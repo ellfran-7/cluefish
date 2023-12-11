@@ -1,0 +1,18 @@
+Package: bio_int_workflow
+Type: Package
+Title: The Title of the Project
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given   = "Ellis",
+           family  = "Franklin",
+           role    = c("aut", "cre", "cph"),
+           email   = "ellisfranklin5@gmail.com",
+           comment = c(ORCID = "{{orcid}}")))
+Description: A paragraph providing a full description of the project (on 
+    several lines...)
+URL: https://github.com/ellfran-7/bio_int_workflow
+BugReports: https://github.com/ellfran-7/bio_int_workflow/issues
+License: GPL (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
