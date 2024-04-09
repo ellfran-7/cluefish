@@ -1,15 +1,3 @@
-^bio_int_workflow\.Rproj$
-^\.Rproj\.user$
-^\.DS_Store$
-^LICENSE\.md$
-^data/raw-data$
-^data/derived-data$
-^outputs$
-^figures$
-^analyses$
 ^make\.R$
-^CONTRIBUTING\.md$
-^\.github$
-^CODE_OF_CONDUCT\.md$
-^README\.Rmd$
-^README\.html$
+^.*\.Rproj$
+^\.Rproj\.user$

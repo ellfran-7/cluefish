@@ -21,3 +21,7 @@ README.html
 inst/doc
 man/
 NAMESPACE
+
+# Unwanted files (e.g. in derived-data/ the files are too large)
+outputs/
+derived-data/

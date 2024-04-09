@@ -1,0 +1,177 @@
+#' Cluster fusion by enriched biological function
+#' 
+#' @description
+#' This function fusions clusters that share a common biological function enrichment.
+#'
+#' @param clustrenrich_data The named `list` output from the `clustrenrich()` function.
+#' 
+#' @return A named `list` holding 3 components, where :
+#'      *`dr_g_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of gene and biological function annotation
+#'      *`dr_c_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of cluster ID and biological function annotation
+#'      *`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the source sfrom which they originated (e.g. GO, KEGG).
+#' 
+#' @examples
+#' 
+
+clustrfusion <- function(
+    clustrenrich_data
+    )
+{
+  
+  # Extract the enrichment results for gene data
+  dr_g_a_enrich <- clustrenrich_data$dr_g_a_enrich
+  
+  # Add new columns "old_clustr" and "new_clustr" for fusion process: this is so that we perform the fusion on the 'new_clustr" column, keeping the 'old_clustr' intact
+  dr_g_a_enrich <- dr_g_a_enrich |> 
+    dplyr::mutate(old_clustr = clustr,
+                  new_clustr = clustr) |> 
+    dplyr::select(-clustr)
+  
+  # Select the 'term_name' column (for the fusion process) and the 'source' column (for fusion trace information) then order the data based on the alphabetical order of the source column. We want to order this column with GO, KEGG then WP. This is reasoned in the README.
+  a_ordered_terms <- clustrenrich_data$dr_g_a_enrich |> 
+    dplyr::select(term_name, source) |> 
+    dplyr::arrange(source)
+  
+  # Retrieve the unique non-NA sources 
+  term_sources <- na.omit(unique(a_ordered_terms$source))
+  
+  # Initialize the fusion log dataframe to track cluster fusion events. This dataframe will record the clusters merged for each source evaluated during fusion.
+  c_fusionlog <- data.frame(old_clustr = sort(as.numeric(dr_g_a_enrich$old_clustr)))
+  
+  # Create vectors to store fusion information for each source
+  after_GO_fusion <- vector("numeric", length = nrow(c_fusionlog))
+  after_KEGG_fusion <- vector("numeric", length = nrow(c_fusionlog))
+  after_WP_fusion <- vector("numeric", length = nrow(c_fusionlog))
+  
+  # Loop through each source
+  for (i in 1:length(term_sources)){
+    
+    # Filter the data to keep only one unique enrichment for each source.
+    # This line of code aims to identify unique combinations of sources. 
+    # Procedure:
+    # - Filter rows with the same value of term_sources in the "source" column.
+    # - Group the data by "new_clustr" and "source".
+    # - Summarize the groups by creating a new column "term_count" that counts unique occurrences of "term_name" values.
+    # - Drop the grouping structure.
+    # - Remove NA values if any.
+    # - Filter rows where the term_count is equal to 1.
+    # - Remove the term_count column and convert the tibble into a regular dataframe.
+    dr_g_a_unique_enriched_terms <- dr_g_a_enrich |> 
+      dplyr::filter(source == term_sources[i]) |> 
+      dplyr::group_by(new_clustr, source) |> 
+      dplyr::summarize(term_count = dplyr::n_distinct(term_name), .groups = "drop") |>
+      na.omit() |> 
+      dplyr::filter(term_count == 1) |> 
+      dplyr::select(-term_count) |> 
+      as.data.frame()
+    
+    # Merge the previously created "dr_g_a_unique_enriched_terms" dataset that holds the info of terms unique to a source within a cluster. This means we filter out all rows where the "term_name" isn't alone to be enriched in the same source.
+    dr_g_a_enrich_filtr <- merge(dr_g_a_enrich, dr_g_a_unique_enriched_terms, by = c("new_clustr", "source"))
+    
+    # Reorder by "new_clustr"
+    dr_g_a_enrich_filtr <- dr_g_a_enrich_filtr[order(dr_g_a_enrich_filtr$new_clustr),]
+    
+    # Retrieve the unique non-NA term names
+    term_names <- na.omit(unique(dr_g_a_enrich_filtr$term_name))
+    
+    # Loop through each term name
+    for (j in 1:length(term_names)){
+      
+      # Select data associated with the unique term within the source
+      dr_g_a_unique_enriched_term <- dr_g_a_enrich_filtr[dr_g_a_enrich_filtr$term_name %in% term_names[j],]
+      
+      # Create a vector of clusters enriching the unique term and remove duplicates
+      unique_clustrs <- unique(dr_g_a_unique_enriched_term$new_clustr)
+      
+      # If multiple clusters associated with the term, proceed
+      if (length(unique_clustrs) > 1){
+        
+        # Identify the smallest cluster id, therefore the largest cluster in gene set size
+        min_cluster <- min(unique_clustrs)
+        
+        # Merge clusters by assigning the smallest id to all clusters enriching the term
+        dr_g_a_enrich[dr_g_a_enrich$new_clustr %in% unique_clustrs,]$new_clustr <- min_cluster
+        
+      } else {
+        
+        next
+        
+      }
+      
+    }
+    
+    # Store fusion information for each source
+    if (term_sources[i] %in% "GO:BP") {
+      after_GO_fusion <- as.numeric(dr_g_a_enrich$new_clustr)
+    } else if (term_sources[i] %in% "KEGG") {
+      after_KEGG_fusion <- as.numeric(dr_g_a_enrich$new_clustr)
+    } else if (term_sources[i] %in% "WP") {
+      after_WP_fusion <- as.numeric(dr_g_a_enrich$new_clustr)
+    }
+    
+  }
+  
+  # Add fusion information to the fusion log dataframe
+  c_fusionlog$after_GO_fusion <- after_GO_fusion
+  c_fusionlog$after_KEGG_fusion <- after_KEGG_fusion
+  c_fusionlog$after_WP_fusion <- after_WP_fusion
+  
+  # Remove repeated rows from fusion log
+  c_fusionlog <- unique(c_fusionlog)
+  
+  # Count the number of clusters before and after fusion
+  total_clusters_before_fusion <- length(unique(dr_g_a_enrich$old_clustr))
+  total_clusters_after_fusion <- length(unique(dr_g_a_enrich$new_clustr))
+  
+  # Calculate the number of clusters that participated in fusion
+  clusters_participated_in_fusion <- total_clusters_before_fusion - total_clusters_after_fusion
+  
+  # Print the ratio of clusters after/before the fusion
+  cat(total_clusters_after_fusion, "/", total_clusters_before_fusion, "clusters left after the fusion process. \n")
+  
+  # Order columns and remove repeated rows for resulting datasets
+  dr_g_a_fusion <- dr_g_a_enrich |> 
+    dplyr::select(ensembl_gene_id, old_clustr, new_clustr, everything()) |> 
+    dplyr::distinct()
+
+  # Renew rownames
+  rownames(dr_g_a_fusion) <- NULL
+  
+  # Create cluster dataset from gene dataset
+  dr_c_a_fusion <- dr_g_a_fusion |> 
+    dplyr::select(-ensembl_gene_id) |> 
+    dplyr::select(old_clustr, new_clustr, term_name, term_id, source)
+  
+  # Prepare dataframe to integrate term_size and highlighted columns from enrichment results
+  gostres_4_merge <- clustrenrich_data$gostres$result |> 
+    dplyr::select(query, term_name, term_size, highlighted) |> 
+    dplyr::rename(old_clustr = query)
+  
+  # Merge dataframes
+  dr_c_a_fusion <- merge(dr_c_a_fusion, gostres_4_merge, by = c("old_clustr", "term_name"))
+  
+  # Remove row repetitions
+  dr_c_a_fusion <- unique(dr_c_a_fusion)
+  
+  # Organize dataframe for readability
+  dr_c_a_fusion <- dr_c_a_fusion |> 
+    dplyr::select(old_clustr, new_clustr, term_name,
+                  term_size, term_id, source, highlighted) |> 
+    dplyr::arrange(as.numeric(old_clustr))
+  
+  # Reset row numbers
+  rownames(dr_g_a_fusion) <- NULL
+  rownames(dr_c_a_fusion) <- NULL
+  rownames(c_fusionlog) <- NULL
+  
+  # Create a named list of the clustrfusion results and the trace of cluster fusions
+  clustr_fusionres <- list(dr_g_a_fusion = dr_g_a_fusion,
+                           dr_c_a_fusion = dr_c_a_fusion,
+                           c_fusionlog = c_fusionlog)
+  
+  # Define the class of the output
+  clustr_fusionres <- structure(clustr_fusionres, class = "clustrfusion")
+  
+  # Return the clusterfusion results
+  return(clustr_fusionres)
+}
