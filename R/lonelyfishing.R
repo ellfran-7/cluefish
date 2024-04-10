@@ -8,11 +8,11 @@
 #' @param clustrfusion_data The named `list` output of the `clustrfusion()` function. 
 #' @param friendly_limit The maximum number of clusters a gene can be part of to be considered "Friendly". Genes exceeding this limit are assigned to a separate "Friendly" cluster. If the limit is set to 0, the "Friendly" cluster isn't created (default is set to 0)
 #' @param path Destination folder for the output data results.
-#' @param output_filename Output enrichment result filename.
+#' @param output_filename Output lonelyfishing result filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #' 
 #' @return A named `list` holding 2 components, where :
-#'      *`dr_g_a_fishing` is a dataframe of the lonely fishing results with each row being a combination of gene and biological function annotation
+#'      *`dr_t_c_a_fishing` is a dataframe of the lonely fishing results with each row being a combination of gene and biological function annotation
 #'      *`dr_c_a_fishing` is a dataframe of the lonely fishing results with each row being a combination of cluster ID and biological function annotation
 #' 
 #' @export
@@ -86,7 +86,7 @@ lonelyfishing <- function(
     
     
     # Combine both objects by rows
-    dr_g_a_lonely_results <- rbind(clustrfusion_data$dr_g_a_fusion, dr_g_a_lonely_data)
+    dr_g_c_a_lonely_results <- rbind(clustrfusion_data$dr_g_a_fusion, dr_g_a_lonely_data)
     
     ## Dataframe contains all clusters with genes types: 
     ## - genes in original cluster but not annotated
@@ -97,15 +97,14 @@ lonelyfishing <- function(
     ## But what are the remaining genes not fished into a cluster?
     
     # Select remaining lonely data
-    dr_t_unfished_lonely_data <- dr_data[!(dr_data$ensembl_gene_id %in% dr_g_a_lonely_results$ensembl_gene_id), ]
+    dr_t_unfished_lonely_data <- dr_data[!(dr_data$ensembl_gene_id %in% dr_g_c_a_lonely_results$ensembl_gene_id), ]
     
     # Prepare data for rbind with gene annotations
     dr_g_c_unfished_lonely_4rbind <- data.frame(ensembl_gene_id = dr_t_unfished_lonely_data$ensembl_gene_id,
                                      old_clustr = "Lonely",
                                      new_clustr = "Lonely")
     
-    # In the results, we want all the KEGG pathways and Wikipathways as they don't inflate the size of the data. Nevertherless, the GO terms are extremely redundant and in massive quantities. We only want the highlighted enriched GO terms here in the results.
-    # Select enriched GO terms, all KEGG pathways, and Wikipathways. 
+    ## Select enriched GO terms, all KEGG pathways, and Wikipathways. 
     # The function specifically focuses on the driver GO terms to avoid excessive redundancy, as the GO term tree is already highly redundant and present in massive quantities. Including all GO terms would significantly inflate the size of the dataframes and therefore the results to explore.
     dr_g_a_annot_data <- clustrenrich_data$dr_g_a_whole |> 
       dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name & source == "GO:BP" |
@@ -113,10 +112,10 @@ lonelyfishing <- function(
     
     # Merge datasets: lonely data with filtered gene annotation data.
     # This combination retains only the enriched driver GO terms, while including all KEGG and Wikipathways in the term_name column.
-    dr_g_a_unfished_lonely_4rbind <- merge(dr_g_c_unfished_lonely_4rbind, dr_g_a_annot_data, by = "ensembl_gene_id", all.x = TRUE)
+    dr_g_c_a_unfished_lonely_4rbind <- merge(dr_g_c_unfished_lonely_4rbind, dr_g_a_annot_data, by = "ensembl_gene_id", all.x = TRUE)
     
     # Combine both datasets by rows
-    dr_g_a_fishing <- rbind(dr_g_a_lonely_results, dr_g_a_unfished_lonely_4rbind)
+    dr_g_c_a_fishing <- rbind(dr_g_c_a_lonely_results, dr_g_c_a_unfished_lonely_4rbind)
     
     
     ## But what about gene  part of many clusters ? The friendly genes !
@@ -126,7 +125,7 @@ lonelyfishing <- function(
     if (friendly_limit != 0) {
       
       # Group by ensembl_gene_id, create a "friendliness" column counting unique clusters per gene. If the "friendliness" value exceeds the limit for a specific gene, update the value in new_clustr to "Friendly". Then ungroup.
-      dr_g_a_fishing <- dr_g_a_fishing |> 
+      dr_g_c_a_fishing <- dr_g_c_a_fishing |> 
         dplyr::group_by(ensembl_gene_id) |> 
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |> 
         dplyr::mutate(new_clustr = dplyr::if_else(friendliness > friendly_limit, "Friendly", as.character(new_clustr))) |> 
@@ -135,7 +134,7 @@ lonelyfishing <- function(
     } else {
       
       # Group by ensembl_gene_id, count unique clusters per gene in "friendliness" column. Then ungroup.
-      dr_g_a_fishing <- dr_g_a_fishing |> 
+      dr_g_c_a_fishing <- dr_g_c_a_fishing |> 
         dplyr::group_by(ensembl_gene_id) |> 
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |> 
         dplyr::ungroup()
@@ -145,10 +144,10 @@ lonelyfishing <- function(
     ## Add remaining information columns: other gene IDs/transcript ID and TF status
     
     # Merge expanded cluster data with getregs() output
-    dr_g_a_fishing <- merge(dr_g_a_fishing, dr_data, by = "ensembl_gene_id", all = TRUE)
+    dr_t_c_a_fishing <- merge(dr_g_c_a_fishing, dr_data, by = "ensembl_gene_id", all = TRUE)
     
     # Order columns and rows by new_clustr, then source, then term_name
-    dr_g_a_fishing <- dr_g_a_fishing |> 
+    dr_t_c_a_fishing <- dr_t_c_a_fishing |> 
       dplyr::select(ensembl_transcript_id_version, ensembl_gene_id, external_gene_name, TF, old_clustr, new_clustr, friendliness, everything()) |> 
       dplyr::arrange(new_clustr, source, term_name)
     
@@ -156,7 +155,7 @@ lonelyfishing <- function(
     ## The results are in a combined gene/biological function annotation per row format, but we also want the results in a combined clustr/biological function annotation per row format.
     
     # Remove "ensembl_gene_id" column, select columns of interest to create cluster dataset
-    dr_c_a_fishing <- dr_g_a_fishing |> 
+    dr_c_a_fishing <- dr_g_c_a_fishing |> 
       dplyr::select(-ensembl_gene_id) |> 
       dplyr::select(old_clustr, new_clustr, term_name, term_id, source)
     
@@ -178,11 +177,11 @@ lonelyfishing <- function(
       dplyr::arrange(as.numeric(old_clustr))
     
     # Reset row numbers
-    rownames(dr_g_a_fishing) <- NULL
+    rownames(dr_t_c_a_fishing) <- NULL
     rownames(dr_c_a_fishing) <- NULL
 
     # Create a named list of the lonelyfishing results
-    lonelyfishingres <- list(dr_t_a_fishing = dr_g_a_fishing,
+    lonelyfishingres <- list(dr_t_c_a_fishing = dr_t_c_a_fishing,
                              dr_c_a_fishing = dr_c_a_fishing)
     
     # Define the class of the output

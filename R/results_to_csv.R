@@ -1,12 +1,12 @@
-#' Generate a gene-level summary table for exploration
+#' Generate a workflow summary table for exploration
 #'
 #' @description
-#' This function creates a concise summary table capturing the key details from the final results post the lonely gene fishing step. It encompasses all essential information for result exploration, striking a balance by avoiding an overwhelming amount of data that might hinder ease of exploration.
+#' This function creates a concise summary table capturing the key details from the workflow results from the `lonelyfishing()` function. It encompasses all essential information for result exploration, striking a balance by avoiding an overwhelming amount of data that might hinder ease of exploration.
 #' 
 #' @param lonelyfishing_data The named `file` output of the `lonelyfishing()` function.
 #' @param bmdboot_data The DRomics bmdboot dataframe results after DRomics::bmdfilter() 
 #' @param path Destination folder for the output data results.
-#' @param output_filename Output enrichment result filename.
+#' @param output_filename Output CSV filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #' 
 #' @return A `.csv` file holding the results of the final step of the workflow with each row being a combination of Ensembl gene, cluster and biological function annotation. This is to be used as a support for exploration and mechanism discovery.
@@ -32,8 +32,8 @@ results_to_csv <- function(
     
   } else {
     
-    # Merge loenlyfishing results with bmdboots results after DRomics::bmdfilter()
-    dr_t_a_workflow_res <- merge(lonelyfishing_data$dr_t_a_fishing, bmdboot_data, by.x = "ensembl_transcript_id_version", by.y = "id")
+    # Merge lonelyfishing results with bmdboots results after DRomics::bmdfilter()
+    dr_t_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by.x = "ensembl_transcript_id_version", by.y = "id")
     
     # Prepare the structure for the summary dataframe
     dr_t_a_summary <- data.frame(

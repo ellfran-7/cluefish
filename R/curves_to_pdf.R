@@ -13,7 +13,7 @@
 #' @param ytitle Y-axis title
 #' @param colors A vector of colors for different trends (default is set at c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"))
 #' @param path Destination folder for the output data results.
-#' @param output_filename Output enrichment result filename.
+#' @param output_filename Output PDF filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #'
 #' @return A `.pdf` file holding a curvesplot per slide for each cluster, and those for the Friendly (if created), Lonely and All deregulated gene transcripts.
@@ -29,8 +29,8 @@ curves_to_pdf <- function(
     tested_doses, 
     ...,
     xunit,
-    xtitle = "Dose",
-    ytitle = "Signal",
+    xtitle,
+    ytitle,
     colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
     path,
     output_filename,
@@ -44,8 +44,11 @@ curves_to_pdf <- function(
     
   } else {
     
+    # Turn the "ensembl_transcript_id" version to "id" for compatibility with the DRomics bmdboot results and for the curvesplot
+    names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
+    
     # Merge loenlyfishing results with bmdboots results after DRomics::bmdfilter()
-    dr_t_a_workflow_res <- merge(lonelyfishing_data$dr_g_a_fishing, bmdboot_data, by = "id")
+    dr_t_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by = "id")
     
     # Subset columns from the merged data, removing non-essential ones
     dr_t_workflow_res <- subset(dr_t_a_workflow_res, select = -c(ensembl_gene_id,
@@ -56,6 +59,7 @@ curves_to_pdf <- function(
                                                                  term_id,
                                                                  source,
                                                                  TF))
+    
     
     # Remove repeated rows
     dr_t_workflow_res <- unique(dr_t_workflow_res)

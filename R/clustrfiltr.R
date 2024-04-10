@@ -3,11 +3,11 @@
 #' @description
 #' This function removes genes belonging to clusters that are considered "too small" by the user.
 #' 
-#' @param getclustrs_data A dataframe that can correspond to the output of the `getclustrs()` function. this input holds at least the columns named `ensembl_gene_id` and `clustr` respectively holding Ensembl gene and cluster identifiers for the deregulated genes.
+#' @param getclustrs_data A dataframe that can correspond to the output of the `getclustrs()` function. This input holds at least the columns named `ensembl_gene_id` and `clustr` respectively holding Ensembl gene and cluster identifiers for the deregulated genes.
 #' @param size_filtr The number of genes in a cluster to consider sufficiently large enough to be a biological complex (by default: 3). 
 #' @return A named `list` holding 2 components, where : 
 #'      *`kept` is a dataframe with the rows kept after the filter (the Ensembl genes are part of a cluster over the size limit)
-#'      *`removed` is a dataframe of the rows removed after the filter (the Ensembl genes are par tof clusters under the size limit)
+#'      *`removed` is a dataframe with the rows removed after the filter (the Ensembl genes are par tof clusters under the size limit)
 #' 
 #' @export
 #'

@@ -3,9 +3,8 @@
 #' @description
 #' This function retrieves and reformats the clustered PPIN data from the StringApp in Cytoscape. 
 #'
-#' @param getregs_data A dataframe that can correspond to the output of the `getregs()` function. TThis input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
-#' @param string_clustr_file The path with the filename of the `node table` .csv file previously downloaded following
-#' clustering of the PPIN made using the StringApp in Cytoscape. This node table must hold a `query.term` and `X__mclCluster` column.
+#' @param getregs_data A dataframe that can correspond to the output of the `getregs()` function. This input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
+#' @param string_clustr_file The path with the filename of the `node table` .csv file previously downloaded following clustering of the PPIN made using the StringApp in Cytoscape. This node table must hold a `query.term` and `X__mclCluster` column.
 #' @return A `dataframe` with an added column indicating to which cluster belongs each gene (if no cluster is associated : NA)
 #' 
 #' @export
@@ -21,7 +20,7 @@ getclustrs <- function(
   dr_g_string_clustr <- read.csv(string_clustr_file)
   
   # Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
-  dr_g_string_clustr$query.term <- str_replace(dr_g_string_clustr$query.term, "\"", "")
+  dr_g_string_clustr$query.term <- stringr::str_replace(dr_g_string_clustr$query.term, "\"", "")
   
   # Create a dataframe for seamless merge with the 'getregs_data' dataframe
   dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 

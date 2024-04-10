@@ -219,7 +219,7 @@ lonely_fishres <- lonelyfishing(
   friendly_limit = 0,
   path = "outputs/",
   output_filename = "lonely_fishres.rds",
-  overwrite = TRUE
+  overwrite = FALSE
 )
 
 

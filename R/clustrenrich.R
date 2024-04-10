@@ -7,8 +7,7 @@
 #' @param clustrfiltr_data The named `list` output from the `clustrfiltr()` function. 
 #' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `ensembl_gene_id` column in the output of the `geteregs()` function.
 #' @param bg_genes The background Ensembl gene list (preferably from the experiment) found in the output of the `DRomics::drcfit()`function..
-#' @param sources A vector of data sources to use. Currently, these include GO (GO:BP, GO:MF, GO:CC to select a 
-#' particular GO branch), KEGG, REAC, TF, MIRNA, CORUM, HP, HPA, WP.
+#' @param sources A vector of data sources to use. Currently, these include GO (GO:BP, GO:MF, GO:CC to select a  particular GO branch), KEGG, REAC, TF, MIRNA, CORUM, HP, HPA, WP.
 #' @param organism Organism ID defined for the chosen sources (e.g. if zebrafish = "drerio")
 #' @param user_threshold Adjusted p-value cutoff for Over-Representation analysis (default at 0.05 in `gost()` function)
 #' @param correction_method P-value adjustment method: one of “gSCS” ,“fdr” and “bonferroni (default set at "fdr")
@@ -26,7 +25,7 @@
 #'      *`dr_g_a_enrich` is a dataframe of the enrichment results with each row being a combination of gene and biological function annotation
 #'      *`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
 #'      *`dr_g_a_whole` is a dataframe of all the biological function annotations found in the g:profiler database for all the deregulated genes
-#'      *`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after eahc filtering step for each source
+#'      *`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
 #'
 #' @export
 #'
