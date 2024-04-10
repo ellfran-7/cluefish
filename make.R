@@ -1,9 +1,9 @@
 #' bio_int_workflow: A workflow to alleviate biological interpretation of the dose-response (DR) modeling results of DR transcriptomic data
 #' 
 #' @description 
-#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modeling results. The main concept revolves around combining biological annotations, gene regulation details, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data.
+#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modeling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data.
 #' 
-#' @author Ellis Franklin \email{ellisfranklin5@gmail.com}
+#' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
 #' @date 2024/02/29
 
@@ -252,14 +252,8 @@ results_to_csv(
 
 # Finally, this last step consists of generating the output PDF file containing a plot of dose-response curves for each cluster of genes, with each plot labeled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labeled with "Dose (µg/L)" and "Signal", and the y-axis is scaled to be the same across all plots.
 
-# To create curvesplots, the function requires an "id" column, in which case, it is the "ensembl_transcript_id_version" column that needs to be changed to "id".
-
-dr_t_a_fishing4curvesplot <- lonely_fishres$dr_t_a_fishing
-
-names(dr_t_a_fishing4curvesplot)[colnames(dr_t_a_fishing4curvesplot) == "ensembl_transcript_id_version"] <- "id"
-
 curves_to_pdf(
-  lonelyfishing_data = dr_t_a_fishing4curvesplot,
+  lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI, 
   clustrfusion_data = clustr_fusionres,
   tested_doses = unique(f$omicdata$dose), 

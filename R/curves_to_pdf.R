@@ -44,14 +44,17 @@ curves_to_pdf <- function(
     
   } else {
     
+    # Extract the lonely fishing results 
+    dr_t_c_a_fishing4curvesplot <- lonely_fishres$dr_t_c_a_fishing
+    
     # Turn the "ensembl_transcript_id" version to "id" for compatibility with the DRomics bmdboot results and for the curvesplot
-    names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
+    names(dr_t_c_a_fishing4curvesplot)[names(dr_t_c_a_fishing4curvesplot) == "ensembl_transcript_id_version"] <- "id"
     
     # Merge loenlyfishing results with bmdboots results after DRomics::bmdfilter()
-    dr_t_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by = "id")
+    dr_t_c_a_workflow_res <- merge(dr_t_c_a_fishing4curvesplot, bmdboot_data, by = "id")
     
     # Subset columns from the merged data, removing non-essential ones
-    dr_t_workflow_res <- subset(dr_t_a_workflow_res, select = -c(ensembl_gene_id,
+    dr_t_workflow_res <- subset(dr_t_c_a_workflow_res, select = -c(ensembl_gene_id,
                                                                  external_gene_name,
                                                                  old_clustr,
                                                                  friendliness,

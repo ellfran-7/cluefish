@@ -33,30 +33,30 @@ results_to_csv <- function(
   } else {
     
     # Merge lonelyfishing results with bmdboots results after DRomics::bmdfilter()
-    dr_t_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by.x = "ensembl_transcript_id_version", by.y = "id")
+    dr_t_c_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by.x = "ensembl_transcript_id_version", by.y = "id")
     
     # Prepare the structure for the summary dataframe
-    dr_t_a_summary <- data.frame(
-      ensembl_transcript_id = dr_t_a_workflow_res$ensembl_transcript_id_version,
-      ensembl_gene_id = dr_t_a_workflow_res$ensembl_gene_id,
-      external_gene_name = dr_t_a_workflow_res$external_gene_name,
-      NewCluster = dr_t_a_workflow_res$new_clustr,
-      Friendliness = dr_t_a_workflow_res$friendliness,
-      Term_name = dr_t_a_workflow_res$term_name,
-      Source = dr_t_a_workflow_res$source,
-      TF = dr_t_a_workflow_res$TF,
-      BMD.zSD = as.numeric(dr_t_a_workflow_res$BMD.zSD),
-      Trend = dr_t_a_workflow_res$trend
+    dr_t_c_a_summary <- data.frame(
+      ensembl_transcript_id = dr_t_c_a_workflow_res$ensembl_transcript_id_version,
+      ensembl_gene_id = dr_t_c_a_workflow_res$ensembl_gene_id,
+      external_gene_name = dr_t_c_a_workflow_res$external_gene_name,
+      NewCluster = dr_t_c_a_workflow_res$new_clustr,
+      Friendliness = dr_t_c_a_workflow_res$friendliness,
+      Term_name = dr_t_c_a_workflow_res$term_name,
+      Source = dr_t_c_a_workflow_res$source,
+      TF = dr_t_c_a_workflow_res$TF,
+      BMD.zSD = as.numeric(dr_t_c_a_workflow_res$BMD.zSD),
+      Trend = dr_t_c_a_workflow_res$trend
     )
     
     # Round BMD.zSD to the tenth for easier reading
-    dr_t_a_summary$BMD.zSD <- round(dr_t_a_summary$BMD.zSD, 1) 
+    dr_t_c_a_summary$BMD.zSD <- round(dr_t_c_a_summary$BMD.zSD, 1) 
     
     # Remove repeated rows
-    dr_t_a_summary <- unique(dr_t_a_summary)
+    dr_t_c_a_summary <- unique(dr_t_c_a_summary)
     
     # Fast save to csv file (using multiple CPUs)
-    data.table::fwrite(x = dr_t_a_summary, 
+    data.table::fwrite(x = dr_t_c_a_summary, 
                        file = file.path(path, output_filename), 
                        sep = ";", 
                        dec=  ",",

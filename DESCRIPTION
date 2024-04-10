@@ -6,12 +6,12 @@ Authors@R: c(
     person(given   = "Ellis",
            family  = "Franklin",
            role    = c("aut", "cre", "cph"),
-           email   = "ellisfranklin5@gmail.com",
+           email   = "ellis.franklin@univ-lorraine.fr",
            comment = c(ORCID = "{{orcid}}")))
 Description: A paragraph providing a full description of the project (on 
     several lines...)
-URL: https://github.com/ellfran-7/bio_int_workflow
-BugReports: https://github.com/ellfran-7/bio_int_workflow/issues
+URL: https://gitlab.in2p3.fr/ellis.franklin1/bio_int_workflow
+BugReports: https://gitlab.in2p3.fr/ellis.franklin1/bio_int_workflow
 License: {{license}}
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -23,5 +23,6 @@ Imports:
     DRomics,
     gprofiler2,
     stats,
+    stringr,
     tidyr,
     utils
