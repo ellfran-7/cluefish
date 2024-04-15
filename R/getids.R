@@ -31,5 +31,4 @@ getids <- function(
                             mart = ensembl)
 
   return(query_results)
-  }
 }
