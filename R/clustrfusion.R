@@ -6,9 +6,9 @@
 #' @param clustrenrich_data The named `list` output from the `clustrenrich()` function.
 #' 
 #' @return A named `list` holding 3 components, where :
-#'      *`dr_g_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of gene and biological function annotation
-#'      *`dr_c_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of cluster ID and biological function annotation
-#'      *`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the source sfrom which they originated (e.g. GO, KEGG).
+#'      -`dr_g_a_fusion` is a dataframe of the cluster fusion results similar to the *clustrenrich_data$dr_g_a_enrich* dataframe with each row being a combination of gene and biological function annotation.
+#'      -`dr_c_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of cluster ID and biological function annotation
+#'      -`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the source sfrom which they originated (e.g. GO, KEGG).
 #' 
 #' @examples
 #' 

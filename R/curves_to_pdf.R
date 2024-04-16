@@ -16,7 +16,7 @@
 #' @param output_filename Output PDF filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #'
-#' @return A `.pdf` file holding a curvesplot per slide for each cluster, and those for the Friendly (if created), Lonely and All deregulated gene transcripts.
+#' @return No return value; the `.pdf` file is downloaded and stored in the specified director. It holds a curvesplot per slide for each cluster, and those for the Friendly (if created), Lonely and All deregulated gene transcripts.
 #' @export
 #'
 #' @examples

@@ -7,7 +7,7 @@
 #
 
 curves_to_pdf(
-  lonelyfishing_data = dr_t_a_fishing4curvesplot,
+  lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI, 
   clustrfusion_data = clustr_fusionres,
   tested_doses = unique(f$omicdata$dose), 

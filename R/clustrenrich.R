@@ -22,10 +22,10 @@
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #'
 #' @return A named `list` holding 4 components, where :
-#'      *`dr_g_a_enrich` is a dataframe of the enrichment results with each row being a combination of gene and biological function annotation
-#'      *`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
-#'      *`dr_g_a_whole` is a dataframe of all the biological function annotations found in the g:profiler database for all the deregulated genes
-#'      *`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
+#'      -`dr_g_a_enrich` is a dataframe of the enrichment results similar to the *clustrfiltr_data$kept* dataframe with each row being a combination of gene and biological function annotation
+#'      -`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
+#'      -`dr_g_a_whole` is a dataframe of all the biological function annotations found in the g:profiler database for all the deregulated genes with a similar structure to the *clustrfiltr_data$kept* dataframe.
+#'      -`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
 #'
 #' @export
 #'
@@ -82,19 +82,19 @@ clustrenrich <- function(
     # Perform Over-Representation Analysis (ORA) using gprofiler2::gost()
     multi_gostres <- gprofiler2::gost(
       query = cluster_list, 
-      organism, 
+      organism = organism, 
       ordered_query = FALSE, 
       multi_query = FALSE, 
       significant = TRUE, 
-      exclude_iea, 
+      exclude_iea = exclude_iea, 
       measure_underrepresentation = FALSE, 
       evcodes = TRUE,
-      user_threshold, 
-      correction_method, 
+      user_threshold = user_threshold, 
+      correction_method = correction_method, 
       domain_scope = "custom_annotated",
       custom_bg = bg_genes, 
       numeric_ns = "", 
-      sources, 
+      sources = sources, 
       as_short_link = FALSE, 
       highlight = TRUE 
     ) 
@@ -156,7 +156,7 @@ clustrenrich <- function(
     # Depending on min/max gene set sizes chosen, remove enriched biological function gene sets from further analysis  
     multi_gostres$result <- multi_gostres$result |> 
       dplyr::filter(
-        min_term_size < term_size & term_size < max_term_size
+        min_term_size <= term_size & term_size <= max_term_size
       )
     
     # Transform the dataframe from "cluster per row" to "gene per row"
@@ -252,7 +252,7 @@ clustrenrich <- function(
                                          term_id = NA,
                                          source = NA)
     
-    # Combine both results: enriched and non-enriched genes
+    # Combine both results: enriching and non-enriching genes
     dr_g_all_data <- rbind(dr_g_a_gostres, dr_g_no_enrich_4_rbind)
     
     # Remove duplicate rows
@@ -268,19 +268,19 @@ clustrenrich <- function(
     # Retrieve GO:BP, KEGG, and WP annotations using the gprofiler::gost() function:
     annot_gostres <- gprofiler2::gost(
       query = dr_genes, 
-      organism, 
+      organism = organism, 
       ordered_query = FALSE, 
       multi_query = FALSE, 
       significant = FALSE, 
-      exclude_iea, 
+      exclude_iea = exclude_iea, 
       measure_underrepresentation = FALSE, 
       evcodes = TRUE,
-      user_threshold, 
-      correction_method, 
+      user_threshold = user_threshold, 
+      correction_method = correction_method, 
       domain_scope = "custom_annotated",
       custom_bg = bg_genes, 
       numeric_ns = "", 
-      sources, 
+      sources = sources, 
       as_short_link = FALSE, 
       highlight = FALSE 
     ) 

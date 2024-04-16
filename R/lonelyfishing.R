@@ -12,8 +12,8 @@
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #' 
 #' @return A named `list` holding 2 components, where :
-#'      *`dr_t_c_a_fishing` is a dataframe of the lonely fishing results with each row being a combination of gene and biological function annotation
-#'      *`dr_c_a_fishing` is a dataframe of the lonely fishing results with each row being a combination of cluster ID and biological function annotation
+#'      -`dr_t_c_a_fishing` is a dataframe of the lonely fishing results similar to the *clustrenrich_data$dr_g_a_enrich* or *clustrfusion_data$dr_g_a_fusion* dataframes with each row being a combination of gene and biological function annotation.
+#'      -`dr_c_a_fishing` ` is a dataframe of the lonely fishing results similar to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation. 
 #' 
 #' @export
 #'
