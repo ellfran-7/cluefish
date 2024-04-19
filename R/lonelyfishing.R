@@ -13,7 +13,7 @@
 #' 
 #' @return A named `list` holding 2 components, where :
 #'      -`dr_t_c_a_fishing` is a dataframe of the lonely fishing results similar to the *clustrenrich_data$dr_g_a_enrich* or *clustrfusion_data$dr_g_a_fusion* dataframes with each row being a combination of gene and biological function annotation.
-#'      -`dr_c_a_fishing` ` is a dataframe of the lonely fishing results similar to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation. 
+#'      -`dr_c_a_fishing` is a dataframe of the lonely fishing results similar to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation. 
 #' 
 #' @export
 #'
@@ -63,13 +63,13 @@ lonelyfishing <- function(
     
     ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
     
-    # Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows.
-    dr_g_a_fusion_modif <- clustrfusion_data$dr_g_a_fusion |> 
+    # Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+    dr_a_fusion_modif <- clustrfusion_data$dr_g_a_fusion |> 
       dplyr::select(-ensembl_gene_id) |> 
       dplyr::distinct()
     
     # Merge modified cluster fusion data and annotated lonely gene data
-    dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_g_a_fusion_modif, by = "term_name")
+    dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
     
     
     # Get genes without clusters for the following messages
@@ -179,7 +179,7 @@ lonelyfishing <- function(
     # Reset row numbers
     rownames(dr_t_c_a_fishing) <- NULL
     rownames(dr_c_a_fishing) <- NULL
-
+    
     # Create a named list of the lonelyfishing results
     lonelyfishingres <- list(dr_t_c_a_fishing = dr_t_c_a_fishing,
                              dr_c_a_fishing = dr_c_a_fishing)

@@ -35,7 +35,7 @@ clustrenrich <- function(
     clustrfiltr_data,
     dr_genes,
     bg_genes,  
-    sources, 
+    sources = c("GO:BP", "KEGG", "WP"), 
     organism, 
     user_threshold = 0.05,  
     correction_method = "fdr",
@@ -108,7 +108,7 @@ clustrenrich <- function(
     # ---------------
     # using the "multi_gostres$result" the function gradually creates one of the components the output of clustrenrich(), which is the $c_simplifylog. It holds the number of biological functions enriched per cluster, before and after each filtering step for each source. In this first block, we create the base dataframe with no filters performed yet.
     
-    # Create a dataframe holding the number of terms enriched by clusters before and after each condition. This will be updated after each sub-step of this function.
+    # Create a dataframe holding the number of terms (term_name) enriched by clusters before and after each condition. Removed row duplicates to pass from "c_a" format to "g_a" format. This will be updated after each sub-step of this function.
     dr_g_a_gostres <- multi_gostres$result |> 
       dplyr::select(query, term_name, source) |> 
       dplyr::distinct()
@@ -121,7 +121,6 @@ clustrenrich <- function(
       dplyr::rename(clustr = query, all_GO = 'GO:BP', all_KEGG = KEGG, all_WP = WP) |> 
       as.data.frame()
     # ---------------
-    
     
     # Conditionally filter out non-highlighted GO terms
     if (only_highlighted_GO == TRUE) {
@@ -159,7 +158,7 @@ clustrenrich <- function(
         min_term_size <= term_size & term_size <= max_term_size
       )
     
-    # Transform the dataframe from "cluster per row" to "gene per row"
+    # Transform the dataframe from c_a to g_a format. The intersection column holds the gene ids that intersect between the query and term. The term_name a,d term_id are the respective names and ids for each term. The source represents the databases from which the term is from.
     dr_g_a_gostres <- multi_gostres$result |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::select(intersection, query, term_name, term_id, source) |> 

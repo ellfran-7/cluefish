@@ -18,7 +18,7 @@ clustrfiltr <- function(
     size_filtr = 3
     )
 { 
-  # Select necessary columns: Ensembl gene ID and cluster ID, removing duplicate rows
+  # Select necessary columns: Ensembl gene ID and cluster ID, removing duplicate rows in order to pass from transcript per row to gene per row
   dr_g_clustrs <- getclustrs_data |> 
     dplyr::select(ensembl_gene_id, clustr) |> 
     dplyr::distinct()

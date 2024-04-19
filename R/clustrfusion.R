@@ -129,11 +129,10 @@ clustrfusion <- function(
   # Print the ratio of clusters after/before the fusion
   cat(total_clusters_after_fusion, "/", total_clusters_before_fusion, "clusters left after the fusion process. \n")
   
-  # Order columns and remove repeated rows for resulting datasets
+  # Order columns
   dr_g_a_fusion <- dr_g_a_enrich |> 
-    dplyr::select(ensembl_gene_id, old_clustr, new_clustr, everything()) |> 
-    dplyr::distinct()
-
+    dplyr::select(ensembl_gene_id, old_clustr, new_clustr, everything())
+  
   # Renew rownames
   rownames(dr_g_a_fusion) <- NULL
   

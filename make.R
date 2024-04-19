@@ -175,8 +175,7 @@ dr_t_clustrs_filtr <- clustrfiltr(
 clustr_enrichres <- clustrenrich(
   clustrfiltr_data = dr_t_clustrs_filtr,
   dr_genes = dr_t_regs$ensembl_gene_id,
-  bg_genes = bg_t_ids$ensembl_gene_id,
-  sources = c("GO:BP", "KEGG", "WP"),
+  bg_genes = bg_t_ids$ensembl_gene_id,,
   organism = "drerio",
   user_threshold = 0.05,
   correction_method = "fdr",
