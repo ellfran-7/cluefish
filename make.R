@@ -101,9 +101,9 @@ bg_t_ids <- getids(
   )
 
 # Save the "time-consuming" data if already created
-write.table(bg_t_ids, "outputs/bg_t_ids.txt")
+write.table(bg_t_ids, "outputs/bg_t_ids_2024_04_19.txt")
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024_04_19.txt")
 
 
 
@@ -118,7 +118,7 @@ bg_t_ids <- read.table("outputs/bg_t_ids.txt")
 dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
 
 dr_t_regs <- getregs(
-  responsiv_ids = dr_t_ids,
+  getids_data = dr_t_ids,
   regulator_file = "data/derived-data/Danio_rerio_TF.txt",
   coregulator_file = "data/derived-data/Danio_rerio_Cof.txt")
 
@@ -136,7 +136,7 @@ DR_output4string <- merge(BMDres_definedCI, dr_t_regs,
                           by.x = "id", by.y = "ensembl_transcript_id_version")
 
 # Save the data 
-write.table(DR_output4string, file = "outputs/DR_output4string.txt", row.names = FALSE, sep = "\t")
+write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_19.txt", row.names = FALSE, sep = "\t")
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
@@ -145,8 +145,9 @@ write.table(DR_output4string, file = "outputs/DR_output4string.txt", row.names =
 # This table, found in the "outputs/" folder, can then be imported back into the Rstudio environment in order to pursue the workflow : 
 
 dr_t_clustrs <- getclustrs(
-  responsiv_data = dr_t_regs,
-  string_clustr_file = "outputs/Resp_PPIN_clustered_051023.csv"
+  getregs_data = dr_t_regs,
+  path = "outputs/",
+  nodetable_filename = "Resp_PPIN_clustered_051023.csv"
 )
 
 
@@ -159,7 +160,7 @@ dr_t_clustrs <- getclustrs(
 #>-------------------------------------------------------
 
 dr_t_clustrs_filtr <- clustrfiltr(
-  clustr_data = dr_t_clustrs,
+  getclustrs_data = dr_t_clustrs,
   size_filtr = 3
 )
 
@@ -185,7 +186,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/",
-  output_filename = "clustr_enrichres.rds",
+  output_filename = "clustr_enrichres_2024_04_19.rds",
   overwrite = FALSE
 )
 
@@ -217,7 +218,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/",
-  output_filename = "lonely_fishres.rds",
+  output_filename = "lonely_fishres_2024_04_19.rds",
   overwrite = FALSE
 )
 
@@ -236,7 +237,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = "summary_workflow_2024_04_07.csv",
+  output_filename = "summary_workflow_2024_04_19.csv",
   overwrite = TRUE
 )
 
@@ -273,7 +274,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = "workflow_curvesplots_2024_04_07.pdf",
+  output_filename = "workflow_curvesplots_2024_04_19.pdf",
   overwrite = TRUE
 )
 

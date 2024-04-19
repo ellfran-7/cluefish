@@ -13,14 +13,15 @@
 
 getclustrs <- function(
     getregs_data, 
-    string_clustr_file 
+    path,
+    nodetable_filename
     )
 {
   # Read the 'node table' CSV file of the created network from StringApp in Cytoscape
-  dr_g_string_clustr <- read.csv(string_clustr_file)
+  dr_g_string_clustr <- read.csv(file.path(path, nodetable_filename))
   
   # Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
-  dr_g_string_clustr$query.term <- stringr::str_replace(dr_g_string_clustr$query.term, "\"", "")
+  dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
   
   # Create a dataframe for seamless merge with the 'getregs_data' dataframe
   dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 

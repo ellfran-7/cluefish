@@ -90,6 +90,11 @@ curves_to_pdf <- function(
       
     }
     
+    # Arrange the data by cluster and by source order : GO:BP, KEGG and then WP. GO:BP terms take precedence and are pasted first in the curvesplot title. If there are no enriched GO:BP terms, a KEGG term is pasted. If neither GO:BP nor KEGG terms are present, a WP term is pasted.
+    order_sources <- c("GO:BP", "KEGG", "WP")
+    dr_g_a_fusion_ordered <- clustrfusion_data$dr_g_a_fusion |> 
+      dplyr::arrange(new_clustr, match(source, order_sources))
+    
     
     # Calculate the first quartile value for each cluster
     groupby <- as.factor(dr_t_data4pdf[, "new_clustr"])
@@ -113,7 +118,7 @@ curves_to_pdf <- function(
       cplot <- DRomics::curvesplot(df_clustr, ...) +
         geom_vline(xintercept = tested_doses,  linetype = 2,  colour = "#302533", 
                    alpha = 0.7,  linewidth = 0.3) +
-        labs(title = paste("Cluster", cluster_names[i], ":", clustrfusion_data$dr_g_a_fusion[clustrfusion_data$dr_g_a_fusion$new_clustr %in% cluster_names[i],]$term_name), 
+        labs(title = paste("Cluster", cluster_names[i], ":", dr_g_a_fusion_ordered[dr_g_a_fusion_ordered$new_clustr %in% cluster_names[i],]$term_name, "-", dr_g_a_fusion_ordered[dr_g_a_fusion_ordered$new_clustr %in% cluster_names[i],]$source), 
              subtitle = paste(length(unique(df_clustr$id)), "items", "with 25% <", dnb[dnb$groupby %in% cluster_names[i],]$firstquartile, xunit)) +
         xlab(xtitle) + 
         ylab(ytitle) +
