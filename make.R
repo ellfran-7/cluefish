@@ -50,7 +50,7 @@ dl_regulation_data(
   path = "data/derived-data/",
   filename_tf = "Danio_rerio_TF.txt",
   filename_cof = "Danio_rerio_Cof.txt",
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 
@@ -101,9 +101,9 @@ bg_t_ids <- getids(
   )
 
 # Save the "time-consuming" data if already created
-write.table(bg_t_ids, "outputs/bg_t_ids_2024_04_19.txt")
+write.table(bg_t_ids, "outputs/bg_t_ids_2024_04_22.txt")
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024_04_19.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024_04_22.txt")
 
 
 
@@ -136,7 +136,7 @@ DR_output4string <- merge(BMDres_definedCI, dr_t_regs,
                           by.x = "id", by.y = "ensembl_transcript_id_version")
 
 # Save the data 
-write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_19.txt", row.names = FALSE, sep = "\t")
+write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_22.txt", row.names = FALSE, sep = "\t")
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
@@ -147,7 +147,7 @@ write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_19.txt", 
 dr_t_clustrs <- getclustrs(
   getregs_data = dr_t_regs,
   path = "outputs/",
-  nodetable_filename = "Resp_PPIN_clustered_051023.csv"
+  nodetable_filename = "Resp_PPIN_clustered_220424.csv"
 )
 
 
@@ -186,7 +186,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/",
-  output_filename = "clustr_enrichres_2024_04_19.rds",
+  output_filename = "clustr_enrichres_2024_04_22.rds",
   overwrite = FALSE
 )
 
@@ -218,8 +218,8 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/",
-  output_filename = "lonely_fishres_2024_04_19.rds",
-  overwrite = FALSE
+  output_filename = "lonely_fishres_2024_04_22.rds",
+  overwrite = TRUE
 )
 
 
@@ -237,7 +237,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = "summary_workflow_2024_04_19.csv",
+  output_filename = "summary_workflow_2024_04_22.csv",
   overwrite = TRUE
 )
 
@@ -251,6 +251,7 @@ results_to_csv(
 #>------------------------------------------------------------
 
 # Finally, this last step consists of generating the output PDF file containing a plot of dose-response curves for each cluster of genes, with each plot labeled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labeled with "Dose (µg/L)" and "Signal", and the y-axis is scaled to be the same across all plots.
+require(ggplot2)
 
 curves_to_pdf(
   lonelyfishing_data = lonely_fishres,
@@ -274,7 +275,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = "workflow_curvesplots_2024_04_19.pdf",
+  output_filename = "workflow_curvesplots_2024_04_22.pdf",
   overwrite = TRUE
 )
 
