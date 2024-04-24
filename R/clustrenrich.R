@@ -22,10 +22,10 @@
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #'
 #' @return A named `list` holding 4 components, where :
-#'      *`dr_g_a_enrich` is a dataframe of the enrichment results with each row being a combination of gene and biological function annotation
-#'      *`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
-#'      *`dr_g_a_whole` is a dataframe of all the biological function annotations found in the g:profiler database for all the deregulated genes
-#'      *`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
+#'      -`dr_g_a_enrich` is a dataframe of the enrichment results similar to the *clustrfiltr_data$kept* dataframe with each row being a combination of gene and biological function annotation
+#'      -`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
+#'      -`dr_g_a_whole` is a dataframe of all the biological function annotations found in the g:profiler database for all the deregulated genes with a similar structure to the *clustrfiltr_data$kept* dataframe.
+#'      -`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
 #'
 #' @export
 #'
@@ -35,7 +35,7 @@ clustrenrich <- function(
     clustrfiltr_data,
     dr_genes,
     bg_genes,  
-    sources, 
+    sources = c("GO:BP", "KEGG", "WP"), 
     organism, 
     user_threshold = 0.05,  
     correction_method = "fdr",
@@ -82,19 +82,19 @@ clustrenrich <- function(
     # Perform Over-Representation Analysis (ORA) using gprofiler2::gost()
     multi_gostres <- gprofiler2::gost(
       query = cluster_list, 
-      organism, 
+      organism = organism, 
       ordered_query = FALSE, 
       multi_query = FALSE, 
       significant = TRUE, 
-      exclude_iea, 
+      exclude_iea = exclude_iea, 
       measure_underrepresentation = FALSE, 
       evcodes = TRUE,
-      user_threshold, 
-      correction_method, 
+      user_threshold = user_threshold, 
+      correction_method = correction_method, 
       domain_scope = "custom_annotated",
       custom_bg = bg_genes, 
       numeric_ns = "", 
-      sources, 
+      sources = sources, 
       as_short_link = FALSE, 
       highlight = TRUE 
     ) 
@@ -108,7 +108,7 @@ clustrenrich <- function(
     # ---------------
     # using the "multi_gostres$result" the function gradually creates one of the components the output of clustrenrich(), which is the $c_simplifylog. It holds the number of biological functions enriched per cluster, before and after each filtering step for each source. In this first block, we create the base dataframe with no filters performed yet.
     
-    # Create a dataframe holding the number of terms enriched by clusters before and after each condition. This will be updated after each sub-step of this function.
+    # Create a dataframe holding the number of terms (term_name) enriched by clusters before and after each condition. Removed row duplicates to pass from "c_a" format to "g_a" format. This will be updated after each sub-step of this function.
     dr_g_a_gostres <- multi_gostres$result |> 
       dplyr::select(query, term_name, source) |> 
       dplyr::distinct()
@@ -121,7 +121,6 @@ clustrenrich <- function(
       dplyr::rename(clustr = query, all_GO = 'GO:BP', all_KEGG = KEGG, all_WP = WP) |> 
       as.data.frame()
     # ---------------
-    
     
     # Conditionally filter out non-highlighted GO terms
     if (only_highlighted_GO == TRUE) {
@@ -156,10 +155,10 @@ clustrenrich <- function(
     # Depending on min/max gene set sizes chosen, remove enriched biological function gene sets from further analysis  
     multi_gostres$result <- multi_gostres$result |> 
       dplyr::filter(
-        min_term_size < term_size & term_size < max_term_size
+        min_term_size <= term_size & term_size <= max_term_size
       )
     
-    # Transform the dataframe from "cluster per row" to "gene per row"
+    # Transform the dataframe from c_a to g_a format. The intersection column holds the gene ids that intersect between the query and term. The term_name a,d term_id are the respective names and ids for each term. The source represents the databases from which the term is from.
     dr_g_a_gostres <- multi_gostres$result |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::select(intersection, query, term_name, term_id, source) |> 
@@ -252,7 +251,7 @@ clustrenrich <- function(
                                          term_id = NA,
                                          source = NA)
     
-    # Combine both results: enriched and non-enriched genes
+    # Combine both results: enriching and non-enriching genes
     dr_g_all_data <- rbind(dr_g_a_gostres, dr_g_no_enrich_4_rbind)
     
     # Remove duplicate rows
@@ -268,19 +267,19 @@ clustrenrich <- function(
     # Retrieve GO:BP, KEGG, and WP annotations using the gprofiler::gost() function:
     annot_gostres <- gprofiler2::gost(
       query = dr_genes, 
-      organism, 
+      organism = organism, 
       ordered_query = FALSE, 
       multi_query = FALSE, 
       significant = FALSE, 
-      exclude_iea, 
+      exclude_iea = exclude_iea, 
       measure_underrepresentation = FALSE, 
       evcodes = TRUE,
-      user_threshold, 
-      correction_method, 
+      user_threshold = user_threshold, 
+      correction_method = correction_method, 
       domain_scope = "custom_annotated",
       custom_bg = bg_genes, 
       numeric_ns = "", 
-      sources, 
+      sources = sources, 
       as_short_link = FALSE, 
       highlight = FALSE 
     ) 

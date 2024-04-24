@@ -6,9 +6,9 @@
 #' @param clustrenrich_data The named `list` output from the `clustrenrich()` function.
 #' 
 #' @return A named `list` holding 3 components, where :
-#'      *`dr_g_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of gene and biological function annotation
-#'      *`dr_c_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of cluster ID and biological function annotation
-#'      *`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the source sfrom which they originated (e.g. GO, KEGG).
+#'      -`dr_g_a_fusion` is a dataframe of the cluster fusion results similar to the *clustrenrich_data$dr_g_a_enrich* dataframe with each row being a combination of gene and biological function annotation.
+#'      -`dr_c_a_fusion` is a dataframe of the cluster fusion results with each row being a combination of cluster ID and biological function annotation
+#'      -`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the source sfrom which they originated (e.g. GO, KEGG).
 #' 
 #' @examples
 #' 
@@ -129,11 +129,10 @@ clustrfusion <- function(
   # Print the ratio of clusters after/before the fusion
   cat(total_clusters_after_fusion, "/", total_clusters_before_fusion, "clusters left after the fusion process. \n")
   
-  # Order columns and remove repeated rows for resulting datasets
+  # Order columns
   dr_g_a_fusion <- dr_g_a_enrich |> 
-    dplyr::select(ensembl_gene_id, old_clustr, new_clustr, everything()) |> 
-    dplyr::distinct()
-
+    dplyr::select(ensembl_gene_id, old_clustr, new_clustr, everything())
+  
   # Renew rownames
   rownames(dr_g_a_fusion) <- NULL
   

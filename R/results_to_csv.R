@@ -9,7 +9,7 @@
 #' @param output_filename Output CSV filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #' 
-#' @return A `.csv` file holding the results of the final step of the workflow with each row being a combination of Ensembl gene, cluster and biological function annotation. This is to be used as a support for exploration and mechanism discovery.
+#' @return No return value; the `.csv` file is downloaded and stored in the specified director. It holds the results of the final step of the workflow with each row being a combination of Ensembl transcript, cluster and biological function annotation. This is to be used as a support for exploration and mechanism discovery.
 #' 
 #' @export
 #'
