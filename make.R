@@ -201,7 +201,8 @@ clustr_enrichres <- clustrenrich(
 #>-------------------------------------------------------------
 
 clustr_fusionres <- clustrfusion(
-  clustrenrich_data = clustr_enrichres
+  clustrenrich_data = clustr_enrichres,
+  monoterm_fusion = FALSE
 )
 
 
