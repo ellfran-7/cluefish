@@ -3,7 +3,7 @@
 #' @description
 #' This function generates a PDF file containing a plot of dose-response curves for each cluster of deregulated genes, with each plot labeled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labeled with "Dose (µg/L)" and "Signal", and the Y-axis is scaled to be the same across all plots.
 #' 
-#' @param lonelyfishing_data The named `file` output of the `lonelyfishing()` function.
+#' @param lonelyfishing_data The named `list` output of the `lonelyfishing()` function.
 #' @param bmdboot_data The DRomics bmdboot dataframe results after DRomics::bmdfilter() 
 #' @param clustrfusion_data The named `list` output of the `clustrfusion()` function. 
 #' @param tested_doses A vector of the tested doses that can be found in the output of the `DRomics::drcfit()`function (unique(f$omicdata$dose))

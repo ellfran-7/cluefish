@@ -3,8 +3,8 @@
 #' @description
 #' This function creates a concise summary table capturing the key details from the workflow results from the `lonelyfishing()` function. It encompasses all essential information for result exploration, striking a balance by avoiding an overwhelming amount of data that might hinder ease of exploration.
 #' 
-#' @param lonelyfishing_data The named `file` output of the `lonelyfishing()` function.
-#' @param bmdboot_data The DRomics bmdboot dataframe results after DRomics::bmdfilter() 
+#' @param lonelyfishing_data The named `list` output of the `lonelyfishing()` function.
+#' @param bmdboot_data The DRomics bmdboot `dataframe` results after DRomics::bmdfilter() 
 #' @param path Destination folder for the output data results.
 #' @param output_filename Output CSV filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).

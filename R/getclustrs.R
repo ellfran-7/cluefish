@@ -3,9 +3,9 @@
 #' @description
 #' This function retrieves and reformats the clustered PPIN data from the StringApp in Cytoscape. 
 #'
-#' @param getregs_data A dataframe that can correspond to the output of the `getregs()` function. This input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
+#' @param getregs_data A dataframe of type *t* that typically corresponds to the output of the `getregs()` function. This input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
 #' @param string_clustr_file The path with the filename of the `node table` .csv file previously downloaded following clustering of the PPIN made using the StringApp in Cytoscape. This node table must hold a `query.term` and `X__mclCluster` column.
-#' @return A `dataframe` similar to the *getregs_data* dataframe input with an added column indicating to which cluster belongs each gene (if no cluster is associated : NA)
+#' @return A `dataframe` of type *t* similar to the *getregs_data* dataframe input with an added column indicating to which cluster belongs each gene (if no cluster is associated : NA)
 #' 
 #' @export
 #'

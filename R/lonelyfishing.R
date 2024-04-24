@@ -3,7 +3,7 @@
 #' @description
 #' This function identifies and integrates lonely genes (genes not found in any cluster after the `clustrfiltr()` function) into existing clusters. Integration relies on shared gene pathway annotations between lonely genes and cluster pathway enrichments. Lonely genes are pinpointed from the input gene data (`dr_data`) and then linked to clusters based on shared biological annotations from pathways.
 #' 
-#' @param dr_data A `dataframe` that can correspond to the output of the `getregs()` function. This input holds at least'ensembl_gene_id' and 'term_name' columns, respectively containing Ensembl gene identifiers and biological function annotations for the deregulated genes. 
+#' @param dr_data A `dataframe` of type *t* that typically corresponds to the output of the `getregs()` function. This input holds at least 'ensembl_gene_id' and 'term_name' columns, respectively containing Ensembl gene identifiers and biological function annotations for the deregulated genes. 
 #' @param clustrenrich_data The named `list` output of the `clustrenrich()` function.
 #' @param clustrfusion_data The named `list` output of the `clustrfusion()` function. 
 #' @param friendly_limit The maximum number of clusters a gene can be part of to be considered "Friendly". Genes exceeding this limit are assigned to a separate "Friendly" cluster. If the limit is set to 0, the "Friendly" cluster isn't created (default is set to 0)
@@ -12,8 +12,8 @@
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #' 
 #' @return A named `list` holding 2 components, where :
-#'      -`dr_t_c_a_fishing` is a dataframe of the lonely fishing results similar to the *clustrenrich_data$dr_g_a_enrich* or *clustrfusion_data$dr_g_a_fusion* dataframes with each row being a combination of gene and biological function annotation.
-#'      -`dr_c_a_fishing` is a dataframe of the lonely fishing results similar to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation. 
+#'      -`dr_t_c_a_fishing` is a dataframe of type *t_c_a* holding the lonely fishing results.
+#'      -`dr_c_a_fishing` is a dataframe of type *c_a* holding the lonely fishing results. It shares a similar structure to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation.
 #' 
 #' @export
 #'

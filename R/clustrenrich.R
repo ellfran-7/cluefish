@@ -5,9 +5,9 @@
 #' An option is added to filter pathways that are enriched by "too few" genes. Secondly, it adds the data for genes in a string cluster but not participating in the enrichment. Throughout the pipeline, there is trace of the number of enriched biological functions before and after filters. Lastly, it retrieves all the biological funciton annotations for the entirety of deregulated genes from within the g:profiler database. 
 #'
 #' @param clustrfiltr_data The named `list` output from the `clustrfiltr()` function. 
-#' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `ensembl_gene_id` column in the output of the `geteregs()` function.
-#' @param bg_genes The background Ensembl gene list (preferably from the experiment) found in the output of the `DRomics::drcfit()`function..
-#' @param sources A vector of data sources to use. Currently, these include GO (GO:BP, GO:MF, GO:CC to select a  particular GO branch), KEGG, REAC, TF, MIRNA, CORUM, HP, HPA, WP.
+#' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `ensembl_gene_id` column in the output of the `geteregs()` function. The `gprofiler2::gost()` function handles duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
+#' @param bg_genes The vector of background Ensembl genes (preferably from the experiment) that typically corresponds to the `ensemble_gene_id` column in the output of the `getids()` function.
+#' @param sources A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.
 #' @param organism Organism ID defined for the chosen sources (e.g. if zebrafish = "drerio")
 #' @param user_threshold Adjusted p-value cutoff for Over-Representation analysis (default at 0.05 in `gost()` function)
 #' @param correction_method P-value adjustment method: one of “gSCS” ,“fdr” and “bonferroni (default set at "fdr")
@@ -22,9 +22,9 @@
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #'
 #' @return A named `list` holding 4 components, where :
-#'      -`dr_g_a_enrich` is a dataframe of the enrichment results similar to the *clustrfiltr_data$kept* dataframe with each row being a combination of gene and biological function annotation
+#'      -`dr_g_a_enrich` is a dataframe of type *g_a* holding the enrichment results with each row being a combination of gene and biological function annotation
 #'      -`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
-#'      -`dr_g_a_whole` is a dataframe of all the biological function annotations found in the g:profiler database for all the deregulated genes with a similar structure to the *clustrfiltr_data$kept* dataframe.
+#'      -`dr_g_a_whole` is a dataframe of type *g_a* holding all the biological function annotations found in the g:profiler database for all the deregulated genes.
 #'      -`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
 #'
 #' @export
@@ -108,13 +108,12 @@ clustrenrich <- function(
     # ---------------
     # using the "multi_gostres$result" the function gradually creates one of the components the output of clustrenrich(), which is the $c_simplifylog. It holds the number of biological functions enriched per cluster, before and after each filtering step for each source. In this first block, we create the base dataframe with no filters performed yet.
     
-    # Create a dataframe holding the number of terms (term_name) enriched by clusters before and after each condition. Removed row duplicates to pass from "c_a" format to "g_a" format. This will be updated after each sub-step of this function.
-    dr_g_a_gostres <- multi_gostres$result |> 
-      dplyr::select(query, term_name, source) |> 
-      dplyr::distinct()
+    # Create a dataframe holding the number of terms (term_name) enriched by clusters before and after each condition. This will be updated after each sub-step of this function.
+    dr_c_a_gostres <- multi_gostres$result |> 
+      dplyr::select(query, term_name, source)
     
     # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster, rename the columns for coherence and turn the tibble into a dataframe.
-    dr_c_a_termcount <- dr_g_a_gostres |>
+    dr_c_a_termcount <- dr_c_a_gostres |>
       dplyr::group_by(query, source) |>
       dplyr::summarize(count = dplyr::n_distinct(term_name), .groups = "drop") |>
       tidyr::pivot_wider(names_from = source, values_from = count, values_fill = 0) |> 
