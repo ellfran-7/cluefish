@@ -13,8 +13,8 @@ format:
     embed-resources: true
     self-contained: true
     grid: 
-      margin-width: 300px
-      sidebar-width: 200px
+      margin-width: 200px
+      sidebar-width: 100px
 execute: 
   warning: false
 reference-location: margin
@@ -24,19 +24,20 @@ cap-location: margin
 ---
 
 ```{r}
+#| label: load-fun-data
 #| include: false
 
-### Load everything : from packages to functions to data
+### Load everything : from packages to functions to data ---------
 
 knitr::opts_chunk$set(warning = F, message = F)
 options(scipen = 1, digits = 2) 
 
-## Packages required
+## Packages required ---------
 require(ggplot2)
 require(kableExtra)
 require(DT)
 
-## Function for specific cluster info retrieval 
+## Function for specific cluster info retrieval ---------
 retrieve_info_for <- function(number) {
   
   # Cluster id and first quartile associated
@@ -71,7 +72,7 @@ retrieve_info_for <- function(number) {
 }
 
 
-## Load Project Addins (R Functions and Packages) ----
+## Load Project Addins (R Functions and Packages) ------
 devtools::load_all(here::here())
 
 # Load DRomics drcfit object (which holds the background transcript list) 
@@ -83,7 +84,7 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 # Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "old-outputs", "clustr_enrichres_2024_04_19.rds"))
+clustr_enrichres <- readRDS(here::here("outputs", "clustr_enrichres_2024_04_26.rds"))
 
 # Get clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -91,7 +92,7 @@ clustr_fusionres <- clustrfusion(
 )
 
 # Load the workflow results 
-lonelyfishing_data <- readRDS(here::here("outputs", "old-outputs", "lonely_fishres_2024_04_19.rds"))
+lonelyfishing_data <- readRDS(here::here("outputs", "lonely_fishres_2024_04_26.rds"))
 
 # Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
 names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
@@ -102,11 +103,10 @@ b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,
 
 ```
 
-
-
 ## The results as an interactive table
 
 ```{r}
+#| label: inter-table
 #| echo: false
 
 # Prepare the structure for the summary dataframe
@@ -132,8 +132,6 @@ b_lonely_fishres_summary <- unique(b_lonely_fishres_summary)
 # Generate the interactive table 
 DT::datatable(b_lonely_fishres_summary, options = list(pageLength = 10))
 ```
-
-\
 
 ## The results as sensitivity plots
 
@@ -209,8 +207,6 @@ sp <- DRomics::sensitivityplot(
 sp
 ```
 
-
-
 ## The top 10 most sensitive clusters
 
 ```{r}
@@ -232,6 +228,12 @@ dnb$firstquartile <- tapply(variable, groupby, firstquartilefun)
 
 dnb_sens <- dnb[order(dnb$firstquartile),]
 
+# Switch the "id" column from "ensembl_transcript_id_version" content to "external_gene_name" content for visualizing the gene symbols
+
+names(b_lonely_fishres)[names(b_lonely_fishres) == "id"] <- "ensembl_transcript_id_version"
+
+names(b_lonely_fishres)[names(b_lonely_fishres) == "external_gene_name"] <- "id"
+
 ```
 
 ```{r}
@@ -249,6 +251,10 @@ cl_info <- retrieve_info_for(1)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot1
 #| fig-cap: "DR curves for the 1st cluster"
@@ -260,17 +266,76 @@ cl_info <- retrieve_info_for(1)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot1
+#| fig-cap: "BMDplot for the 1st cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
+
 
 ```{r}
 #| label: fig-table1
@@ -279,23 +344,21 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
-
 
 \
 
@@ -314,6 +377,10 @@ cl_info <- retrieve_info_for(2)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot2
 #| fig-cap: "DR curves for the 2nd cluster"
@@ -325,17 +392,75 @@ cl_info <- retrieve_info_for(2)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot2
+#| fig-cap: "BMDplot for the 2nd cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table2
@@ -344,21 +469,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -378,6 +502,10 @@ cl_info <- retrieve_info_for(3)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot3
 #| fig-cap: "DR curves for the 3rd cluster"
@@ -389,17 +517,75 @@ cl_info <- retrieve_info_for(3)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot3
+#| fig-cap: "BMDplot for the 3rd cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table3
@@ -408,21 +594,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -442,6 +627,10 @@ cl_info <- retrieve_info_for(4)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot4
 #| fig-cap: "DR curves for the 4th cluster"
@@ -453,17 +642,75 @@ cl_info <- retrieve_info_for(4)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot4
+#| fig-cap: "BMDplot for the 4th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table4
@@ -472,21 +719,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -506,6 +752,10 @@ cl_info <- retrieve_info_for(5)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot5
 #| fig-cap: "DR curves for the 5th cluster"
@@ -517,17 +767,75 @@ cl_info <- retrieve_info_for(5)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot5
+#| fig-cap: "BMDplot for the 5th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table5
@@ -536,21 +844,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -570,6 +877,10 @@ cl_info <- retrieve_info_for(6)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot6
 #| fig-cap: "DR curves for the 6th cluster"
@@ -581,17 +892,75 @@ cl_info <- retrieve_info_for(6)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot6
+#| fig-cap: "BMDplot for the 6th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table6
@@ -600,21 +969,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -634,6 +1002,10 @@ cl_info <- retrieve_info_for(7)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot7
 #| fig-cap: "DR curves for the 7th cluster"
@@ -645,17 +1017,74 @@ cl_info <- retrieve_info_for(7)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot7
+#| fig-cap: "BMDplot for the 7th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
 
 ```{r}
 #| label: fig-table7
@@ -664,21 +1093,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -698,6 +1126,10 @@ cl_info <- retrieve_info_for(8)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot8
 #| fig-cap: "DR curves for the 8th cluster"
@@ -709,17 +1141,74 @@ cl_info <- retrieve_info_for(8)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot8
+#| fig-cap: "BMDplot for the 8th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
 
 ```{r}
 #| label: fig-table8
@@ -728,21 +1217,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -762,6 +1250,10 @@ cl_info <- retrieve_info_for(9)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot9
 #| fig-cap: "DR curves for the 9th cluster"
@@ -773,17 +1265,75 @@ cl_info <- retrieve_info_for(9)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot9
+#| fig-cap: "BMDplot for the 9th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table9
@@ -792,21 +1342,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \
@@ -826,6 +1375,10 @@ cl_info <- retrieve_info_for(10)
 >
 > Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
+::: panel-tabset
+
+#### Curvesplot
+
 ```{r}
 #| label: fig-curvesplot10
 #| fig-cap: "DR curves for the 10th cluster"
@@ -837,17 +1390,75 @@ cl_info <- retrieve_info_for(10)
 clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
 
 # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(clustr_df4drplots, addBMD = TRUE, scaling = TRUE, colorby = "trend",
-           npoints= 100, free.y.scales = FALSE,
-           xmin = 0.01, xmax = 100, dose_log_transfo = TRUE, line.size = 1, line.alpha = 0.4, point.size = 4, point.alpha = 1) +
+cp <- DRomics::curvesplot(
+  clustr_df4drplots, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.01, 
+  xmax = 100,
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
   geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
   xlab("Dose (µg/L)") + ylab("Signal")+
   scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
   theme_light()
 
-plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
+plotly::ggplotly(cp, tooltip = c("x", "id"))
 
 ```
+
+#### BMDplot
+
+```{r}
+#| label: fig-bmdplot10
+#| fig-cap: "BMDplot for the 10th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+# For the bmdplots, we need to remove redundancy of rows : 
+
+clustr_df4drplots_no_redund <- clustr_df4drplots |> 
+  dplyr::select(-c(ensembl_gene_id,
+                ensembl_transcript_id_version,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+
+# Create a BMDplot of cluster transcripts
+
+bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") + 
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+plotly::ggplotly(bp, tooltip = c("x", "id"))
+```
+
+:::
+
 
 ```{r}
 #| label: fig-table10
@@ -856,21 +1467,20 @@ plotly::ggplotly(cp, tooltip =  c("x", "id", "external_gene_name"))
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 external_gene_name,
                                                                  BMD.zSD,
                                                                  TF,
                                                                  trend))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$external_gene_name),]
+clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
 
 clustr_df4drplots_redund |> 
   knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
   kable_styling(bootstrap_options = "striped", full_width = T) |> 
   kable_styling(font_size = 14, position = "center") |>  
   kable_styling(latex_options = "hold_position") |>  
-  column_spec(2, bold = TRUE) |> 
-  column_spec(3, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+  column_spec(1, bold = TRUE) |> 
+  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
 ```
 
 \

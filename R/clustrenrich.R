@@ -13,8 +13,8 @@
 #' @param correction_method P-value adjustment method: one of “gSCS” ,“fdr” and “bonferroni (default set at "fdr")
 #' @param excude_iea Exclude GO electronic annotations (IEA). Recommended to keep for weakly referenced organisms (default set as "FALSE")
 #' @param enrich_size_filtr Option to filter out enriched terms that have too little (`min_term_size`) and/or too large (`max_term_size`) gene sets. Recommended for well-annotated organisms (default = TRUE).
-#' @param min_term_size Minimum gene set size to consider an enriched biological pathway as relevant to the analysis (default set at 5)
-#' @param max_term_size Maximum gene set size to consider an enriched biological pathway as relevant to the analysis (default set at 500)
+#' @param min_term_size Minimum gene set size to consider a biological pathway as relevant to the analysis (default set at 5)
+#' @param max_term_size Maximum gene set size to consider a biological pathway as relevant to the analysis (default set at 500)
 #' @param only_highlighted_GO Option to only keep highlighted driver GO terms in the analysis results (default set at TRUE)
 #' @param ngenes_enrich_filtr Minimum number of cluster genes participating in enrichment to consider sufficient for an enriched pathway to be kept in the output (default set)
 #' @param path Destination folder for the output data results.
@@ -73,7 +73,7 @@ clustrenrich <- function(
     
     # Convert the “ensembl_gene_id” column values to characters
     dr_g_clustrfiltr_data$ensembl_gene_id <- as.character(dr_g_clustrfiltr_data$ensembl_gene_id)
-  
+    
     # Create a list by dividing gene set data (“ensembl_gene_id”) into groups (“clustr”). This is reassembled in the form of a list of vectors containing the values for the groups. This list format is input for gprofiler2::gost() function, allowing for gost() analysis on each cluster
     cluster_list <- split(dr_g_clustrfiltr_data$ensembl_gene_id, 
                           dr_g_clustrfiltr_data$clustr)

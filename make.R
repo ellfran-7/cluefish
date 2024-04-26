@@ -102,9 +102,9 @@ bg_t_ids <- getids(
   )
 
 # Save the "time-consuming" data if already created
-write.table(bg_t_ids, "outputs/bg_t_ids_2024_04_22.txt")
+write.table(bg_t_ids, "outputs/bg_t_ids_2024_04_26.txt")
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024_04_22.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024_04_26.txt")
 
 
 
@@ -137,7 +137,7 @@ DR_output4string <- merge(BMDres_definedCI, dr_t_regs,
                           by.x = "id", by.y = "ensembl_transcript_id_version")
 
 # Save the data 
-write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_22.txt", row.names = FALSE, sep = "\t")
+write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_26.txt", row.names = FALSE, sep = "\t")
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
@@ -162,7 +162,7 @@ dr_t_clustrs <- getclustrs(
 
 dr_t_clustrs_filtr <- clustrfiltr(
   getclustrs_data = dr_t_clustrs,
-  size_filtr = 3
+  size_filtr = 4
 )
 
 
@@ -187,8 +187,8 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/",
-  output_filename = "clustr_enrichres_2024_04_22.rds",
-  overwrite = FALSE
+  output_filename = "clustr_enrichres_2024_04_26.rds",
+  overwrite = TRUE
 )
 
 
@@ -220,8 +220,8 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/",
-  output_filename = "lonely_fishres_2024_04_22.rds",
-  overwrite = TRUE
+  output_filename = "lonely_fishres_2024_04_26.rds",
+  overwrite = FALSE
 )
 
 
@@ -239,7 +239,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = "summary_workflow_2024_04_22.csv",
+  output_filename = "summary_workflow_2024_04_26.csv",
   overwrite = TRUE
 )
 
@@ -277,14 +277,18 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = "workflow_curvesplots_2024_04_22.pdf",
+  output_filename = "workflow_curvesplots_2024_04_26.pdf",
   overwrite = TRUE
 )
 
 
 
 
+#>> STEP 11 - Generate the quarto report 
+#>--------------------------------------
 
+# Render and preview the html report in the Viewer panel
+quarto::quarto_preview(file = here::here("analyses", "quarto", "workflow_results_report.qmd"))
 
 
 
