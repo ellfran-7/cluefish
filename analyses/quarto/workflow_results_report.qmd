@@ -21,7 +21,7 @@ reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "workflow_results_report_2024-04-28.html"
+output-file: "workflow_results_report_sc07_cf4_2024-04-29.html"
 ---
 
 ```{r}
@@ -85,7 +85,7 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 # Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "clustr_enrichres_cf_4_2024_04_26.rds"))
+clustr_enrichres <- readRDS(here::here("outputs", "cs07-cf4", "clustr_enrichres_sc07_cf4_2024-04-29.rds"))
 
 # Get clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -93,7 +93,7 @@ clustr_fusionres <- clustrfusion(
 )
 
 # Load the workflow results 
-lonelyfishing_data <- readRDS(here::here("outputs", "lonely_fishres_2024_04_26.rds"))
+lonelyfishing_data <- readRDS(here::here("outputs", "cs07-cf4", "lonely_fishres_sc07_cf4_2024-04-29.rds"))
 
 # Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
 names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
@@ -4387,6 +4387,7 @@ clustr_df4drplots_redund |>
 ```
 
 \
+
 
 ```{r}
 #| echo: false

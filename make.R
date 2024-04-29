@@ -102,9 +102,9 @@ bg_t_ids <- getids(
   )
 
 # Save the "time-consuming" data if already created
-write.table(bg_t_ids, "outputs/bg_t_ids_2024_04_26.txt")
+write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024_04_26.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024-04-26.txt")
 
 
 
@@ -137,21 +137,20 @@ DR_output4string <- merge(BMDres_definedCI, dr_t_regs,
                           by.x = "id", by.y = "ensembl_transcript_id_version")
 
 # Save the data 
-write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_26.txt", row.names = FALSE, sep = "\t")
+write.table(DR_output4string, file = paste0("outputs/DR_output4string_", Sys.Date(), ".txt"), row.names = FALSE, sep = "\t")
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
 # The Ensembl gene IDs of all the responsive transcripts are manually exported into the StringApp plug-in found within the Cytoscape platform. They are queried with the parameters configured to include all types of interactions, a confidence score of 0.9 and no additional interactions. This creates an interaction network based on the known and predicted protein-protein associations data in the STRING database. Subsequently, to group the interaction network, we use clusterMaker2 to run Markov Chain Clustering (MCL). The inflation parameter is set as the default value (4.0) to reduce cluster size. To extract the relevant cluster information, the 'node table' containing the clustered elements is manually exported from the StringApp as a comma-separated values (CSV) file into the outputs/ folder. This exported table encompasses all the transcripts found within a cluster, their identifications, along with an appended cluster ID column. 
 
+
 # This table, found in the "outputs/" folder, can then be imported back into the Rstudio environment in order to pursue the workflow : 
 
 dr_t_clustrs <- getclustrs(
   getregs_data = dr_t_regs,
-  path = "outputs/",
-  nodetable_filename = "Resp_PPIN_clustered_sc09_mcl_4_051023.csv"
+  path = "outputs/cytoscape-files/",
+  nodetable_filename = "Resp_PPIN_clustered_sc09_mcl4_2023-10-05.csv"
 )
-
-
 
 
 
@@ -162,9 +161,8 @@ dr_t_clustrs <- getclustrs(
 
 dr_t_clustrs_filtr <- clustrfiltr(
   getclustrs_data = dr_t_clustrs,
-  size_filtr = 3
+  size_filtr = 4
 )
-
 
 
 
@@ -187,10 +185,9 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/",
-  output_filename = "clustr_enrichres_cf_3_2024_04_28.rds",
-  overwrite = TRUE
+  output_filename = paste0("clustr_enrichres_sc09_cf3_", Sys.Date(), ".rds"),
+  overwrite = FALSE
 )
-
 
 
 
@@ -220,10 +217,9 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/",
-  output_filename = "lonely_fishres_2024_04_28.rds",
-  overwrite = FALSE
+  output_filename = paste0("lonely_fishres_sc09_cf3_", Sys.Date(), ".rds"),
+  overwrite = TRUE
 )
-
 
 
 
@@ -239,10 +235,9 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = "summary_workflow_2024_04_28.csv",
+  output_filename = paste0("summary_workflow_sc09_cf3_", Sys.Date(), ".csv"),
   overwrite = TRUE
 )
-
 
 
 
@@ -277,9 +272,11 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = "workflow_curvesplots_2024_04_28.pdf",
+  output_filename = paste0("workflow_curvesplots_sc09_cf3_", Sys.Date(), ".pdf"),
   overwrite = TRUE
 )
+
+
 
 
 

@@ -33,15 +33,24 @@ clustrfiltr <- function(
   cat("Total clusters kept:", length(big_clusters), "/", length(unique(dr_g_clustrs$clustr)), "\n")
   
   # Separate clusters into kept and removed based on the size filter to create the list result
-  dr_g_clustrs_filtr <- list(kept = getclustrs_data[getclustrs_data$clustr %in% big_clusters, ],
+  dr_t_clustrs_filtr <- list(kept = getclustrs_data[getclustrs_data$clustr %in% big_clusters, ],
                              removed =  getclustrs_data[!getclustrs_data$clustr %in% big_clusters, ])
   
+  # Order the results by cluster number
+  clustr_order <- sort(dr_t_clustrs_filtr$kept$clustr)
+  
+  dr_t_clustrs_filtr$kept <- dr_t_clustrs_filtr$kept |> 
+    dplyr::arrange(clustr)
+  
+  dr_t_clustrs_filtr$removed <- dr_t_clustrs_filtr$kept |> 
+    dplyr::arrange(clustr)
+  
   # Reset row names for clarity
-  rownames(dr_g_clustrs_filtr$kept) <- NULL
-  rownames(dr_g_clustrs_filtr$removed) <- NULL
+  rownames(dr_t_clustrs_filtr$kept) <- NULL
+  rownames(dr_t_clustrs_filtr$removed) <- NULL
   
   # Define the result as a structured object with class "clustrfiltres"
-  dr_g_clustrs_filtr <- structure(dr_g_clustrs_filtr, class = "clustrfiltres")
+  dr_t_clustrs_filtr <- structure(dr_t_clustrs_filtr, class = "clustrfiltres")
                           
-  return(dr_g_clustrs_filtr)
+  return(dr_t_clustrs_filtr)
 }
