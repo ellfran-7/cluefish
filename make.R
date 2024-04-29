@@ -148,7 +148,7 @@ write.table(DR_output4string, file = "outputs/DR_output4string_2024_04_26.txt", 
 dr_t_clustrs <- getclustrs(
   getregs_data = dr_t_regs,
   path = "outputs/",
-  nodetable_filename = "Resp_PPIN_clustered_220424.csv"
+  nodetable_filename = "Resp_PPIN_clustered_sc09_mcl_4_051023.csv"
 )
 
 
@@ -162,7 +162,7 @@ dr_t_clustrs <- getclustrs(
 
 dr_t_clustrs_filtr <- clustrfiltr(
   getclustrs_data = dr_t_clustrs,
-  size_filtr = 4
+  size_filtr = 3
 )
 
 
@@ -187,7 +187,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/",
-  output_filename = "clustr_enrichres_2024_04_26.rds",
+  output_filename = "clustr_enrichres_cf_3_2024_04_28.rds",
   overwrite = TRUE
 )
 
@@ -220,7 +220,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/",
-  output_filename = "lonely_fishres_2024_04_26.rds",
+  output_filename = "lonely_fishres_2024_04_28.rds",
   overwrite = FALSE
 )
 
@@ -239,7 +239,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = "summary_workflow_2024_04_26.csv",
+  output_filename = "summary_workflow_2024_04_28.csv",
   overwrite = TRUE
 )
 
@@ -277,7 +277,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = "workflow_curvesplots_2024_04_26.pdf",
+  output_filename = "workflow_curvesplots_2024_04_28.pdf",
   overwrite = TRUE
 )
 
@@ -287,9 +287,8 @@ curves_to_pdf(
 #>> STEP 11 - Generate the quarto report 
 #>--------------------------------------
 
+file_name = paste0("workflow_results_report_", Sys.Date(), ".pdf")
+
 # Render and preview the html report in the Viewer panel
-quarto::quarto_preview(file = here::here("analyses", "quarto", "workflow_results_report.qmd"))
-
-
-
+quarto::quarto_render(output_file = here::here("analyses", "quarto", file_name), output_format = "html")
 
