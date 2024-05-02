@@ -63,15 +63,24 @@ getids <- function(
         # Extract unique Ensembl gene identifiers in the order they appear
         unique_genes <- unique(query_results$ensembl_gene_id[indices])
         
-        # Map each Ensembl gene to a unique numeric identifier based on the order of appearance
-        gene_id_map <- as.numeric(factor(query_results$ensembl_gene_id[indices], levels = unique_genes))
-        
-        # Count the appearances of each Ensembl transcript within each Ensembl gene
+        # Count the appearances of each Ensembl transcript within each Ensembl gene. The ave() function in R to applies the seq_along() function to each group of Ensembl transcripts associated with the same Ensembl gene id.
         transcript_counts <- with(query_results, ave(ensembl_transcript_id_version[indices], ensembl_gene_id[indices], FUN = seq_along))
         
-        # Add ensembl transcript and gene appearance numbering to the gene symbol column 
-        query_results$external_gene_name[indices] <- paste0(query_results$external_gene_name[indices], "_", gene_id_map, ".", transcript_counts)
-        
+        if (length(unique_genes) > 1) {
+          
+          # Map each Ensembl gene to a unique numeric identifier based on the order of appearance
+          gene_id_map <- as.numeric(factor(query_results$ensembl_gene_id[indices], levels = unique_genes))
+          
+          # Add ensembl transcript and gene appearance numbering to the gene symbol column 
+          query_results$external_gene_name[indices] <- paste0(query_results$external_gene_name[indices], "_g", gene_id_map, "t", transcript_counts)
+          
+        } else {
+          
+          # Add ensembl transcript and gene appearance numbering to the gene symbol column 
+          query_results$external_gene_name[indices] <- paste0(query_results$external_gene_name[indices], "_t", transcript_counts)
+          
+          
+        }
       }
     }
   }
