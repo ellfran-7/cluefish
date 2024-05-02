@@ -149,7 +149,7 @@ write.table(DR_output4string, file = paste0("outputs/DR_output4string_", Sys.Dat
 dr_t_clustrs <- getclustrs(
   getregs_data = dr_t_regs,
   path = "outputs/cytoscape-files/",
-  nodetable_filename = "Resp_PPIN_clustered_sc09_mcl4_2023-10-05.csv"
+  nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"
 )
 
 
@@ -184,8 +184,8 @@ clustr_enrichres <- clustrenrich(
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
-  path = "outputs/",
-  output_filename = paste0("clustr_enrichres_sc09_cf3_", Sys.Date(), ".rds"),
+  path = "outputs/cs09-cf4/",
+  output_filename = paste0("clustr_enrichres_cs09_cf4_2024-04-30.rds"),
   overwrite = FALSE
 )
 
@@ -216,9 +216,9 @@ lonely_fishres <- lonelyfishing(
   clustrenrich_data = clustr_enrichres,
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
-  path = "outputs/",
-  output_filename = paste0("lonely_fishres_sc09_cf3_", Sys.Date(), ".rds"),
-  overwrite = TRUE
+  path = "outputs/cs09-cf4/",
+  output_filename = paste0("lonely_fishres_cs09_cf4_2024-04-30.rds"),
+  overwrite = FALSE
 )
 
 
@@ -235,7 +235,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = paste0("summary_workflow_sc09_cf3_", Sys.Date(), ".csv"),
+  output_filename = paste0("summary_workflow_cs09_cf4_2024-04-30.csv"),
   overwrite = TRUE
 )
 
@@ -272,7 +272,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = paste0("workflow_curvesplots_sc09_cf3_", Sys.Date(), ".pdf"),
+  output_filename = paste0("workflow_curvesplots_cs09_cf4_2024-04-30.pdf"),
   overwrite = TRUE
 )
 

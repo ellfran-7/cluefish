@@ -52,8 +52,8 @@ lonelyfishing <- function(
     dr_g_a_annots_filtr <- clustrenrich_data$dr_g_a_whole |> 
       dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name)
     
-    # Merge lonely gene data with enriched function annotation data
-    dr_g_a_no_clustr <- merge(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id")
+    # Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
+    dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id", relationship = "many-to-many")
     
     # Select columns for fishing: "ensembl_gene_id" to fish and "term_name" for fishing. Remove duplicates.
     dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
@@ -72,19 +72,45 @@ lonelyfishing <- function(
     dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
     
     
-    # Get genes without clusters for the following messages
-    dr_g_a_no_clustr <- dr_data |> 
+    # Get biologicaly annotated genes without clusters for the following messages
+    dr_g_a_no_clustr_annotated <- dr_data |> 
       dplyr::filter((!ensembl_gene_id %in% clustrfusion_data$dr_g_a_fusion$ensembl_gene_id) &
                       ensembl_gene_id %in% clustrenrich_data$dr_g_a_whole$ensembl_gene_id)
     
+    # Get genes without clusters for the following messages
+    dr_g_a_no_clustr <- dr_data |> 
+      dplyr::filter((!ensembl_gene_id %in% clustrfusion_data$dr_g_a_fusion$ensembl_gene_id))
+    
     ## Print info about lonely genes fished 
-    # Print the ration of fished lonely annotated genes
-    cat(length(unique(dr_g_a_lonely_data$ensembl_gene_id)), "/", length(unique(dr_g_a_no_clustr$ensembl_gene_id)), "lonely annotated genes fished !", "\n")
     
+    # Before fishing summary
+    cat("Before Fishing:", "\n")
+
+    # Print the number of total genes
+    cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr$ensembl_gene_id)), "\n")
+  
+    # Print the number of annotated genes
+    cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated$ensembl_gene_id)), "\n")
+    
+    # Space
+    cat("", "\n")
+    
+    # Print the number of lonely genes fishes
+    cat("Fished", length(unique(dr_g_a_lonely_data$ensembl_gene_id)), "Lonely Genes !", "\n")
+    
+    # Space
+    cat("", "\n")
+    
+    # Before fishing summary
+    cat("After Fishing:", "\n")
+  
     # Print the number of lonely genes remaining
-    cat(length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id)), "remain lonely !")
+    cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id)), "\n")
     
+    # Print the number of annotated lonely genes remaining
+    cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id)), "\n")
     
+  
     # Combine both objects by rows
     dr_g_c_a_lonely_results <- rbind(clustrfusion_data$dr_g_a_fusion, dr_g_a_lonely_data)
     

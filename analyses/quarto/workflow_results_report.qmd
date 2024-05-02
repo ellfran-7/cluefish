@@ -21,7 +21,7 @@ reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "workflow_results_report_sc07_cf4_2024-04-29.html"
+output-file: "workflow_results_report_sc09_cf4_2024-05-01.html"
 ---
 
 ```{r}
@@ -73,27 +73,95 @@ retrieve_info_for <- function(number) {
 }
 
 
-## Load Project Addins (R Functions and Packages) ------
+### Load Project Addins (R Functions and Packages) ------
 devtools::load_all(here::here())
 
-# Load DRomics drcfit object (which holds the background transcript list) 
+## Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
-# Load DRomics bmdboot object
+## Load DRomics bmdboot object
 b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
 
-# We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
+## We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
-# Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "cs07-cf4", "clustr_enrichres_sc07_cf4_2024-04-29.rds"))
+## Retrieve the background identifiers
+bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-04-26.txt"))
 
-# Get clustr_fusionres
+## Retrieve the deregulated identifiers
+dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
+
+## Retrieve the getclustrs() output
+dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"))
+
+## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
+dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
+  
+## Create a dataframe for seamless merge with the 'getregs_data' dataframe
+dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 
+                                   clustr = dr_g_string_clustr$X__mclCluster)
+  
+## Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
+dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "ensembl_gene_id")
+  
+## Remove genes not associated with a cluster 
+dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 
+
+## Retrieve the clustrfiltr() output
+sizelimit <- 4
+
+dr_t_clustrs_filtr <- clustrfiltr(
+  getclustrs_data = dr_t_clustr_data,
+  size_filtr = sizelimit
+)
+
+## Retrieve the clustr_enrichres 
+clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-04-30.rds"))
+
+## Retrieve the  clustr_fusionres
 clustr_fusionres <- clustrfusion(
   clustrenrich_data = clustr_enrichres
 )
 
-# Load the workflow results 
-lonelyfishing_data <- readRDS(here::here("outputs", "cs07-cf4", "lonely_fishres_sc07_cf4_2024-04-29.rds"))
+## Load the workflow results 
+lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-04-30.rds"))
+
+# Filtering all genes not part of clusters : the lonely genes
+dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id),] 
+
+# Filtering annotations based on enriched biological functions
+# In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
+dr_g_a_annots_filtr <- clustr_enrichres$dr_g_a_whole |> 
+      dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name)
+    
+# Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
+dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id", relationship = "many-to-many")
+    
+# Select columns for fishing: "ensembl_gene_id" to fish and "term_name" for fishing. Remove duplicates.
+dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
+      dplyr::select(ensembl_gene_id, term_name) |> 
+      dplyr::distinct()
+# This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
+    
+## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
+    
+# Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+dr_a_fusion_modif <- clustr_fusionres$dr_g_a_fusion |> 
+      dplyr::select(-ensembl_gene_id) |> 
+      dplyr::distinct()
+    
+# Merge modified cluster fusion data and annotated lonely gene data
+dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
+    
+    
+# Get biologicaly annotated genes without clusters for the following messages
+dr_g_a_no_clustr_annotated <- dr_t_ids |> 
+      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id) &
+                      ensembl_gene_id %in% clustr_enrichres$dr_g_a_whole$ensembl_gene_id)
+    
+# Get genes without clusters for the following messages
+dr_g_a_no_clustr <- dr_t_ids |> 
+      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id))
+    
 
 # Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
 names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
@@ -104,10 +172,142 @@ b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,
 
 ```
 
+## Results from the DRomics analysis
+
+The total number of transcripts derived from this experiment : `r length(unique(f$omicdata$item))`
+
+| Step                                   | Number of transcripts concerned         |
+|----------------------------------------|--------------------------------|
+| Selection of deregulated transcripts   | `r length(unique(f$fitres$id))`         |
+| Computation of BMD-1SD values          | `r length(unique(b$res$id))`            |
+| Defined confidence interval around BMD | `r length(unique(BMDres_definedCI$id))` |
+
+: Summary table of DRomics analysis {.table-bordered .light}
+
+ 
+
+------------------------------------------------------------------------
+
+ 
+
+## Summary of the workflow
+
+### Identifier retrieval
+
+| Type of identifier                                                               | Background count                                           | Deregulated count                                          |
+|----------------------------|----------------------|----------------------|
+| [Ensembl transcript](https://mart.ensembl.org/info/genome/stable_ids/index.html) | `r length(unique(bg_t_ids$ensembl_transcript_id_version))` | `r length(unique(dr_t_ids$ensembl_transcript_id_version))` |
+| [Ensembl gene](https://mart.ensembl.org/info/genome/stable_ids/index.html)       | `r length(unique(bg_t_ids$ensembl_gene_id))`               | `r length(unique(dr_t_ids$ensembl_gene_id))`               |
+
+: Summary table of indentifier mapping {.table-bordered .light}
+
+The [external_gene_name](https://zfin.org/) identifiers, which depict human-readable gene names, have been adjusted to address redundancy between Ensembl transcript or gene identifiers. As a result, the count of [external_gene_name](https://zfin.org/) IDs matches the number of transcripts: `r length(unique(dr_t_ids$ensembl_transcript_id_version))`.
+
+### Cluster Gene Set Size Filtering
+
+Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes," signifying their absence from any cluster.
+
+| Step                 | Ensembl Gene Count                                          | Cluster Count                                      |
+|------------------|-----------------------------|-------------------------|
+| Before clustrfiltr() | `r length(unique(dr_t_clustr_data$ensembl_gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
+| After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$ensembl_gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
+
+: Summary table of cluster and gene count before and after cluster filtering step {.table-bordered .light}
+
+### Cluster Functional Enrichment
+
+Functional enrichment analysis is conducted individually for each cluster and data source. The assessed sources include GO:BP, KEGG, and Wikipathways (WP). The background gene list is specified as "custom_annotated," restricting the enrichment Fisher test to annotated Ensembl genes only. A significance threshold of 0.05 is applied for adjusted p-value correction using the 'fdr' method. IEA (Electronically Inferred Annotations) GO terms are taken into account during the analysis.
+
+```{r}
+#| echo: false
+
+# Make the code easier to read by pciking out the df from the clustr_enrichresd list:
+dr_g_a_enrich_after <- clustr_enrichres$dr_g_a_enrich
+
+# Transform the dataframe from "cluster per row" to "gene per row":
+dr_g_a_enrich_before <- clustr_enrichres$gostres$result |> 
+      tidyr::separate_rows(intersection, sep = ",") |> 
+      dplyr::select(query, intersection, term_name, term_id, source) |> 
+      dplyr::mutate(clustr = as.numeric(query)) |> 
+      dplyr::select(-query) |> 
+      dplyr::arrange(clustr) |> 
+      dplyr::rename(ensembl_gene_id = intersection)
+    
+# Remove duplicate rows
+dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
+
+```
+
+| Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
+|------------------|------------------|------------------|------------------|
+| Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
+
+: Summary of background gene lists involved in functional enrichment for each source {.table-bordered .light}
+
+| Metric                                   | Query Ensembl Gene Count                                                                          | Cluster Count                                                                            | Total Term Count                                                                            |
+|------------------|-------------------|------------------|------------------|
+| Enrichment results before term filtering | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$ensembl_gene_id))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$clustr))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$term_name))` |
+| Enrichment results after term filtering  | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$ensembl_gene_id))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$clustr))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$term_name))`   |
+
+: Summary table of gene, cluster and total term count during the cluster enrichment step {.table-bordered .light}
+
+| Metric                                      | GO:BP                                                                                                             | KEGG                                                                                                             | Wikipathways                                                                                                   |
+|------------------|------------------|------------------|------------------|
+| All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
+| Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
+| Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
+
+: Summary table of term count per source and per characteristic {.table-bordered .light}
+
+ 
+
+### Cluster Fusion
+
+Clusters merge when they share identical enriched terms.
+
+| Metric        | Cluster count                                                 |
+|-------------------|-----------------------------------------------------|
+| Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
+| After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
+
+: Summary table of the cluster count before and after cluster fusion {.table-bordered .light}
+
+```{r}
+#| label: tbl-fusion
+#| tbl-cap: "Summary table of cluster fusion process"
+#| tbl-colwidths: auto
+#| echo: false
+
+same_value_rows <- clustr_fusionres$c_fusionlog[apply(clustr_fusionres$c_fusionlog, 1, function(x) length(unique(x)) != 1), ]
+
+kableExtra::kable(same_value_rows, row.names = FALSE, booktabs = FALSE) |> 
+  kableExtra::kable_styling(bootstrap_options = "bordered")
+```
+
+ 
+
+## Lonely fishing
+
+Lonely genes are incorporated into clusters if they share a common term with any given cluster. 
+
+| Metric                      | All                                                                                                                              | Annotated                                                                                                                                            |
+|------------------------|------------------------|------------------------|
+| Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$ensembl_gene_id))`                                                                             | `r length(unique(dr_g_a_no_clustr_annotated$ensembl_gene_id))`                                                                                       |
+| Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                                                                  | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                               |
+| Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` |
+
+: Summary table of all and only biologically annotated genes involved in the lonely fishing  {.table-bordered .light}
+
+
+------------------------------------------------------------------------
+
+ 
+
 ## The results as an interactive table
 
 ```{r}
-#| label: inter-table
+#| label: tbl-workflow
+#| tbl-cap: "Summary table of the workflow results"
 #| echo: false
 
 # Prepare the structure for the summary dataframe
@@ -131,8 +331,16 @@ b_lonely_fishres_summary$BMD.zSD <- round(b_lonely_fishres_summary$BMD.zSD, 1)
 b_lonely_fishres_summary <- unique(b_lonely_fishres_summary)
 
 # Generate the interactive table 
-DT::datatable(b_lonely_fishres_summary, options = list(pageLength = 10))
+b_lonely_fishres_summary |> 
+  DT::datatable(options = list(pageLength = 10)) |> 
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), fontSize = '80%')
 ```
+
+ 
+
+------------------------------------------------------------------------
+
+ 
 
 ## The results as sensitivity plots
 
@@ -208,7 +416,13 @@ sp <- DRomics::sensitivityplot(
 sp
 ```
 
-## The top 50 most sensitive clusters
+ 
+
+------------------------------------------------------------------------
+
+ 
+
+## The top 46 most sensitive clusters
 
 ```{r}
 #| echo: false
@@ -338,15 +552,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table1
-#| fig-cap: "Table of the 1st cluster content"
+#| label: tbl-table1
+#| tbl-cap: "Table of the 1st cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -460,15 +675,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table2
-#| fig-cap: "Table of the 2nd cluster content"
+#| label: tbl-table2
+#| tbl-cap: "Table of the 2nd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -582,15 +798,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table3
-#| fig-cap: "Table of the 3rd cluster content"
+#| label: tbl-table3
+#| tbl-cap: "Table of the 3rd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -704,15 +921,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table4
-#| fig-cap: "Table of the 4th cluster content"
+#| label: tbl-table4
+#| tbl-cap: "Table of the 4th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -826,15 +1044,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table5
-#| fig-cap: "Table of the 5th cluster content"
+#| label: tbl-table5
+#| tbl-cap: "Table of the 5th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -948,15 +1167,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table6
-#| fig-cap: "Table of the 6th cluster content"
+#| label: tbl-table6
+#| tbl-cap: "Table of the 6th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,  
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1070,15 +1290,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table7
-#| fig-cap: "Table of the 7th cluster content"
+#| label: tbl-table7
+#| tbl-cap: "Table of the 7th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,   
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1192,15 +1413,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table8
-#| fig-cap: "Table of the 8th cluster content"
+#| label: tbl-table8
+#| tbl-cap: "Table of the 8th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,  
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1314,15 +1536,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table9
-#| fig-cap: "Table of the 9th cluster content"
+#| label: tbl-table9
+#| tbl-cap: "Table of the 9th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,       
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1436,15 +1659,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table10
-#| fig-cap: "Table of the 10th cluster content"
+#| label: tbl-table10
+#| tbl-cap: "Table of the 10th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,   
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1558,15 +1782,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table11
-#| fig-cap: "Table of the 11th cluster content"
+#| label: tbl-table11
+#| tbl-cap: "Table of the 11th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,  
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1585,7 +1810,7 @@ clustr_df4drplots_redund |>
 ```{r}
 #| echo: false
 
-cl_info <- retrieve_info_for(2)
+cl_info <- retrieve_info_for(12)
 
 ```
 
@@ -1680,15 +1905,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table12
-#| fig-cap: "Table of the 12th cluster content"
+#| label: tbl-table12
+#| tbl-cap: "Table of the 12th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend, 
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1802,15 +2028,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table13
-#| fig-cap: "Table of the 13th cluster content"
+#| label: tbl-table13
+#| tbl-cap: "Table of the 13th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,   
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -1924,15 +2151,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table14
-#| fig-cap: "Table of the 14th cluster content"
+#| label: tbl-table14
+#| tbl-cap: "Table of the 14th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2046,15 +2274,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table15
-#| fig-cap: "Table of the 15th cluster content"
+#| label: tbl-table15
+#| tbl-cap: "Table of the 15th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,   
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2168,15 +2397,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table16
-#| fig-cap: "Table of the 16th cluster content"
+#| label: tbl-table16
+#| tbl-cap: "Table of the 16th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,          
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2290,15 +2520,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table17
-#| fig-cap: "Table of the 17th cluster content"
+#| label: tbl-table17
+#| tbl-cap: "Table of the 17th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend, 
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2412,15 +2643,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table18
-#| fig-cap: "Table of the 18th cluster content"
+#| label: tbl-table18
+#| tbl-cap: "Table of the 18th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,       
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2432,6 +2664,7 @@ clustr_df4drplots_redund |>
   kable_styling(latex_options = "hold_position") |>  
   column_spec(1, bold = TRUE) |> 
   column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
+
 ```
 
 \
@@ -2534,15 +2767,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table19
-#| fig-cap: "Table of the 19th cluster content"
+#| label: tbl-table19
+#| tbl-cap: "Table of the 19th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2656,15 +2889,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table20
-#| fig-cap: "Table of the 20th cluster content"
+#| label: tbl-table20
+#| tbl-cap: "Table of the 20th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2778,15 +3011,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table21
-#| fig-cap: "Table of the 21st cluster content"
+#| label: tbl-table21
+#| tbl-cap: "Table of the 21st cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -2900,15 +3133,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table22
-#| fig-cap: "Table of the 22nd cluster content"
+#| label: tbl-table22
+#| tbl-cap: "Table of the 22nd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3022,15 +3255,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table23
-#| fig-cap: "Table of the 23rd cluster content"
+#| label: tbl-table23
+#| tbl-cap: "Table of the 23rd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3144,15 +3377,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table24
-#| fig-cap: "Table of the 24th cluster content"
+#| label: tbl-table24
+#| tbl-cap: "Table of the 24th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3266,15 +3499,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table25
-#| fig-cap: "Table of the 25th cluster content"
+#| label: tbl-table25
+#| tbl-cap: "Table of the 25th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3388,15 +3621,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table26
-#| fig-cap: "Table of the 26th cluster content"
+#| label: tbl-table26
+#| tbl-cap: "Table of the 26th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3510,15 +3743,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table27
-#| fig-cap: "Table of the 27th cluster content"
+#| label: tbl-table27
+#| tbl-cap: "Table of the 27th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3632,15 +3865,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table28
-#| fig-cap: "Table of the 28th cluster content"
+#| label: tbl-table28
+#| tbl-cap: "Table of the 28th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3754,15 +3987,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table29
-#| fig-cap: "Table of the 29th cluster content"
+#| label: tbl-table29
+#| tbl-cap: "Table of the 29th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3876,15 +4109,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table30
-#| fig-cap: "Table of the 30th cluster content"
+#| label: tbl-table30
+#| tbl-cap: "Table of the 30th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -3998,15 +4231,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table31
-#| fig-cap: "Table of the 31st cluster content"
+#| label: tbl-table31
+#| tbl-cap: "Table of the 31st cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4120,15 +4353,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table32
-#| fig-cap: "Table of the 32nd cluster content"
+#| label: tbl-table32
+#| tbl-cap: "Table of the 32nd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4242,15 +4475,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table33
-#| fig-cap: "Table of the 33rd cluster content"
+#| label: tbl-table33
+#| tbl-cap: "Table of the 33rd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4364,15 +4597,16 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table34
-#| fig-cap: "Table of the 34th cluster content"
+#| label: tbl-table34
+#| tbl-cap: "Table of the 34th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,
+                                                                 friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4387,7 +4621,6 @@ clustr_df4drplots_redund |>
 ```
 
 \
-
 
 ```{r}
 #| echo: false
@@ -4487,8 +4720,8 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table35
-#| fig-cap: "Table of the 35th cluster content"
+#| label: tbl-table35
+#| tbl-cap: "Table of the 35th cluster content"
 #| echo: false
 #| message: false
 
@@ -4609,15 +4842,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table36
-#| fig-cap: "Table of the 36th cluster content"
+#| label: tbl-table36
+#| tbl-cap: "Table of the 36th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4731,15 +4964,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table37
-#| fig-cap: "Table of the 37th cluster content"
+#| label: tbl-table37
+#| tbl-cap: "Table of the 37th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4853,15 +5086,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table38
-#| fig-cap: "Table of the 38th cluster content"
+#| label: tbl-table38
+#| tbl-cap: "Table of the 38th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -4975,15 +5208,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table39
-#| fig-cap: "Table of the 39th cluster content"
+#| label: tbl-table39
+#| tbl-cap: "Table of the 39th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5097,15 +5330,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table40
-#| fig-cap: "Table of the 40th cluster content"
+#| label: tbl-table40
+#| tbl-cap: "Table of the 40th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5219,15 +5452,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table41
-#| fig-cap: "Table of the 41st cluster content"
+#| label: tbl-table41
+#| tbl-cap: "Table of the 41st cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5341,15 +5574,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table42
-#| fig-cap: "Table of the 42nd cluster content"
+#| label: tbl-table42
+#| tbl-cap: "Table of the 42nd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5463,15 +5696,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table43
-#| fig-cap: "Table of the 43rd cluster content"
+#| label: tbl-table43
+#| tbl-cap: "Table of the 43rd cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5585,15 +5818,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table44
-#| fig-cap: "Table of the 44th cluster content"
+#| label: tbl-table44
+#| tbl-cap: "Table of the 44th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5707,15 +5940,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table45
-#| fig-cap: "Table of the 45th cluster content"
+#| label: tbl-table45
+#| tbl-cap: "Table of the 45th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
@@ -5829,503 +6062,15 @@ plotly::ggplotly(bp, tooltip = c("x", "id"))
 :::
 
 ```{r}
-#| label: fig-table46
-#| fig-cap: "Table of the 46th cluster content"
+#| label: tbl-table46
+#| tbl-cap: "Table of the 46th cluster content"
 #| echo: false
 #| message: false
 
 clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
                                                                  BMD.zSD,
                                                                  TF,
-                                                                 trend))
-clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
-
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
-
-clustr_df4drplots_redund |> 
-  knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
-  kable_styling(bootstrap_options = "striped", full_width = T) |> 
-  kable_styling(font_size = 14, position = "center") |>  
-  kable_styling(latex_options = "hold_position") |>  
-  column_spec(1, bold = TRUE) |> 
-  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
-```
-
-\
-
-```{r}
-#| echo: false
-
-cl_info <- retrieve_info_for(47)
-
-```
-
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
->
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
->
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
->
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
-
-::: panel-tabset
-#### Curvesplot
-
-```{r}
-#| label: fig-curvesplot47
-#| fig-cap: "DR curves for the 47th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
-
-# Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(
-  clustr_df4drplots, 
-  addBMD = TRUE, 
-  scaling = TRUE, 
-  colorby = "trend",
-  npoints= 100, 
-  free.y.scales = FALSE,
-  xmin = 0.01, 
-  xmax = 100,
-  dose_log_transfo = TRUE,
-  line.size = 1,
-  line.alpha = 0.4,
-  point.size = 4,
-  point.alpha = 1) +
-  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
-  xlab("Dose (µg/L)") + ylab("Signal")+
-  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
-  theme_light()
-
-plotly::ggplotly(cp, tooltip = c("x", "id"))
-
-```
-
-#### BMDplot
-
-```{r}
-#| label: fig-bmdplot47
-#| fig-cap: "BMDplot for the 47th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-# For the bmdplots, we need to remove redundancy of rows : 
-
-clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
-                TF,
-                old_clustr,
-                friendliness,
-                term_name,
-                term_id,
-                source)) |> 
-  dplyr::distinct()
-
-# Create a BMDplot of cluster transcripts
-
-bp <- DRomics::bmdplot(
-  clustr_df4drplots_no_redund, 
-  add.CI = TRUE,
-  colorby = "trend",
-  point.size = 3,
-  point.alpha = 1,
-  line.size = 1,
-  line.alpha = 0.7,
-  add.label = TRUE,
-  BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
-  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
-                                "U" = "#7570B3", "bell" = "#E7298A")) +
-  guides(shape = "none") +
-  theme_light()
-
-plotly::ggplotly(bp, tooltip = c("x", "id"))
-```
-:::
-
-```{r}
-#| label: fig-table47
-#| fig-cap: "Table of the 47th cluster content"
-#| echo: false
-#| message: false
-
-clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 BMD.zSD,
-                                                                 TF,
-                                                                 trend))
-clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
-
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
-
-clustr_df4drplots_redund |> 
-  knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
-  kable_styling(bootstrap_options = "striped", full_width = T) |> 
-  kable_styling(font_size = 14, position = "center") |>  
-  kable_styling(latex_options = "hold_position") |>  
-  column_spec(1, bold = TRUE) |> 
-  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
-```
-
-\
-
-```{r}
-#| echo: false
-
-cl_info <- retrieve_info_for(48)
-
-```
-
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
->
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
->
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
->
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
-
-::: panel-tabset
-#### Curvesplot
-
-```{r}
-#| label: fig-curvesplot48
-#| fig-cap: "DR curves for the 48th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
-
-# Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(
-  clustr_df4drplots, 
-  addBMD = TRUE, 
-  scaling = TRUE, 
-  colorby = "trend",
-  npoints= 100, 
-  free.y.scales = FALSE,
-  xmin = 0.01, 
-  xmax = 100,
-  dose_log_transfo = TRUE,
-  line.size = 1,
-  line.alpha = 0.4,
-  point.size = 4,
-  point.alpha = 1) +
-  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
-  xlab("Dose (µg/L)") + ylab("Signal")+
-  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
-  theme_light()
-
-plotly::ggplotly(cp, tooltip = c("x", "id"))
-
-```
-
-#### BMDplot
-
-```{r}
-#| label: fig-bmdplot48
-#| fig-cap: "BMDplot for the 48th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-# For the bmdplots, we need to remove redundancy of rows : 
-
-clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
-                TF,
-                old_clustr,
-                friendliness,
-                term_name,
-                term_id,
-                source)) |> 
-  dplyr::distinct()
-
-# Create a BMDplot of cluster transcripts
-
-bp <- DRomics::bmdplot(
-  clustr_df4drplots_no_redund, 
-  add.CI = TRUE,
-  colorby = "trend",
-  point.size = 3,
-  point.alpha = 1,
-  line.size = 1,
-  line.alpha = 0.7,
-  add.label = TRUE,
-  BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
-  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
-                                "U" = "#7570B3", "bell" = "#E7298A")) +
-  guides(shape = "none") +
-  theme_light()
-
-plotly::ggplotly(bp, tooltip = c("x", "id"))
-```
-:::
-
-```{r}
-#| label: fig-table48
-#| fig-cap: "Table of the 48th cluster content"
-#| echo: false
-#| message: false
-
-clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 BMD.zSD,
-                                                                 TF,
-                                                                 trend))
-clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
-
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
-
-clustr_df4drplots_redund |> 
-  knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
-  kable_styling(bootstrap_options = "striped", full_width = T) |> 
-  kable_styling(font_size = 14, position = "center") |>  
-  kable_styling(latex_options = "hold_position") |>  
-  column_spec(1, bold = TRUE) |> 
-  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
-```
-
-\
-
-```{r}
-#| echo: false
-
-cl_info <- retrieve_info_for(49)
-
-```
-
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
->
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
->
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
->
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
-
-::: panel-tabset
-#### Curvesplot
-
-```{r}
-#| label: fig-curvesplot49
-#| fig-cap: "DR curves for the 49th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
-
-# Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(
-  clustr_df4drplots, 
-  addBMD = TRUE, 
-  scaling = TRUE, 
-  colorby = "trend",
-  npoints= 100, 
-  free.y.scales = FALSE,
-  xmin = 0.01, 
-  xmax = 100,
-  dose_log_transfo = TRUE,
-  line.size = 1,
-  line.alpha = 0.4,
-  point.size = 4,
-  point.alpha = 1) +
-  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
-  xlab("Dose (µg/L)") + ylab("Signal")+
-  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
-  theme_light()
-
-plotly::ggplotly(cp, tooltip = c("x", "id"))
-
-```
-
-#### BMDplot
-
-```{r}
-#| label: fig-bmdplot49
-#| fig-cap: "BMDplot for the 49th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-# For the bmdplots, we need to remove redundancy of rows : 
-
-clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
-                TF,
-                old_clustr,
-                friendliness,
-                term_name,
-                term_id,
-                source)) |> 
-  dplyr::distinct()
-
-# Create a BMDplot of cluster transcripts
-
-bp <- DRomics::bmdplot(
-  clustr_df4drplots_no_redund, 
-  add.CI = TRUE,
-  colorby = "trend",
-  point.size = 3,
-  point.alpha = 1,
-  line.size = 1,
-  line.alpha = 0.7,
-  add.label = TRUE,
-  BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
-  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
-                                "U" = "#7570B3", "bell" = "#E7298A")) +
-  guides(shape = "none") +
-  theme_light()
-
-plotly::ggplotly(bp, tooltip = c("x", "id"))
-```
-:::
-
-```{r}
-#| label: fig-table49
-#| fig-cap: "Table of the 49th cluster content"
-#| echo: false
-#| message: false
-
-clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 BMD.zSD,
-                                                                 TF,
-                                                                 trend))
-clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
-
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
-
-clustr_df4drplots_redund |> 
-  knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
-  kable_styling(bootstrap_options = "striped", full_width = T) |> 
-  kable_styling(font_size = 14, position = "center") |>  
-  kable_styling(latex_options = "hold_position") |>  
-  column_spec(1, bold = TRUE) |> 
-  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
-```
-
-\
-
-```{r}
-#| echo: false
-
-cl_info <- retrieve_info_for(50)
-
-```
-
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
->
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
->
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
->
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
-
-::: panel-tabset
-#### Curvesplot
-
-```{r}
-#| label: fig-curvesplot50
-#| fig-cap: "DR curves for the 50th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
-
-# Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(
-  clustr_df4drplots, 
-  addBMD = TRUE, 
-  scaling = TRUE, 
-  colorby = "trend",
-  npoints= 100, 
-  free.y.scales = FALSE,
-  xmin = 0.01, 
-  xmax = 100,
-  dose_log_transfo = TRUE,
-  line.size = 1,
-  line.alpha = 0.4,
-  point.size = 4,
-  point.alpha = 1) +
-  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
-  xlab("Dose (µg/L)") + ylab("Signal")+
-  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
-  theme_light()
-
-plotly::ggplotly(cp, tooltip = c("x", "id"))
-
-```
-
-#### BMDplot
-
-```{r}
-#| label: fig-bmdplot50
-#| fig-cap: "BMDplot for the 50th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-# For the bmdplots, we need to remove redundancy of rows : 
-
-clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
-                TF,
-                old_clustr,
-                friendliness,
-                term_name,
-                term_id,
-                source)) |> 
-  dplyr::distinct()
-
-# Create a BMDplot of cluster transcripts
-
-bp <- DRomics::bmdplot(
-  clustr_df4drplots_no_redund, 
-  add.CI = TRUE,
-  colorby = "trend",
-  point.size = 3,
-  point.alpha = 1,
-  line.size = 1,
-  line.alpha = 0.7,
-  add.label = TRUE,
-  BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
-  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
-                                "U" = "#7570B3", "bell" = "#E7298A")) +
-  guides(shape = "none") +
-  theme_light()
-
-plotly::ggplotly(bp, tooltip = c("x", "id"))
-```
-:::
-
-```{r}
-#| label: fig-table50
-#| fig-cap: "Table of the 50th cluster content"
-#| echo: false
-#| message: false
-
-clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 BMD.zSD,
-                                                                 TF,
-                                                                 trend))
+                                                                 trend,                                                                  friendliness))
 clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
 
 clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
