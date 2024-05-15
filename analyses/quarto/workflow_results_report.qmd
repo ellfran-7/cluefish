@@ -8,20 +8,19 @@ highlight-style: "breeze"
 toc: true
 number-sections: true
 number-depth: 2
-format: 
+format:
   html: 
     embed-resources: true
     self-contained: true
     grid: 
-      margin-width: 200px
-      sidebar-width: 100px
+      margin-width: 350px
 execute: 
   warning: false
 reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "workflow_results_report_sc09_cf4_2024-05-01.html"
+output-file: "workflow_results_report_sc09_cf4_2024-05-13.html"
 ---
 
 ```{r}
@@ -37,6 +36,7 @@ options(scipen = 1, digits = 2)
 require(ggplot2)
 require(kableExtra)
 require(DT)
+require(gt)
 
 ## Function for specific cluster info retrieval ---------
 retrieve_info_for <- function(number) {
@@ -85,7 +85,7 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 ## Retrieve the background identifiers
-bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-04-26.txt"))
+bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-05-02.txt"))
 
 ## Retrieve the deregulated identifiers
 dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
@@ -115,7 +115,7 @@ dr_t_clustrs_filtr <- clustrfiltr(
 )
 
 ## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-04-30.rds"))
+clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-05-13.rds"))
 
 ## Retrieve the  clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -123,7 +123,7 @@ clustr_fusionres <- clustrfusion(
 )
 
 ## Load the workflow results 
-lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-04-30.rds"))
+lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-05-13.rds"))
 
 # Filtering all genes not part of clusters : the lonely genes
 dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id),] 
@@ -172,21 +172,25 @@ b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,
 
 ```
 
+ 
+
+## Introduction
+
+This document is a comprehensive report, meticulously encapsulating the pivotal results derived from the DRomics analysis while detailing the workflow. It succinctly summarizes the impacts and outputs of each significant step within the pipeline, supported by visual representations like plots depicting the summary of BMD values per cluster, aiding in prioritization. Moreover, additional specific visualizations for each cluster, such as plots of fitted curves, empirical cumulative distribution function (ECDF) plots of BMD values, and summary tables, enable a more focused exploration.
+
+ 
+
 ## Results from the DRomics analysis
 
-The total number of transcripts derived from this experiment : `r length(unique(f$omicdata$item))`
+The total number of transcripts derived from this experiment : **`r length(unique(f$omicdata$item))`**
 
 | Step                                   | Number of transcripts concerned         |
-|----------------------------------------|--------------------------------|
+|----------------------------------------|-----------------------------------------|
 | Selection of deregulated transcripts   | `r length(unique(f$fitres$id))`         |
 | Computation of BMD-1SD values          | `r length(unique(b$res$id))`            |
 | Defined confidence interval around BMD | `r length(unique(BMDres_definedCI$id))` |
 
-: Summary table of DRomics analysis {.table-bordered .light}
-
- 
-
-------------------------------------------------------------------------
+: Summary table of DRomics analysis {#tbl-dromics .bordered .light}
 
  
 
@@ -195,28 +199,32 @@ The total number of transcripts derived from this experiment : `r length(unique(
 ### Identifier retrieval
 
 | Type of identifier                                                               | Background count                                           | Deregulated count                                          |
-|----------------------------|----------------------|----------------------|
+|----------------------------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
 | [Ensembl transcript](https://mart.ensembl.org/info/genome/stable_ids/index.html) | `r length(unique(bg_t_ids$ensembl_transcript_id_version))` | `r length(unique(dr_t_ids$ensembl_transcript_id_version))` |
 | [Ensembl gene](https://mart.ensembl.org/info/genome/stable_ids/index.html)       | `r length(unique(bg_t_ids$ensembl_gene_id))`               | `r length(unique(dr_t_ids$ensembl_gene_id))`               |
 
-: Summary table of indentifier mapping {.table-bordered .light}
+: Summary table of indentifier mapping {#tbl-getids .bordered .light}
+
+::: callout-note
+## Note
 
 The [external_gene_name](https://zfin.org/) identifiers, which depict human-readable gene names, have been adjusted to address redundancy between Ensembl transcript or gene identifiers. As a result, the count of [external_gene_name](https://zfin.org/) IDs matches the number of transcripts: `r length(unique(dr_t_ids$ensembl_transcript_id_version))`.
+:::
 
 ### Cluster Gene Set Size Filtering
 
-Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes," signifying their absence from any cluster.
+Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
 
 | Step                 | Ensembl Gene Count                                          | Cluster Count                                      |
-|------------------|-----------------------------|-------------------------|
+|----------------------|-------------------------------------------------------------|----------------------------------------------------|
 | Before clustrfiltr() | `r length(unique(dr_t_clustr_data$ensembl_gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
 | After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$ensembl_gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
 
-: Summary table of cluster and gene count before and after cluster filtering step {.table-bordered .light}
+: Summary table of cluster and gene count before and after cluster filtering step {#tbl-clfiltr .bordered .light}
 
 ### Cluster Functional Enrichment
 
-Functional enrichment analysis is conducted individually for each cluster and data source. The assessed sources include GO:BP, KEGG, and Wikipathways (WP). The background gene list is specified as "custom_annotated," restricting the enrichment Fisher test to annotated Ensembl genes only. A significance threshold of 0.05 is applied for adjusted p-value correction using the 'fdr' method. IEA (Electronically Inferred Annotations) GO terms are taken into account during the analysis.
+Functional enrichment analysis is conducted individually for each cluster and data source. The assessed sources include GO:BP, KEGG, and Wikipathways (WP). The background gene list is specified as "custom_annotated", restricting the enrichment Fisher test to annotated Ensembl genes only. A significance threshold of 0.05 is applied for adjusted p-value correction using the 'fdr' method. IEA (Electronically Inferred Annotations) GO terms are taken into account during the analysis.
 
 ```{r}
 #| echo: false
@@ -239,38 +247,36 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 ```
 
 | Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
-|------------------|------------------|------------------|------------------|
+|-----------------|------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
 
-: Summary of background gene lists involved in functional enrichment for each source {.table-bordered .light}
+: Summary of background gene lists involved in functional enrichment for each source {#tbl-backenrich .bordered .light}
 
 | Metric                                   | Query Ensembl Gene Count                                                                          | Cluster Count                                                                            | Total Term Count                                                                            |
-|------------------|-------------------|------------------|------------------|
+|------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | Enrichment results before term filtering | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$ensembl_gene_id))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$clustr))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$term_name))` |
 | Enrichment results after term filtering  | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$ensembl_gene_id))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$clustr))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$term_name))`   |
 
-: Summary table of gene, cluster and total term count during the cluster enrichment step {.table-bordered .light}
+: Summary table of gene, cluster and total term count during the cluster enrichment step {#tbl-enrichfiltr .bordered .light}
 
 | Metric                                      | GO:BP                                                                                                             | KEGG                                                                                                             | Wikipathways                                                                                                   |
-|------------------|------------------|------------------|------------------|
+|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
 | Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
 | Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
 
-: Summary table of term count per source and per characteristic {.table-bordered .light}
-
- 
+: Summary table of term count per source and per characteristic {#tbl-enrichpersource .bordered .light}
 
 ### Cluster Fusion
 
 Clusters merge when they share identical enriched terms.
 
 | Metric        | Cluster count                                                 |
-|-------------------|-----------------------------------------------------|
+|---------------|---------------------------------------------------------------|
 | Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
 | After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
 
-: Summary table of the cluster count before and after cluster fusion {.table-bordered .light}
+: Summary table of the cluster count before and after cluster fusion {#tbl-clfus .bordered .light}
 
 ```{r}
 #| label: tbl-fusion
@@ -280,34 +286,35 @@ Clusters merge when they share identical enriched terms.
 
 same_value_rows <- clustr_fusionres$c_fusionlog[apply(clustr_fusionres$c_fusionlog, 1, function(x) length(unique(x)) != 1), ]
 
-kableExtra::kable(same_value_rows, row.names = FALSE, booktabs = FALSE) |> 
-  kableExtra::kable_styling(bootstrap_options = "bordered")
+# kableExtra::kbl(same_value_rows, row.names = FALSE, booktabs = FALSE) |> 
+#   kableExtra::kable_styling(bootstrap_options = c("basic", "bordered"))
+
+gt::gt(same_value_rows) |> 
+  gt::tab_style(style = list(cell_borders(), cell_fill("#Ffffff")), locations = cells_body(columns = everything(), rows = everything()))
+
 ```
 
- 
+### Lonely fishing
 
-## Lonely fishing
-
-Lonely genes are incorporated into clusters if they share a common term with any given cluster. 
+Lonely genes are incorporated into clusters if they share a common term with any given cluster.
 
 | Metric                      | All                                                                                                                              | Annotated                                                                                                                                            |
-|------------------------|------------------------|------------------------|
+|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$ensembl_gene_id))`                                                                             | `r length(unique(dr_g_a_no_clustr_annotated$ensembl_gene_id))`                                                                                       |
-| Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                                                                  | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                               |
+| Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                           | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                               |
 | Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` |
 
-: Summary table of all and only biologically annotated genes involved in the lonely fishing  {.table-bordered .light}
-
-
-------------------------------------------------------------------------
+: Summary table of all and only biologically annotated genes involved in the lonely fishing {#tbl-lofish .bordered .light}
 
  
 
 ## The results as an interactive table
 
+::: fullwidth
 ```{r}
 #| label: tbl-workflow
 #| tbl-cap: "Summary table of the workflow results"
+#| tbl-cap-location: margin
 #| echo: false
 
 # Prepare the structure for the summary dataframe
@@ -332,13 +339,10 @@ b_lonely_fishres_summary <- unique(b_lonely_fishres_summary)
 
 # Generate the interactive table 
 b_lonely_fishres_summary |> 
-  DT::datatable(options = list(pageLength = 10)) |> 
+  DT::datatable(options = list(pageLength = 10), class = c("compact", "hover", "row-border", "order-column")) |> 
   DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), fontSize = '80%')
 ```
-
- 
-
-------------------------------------------------------------------------
+:::
 
  
 
@@ -350,7 +354,7 @@ b_lonely_fishres_summary |>
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
-#| fig-asp: 1.5
+#| fig-asp: 1
 
 b_lonely_fishres_no_redund <- subset(b_lonely_fishres, 
                                      select = -c(ensembl_gene_id,
@@ -381,12 +385,10 @@ sp <- DRomics::sensitivityplot(
   theme(plot.title.position = 'plot', 
         plot.title = element_text(hjust = 0.5)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
-  geom_text(aes(label = paste("   ", sp$data$groupby, "   "), y = 0.9*sp$data$firstquartile), color = "#666362", size = 3)
+  geom_text(aes(label = paste("   ", sp$data$groupby, "   "), y = 0.9*sp$data$firstquartile), color = "#666362", size = 2.5)
 
 sp
 ```
-
-\
 
 ```{r}
 #| label: fig-sensitivityplot2
@@ -394,7 +396,7 @@ sp
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
-#| fig-asp: 1.5
+#| fig-asp: 1
 
 
 sp <- DRomics::sensitivityplot(
@@ -411,18 +413,32 @@ sp <- DRomics::sensitivityplot(
   theme(plot.title.position = 'plot', 
         plot.title = element_text(hjust = 0.5)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
-  geom_text(aes(label = paste("   ", sp$data$groupby, "   "), y = 0.9*sp$data$firstquartile), color = "#666362", size = 3)
+  geom_text(aes(label = paste("   ", sp$data$groupby, "   "), y = 0.9*sp$data$firstquartile), color = "#666362", size = 2.5)
 
 sp
 ```
 
  
 
-------------------------------------------------------------------------
-
- 
-
 ## The top 46 most sensitive clusters
+
+Each cluster is represented by :
+
+-   a **curvesplot** representing the fitted curves (*with x-axis the dose in log scale and the y-axis the scaled signal*)
+
+-   a **BMDplot** representing an ECDF plot with confidence intervals on each BMD value (*with the x-axis the dose in log scale and the y-axis the empirical cumulative distribution*)
+
+-   a **table** of the cluster content with some columns of interest:
+
+    -   **id**: the gene name associated to the transcript
+
+    -   **BMD.zSD**: the computed BMD for the transcript with the color of the cell associated to the BMD value, following the [*viridis*](https://sjmgarnier.github.io/viridisLite/reference/figures/viridis-scales.png) color palette.
+
+    -   **TF**: the status of the transcripts' gene being either a transcription or co-transcription factor
+
+    -   **Trend**: the shape of the dose-response curve fitted
+
+    -   **Friendliness**: the total number of clusters that the transcript is associated to
 
 ```{r}
 #| echo: false
@@ -461,7 +477,7 @@ cl_info <- retrieve_info_for(1)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -490,7 +506,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -541,7 +557,8 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +   xlim(0.1, 100) +
+  xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -584,7 +601,7 @@ cl_info <- retrieve_info_for(2)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -613,7 +630,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -664,7 +681,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +   xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -707,7 +724,7 @@ cl_info <- retrieve_info_for(3)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -736,7 +753,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -787,7 +804,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +   xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -830,7 +847,7 @@ cl_info <- retrieve_info_for(4)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -859,7 +876,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -910,7 +927,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -953,7 +970,7 @@ cl_info <- retrieve_info_for(5)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -982,7 +999,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1033,7 +1050,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1076,7 +1093,7 @@ cl_info <- retrieve_info_for(6)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1105,7 +1122,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1156,7 +1173,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1199,7 +1216,7 @@ cl_info <- retrieve_info_for(7)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1228,7 +1245,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1279,7 +1296,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1322,7 +1339,7 @@ cl_info <- retrieve_info_for(8)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1351,7 +1368,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1402,7 +1419,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1445,7 +1462,7 @@ cl_info <- retrieve_info_for(9)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1474,7 +1491,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1525,7 +1542,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1568,7 +1585,7 @@ cl_info <- retrieve_info_for(10)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1597,7 +1614,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1648,7 +1665,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1691,7 +1708,7 @@ cl_info <- retrieve_info_for(11)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1720,7 +1737,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1771,7 +1788,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1814,7 +1831,7 @@ cl_info <- retrieve_info_for(12)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1843,7 +1860,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -1894,7 +1911,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -1937,7 +1954,7 @@ cl_info <- retrieve_info_for(13)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -1966,7 +1983,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2017,7 +2034,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2060,7 +2077,7 @@ cl_info <- retrieve_info_for(14)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2089,7 +2106,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2140,7 +2157,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2183,7 +2200,7 @@ cl_info <- retrieve_info_for(15)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2212,7 +2229,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2263,7 +2280,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2306,7 +2323,7 @@ cl_info <- retrieve_info_for(16)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2335,7 +2352,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2386,7 +2403,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2429,7 +2446,7 @@ cl_info <- retrieve_info_for(17)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2458,7 +2475,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2509,7 +2526,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2552,7 +2569,7 @@ cl_info <- retrieve_info_for(18)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2581,7 +2598,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2632,7 +2649,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2676,7 +2693,7 @@ cl_info <- retrieve_info_for(19)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2705,7 +2722,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2756,7 +2773,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2798,7 +2815,7 @@ cl_info <- retrieve_info_for(20)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2827,7 +2844,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -2878,7 +2895,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -2920,7 +2937,7 @@ cl_info <- retrieve_info_for(21)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -2949,7 +2966,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3000,7 +3017,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3042,7 +3059,7 @@ cl_info <- retrieve_info_for(22)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3071,7 +3088,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3122,7 +3139,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3164,7 +3181,7 @@ cl_info <- retrieve_info_for(23)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3193,7 +3210,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3244,7 +3261,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3286,7 +3303,7 @@ cl_info <- retrieve_info_for(24)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3315,7 +3332,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3366,7 +3383,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3408,7 +3425,7 @@ cl_info <- retrieve_info_for(25)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3437,7 +3454,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3488,7 +3505,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3530,7 +3547,7 @@ cl_info <- retrieve_info_for(26)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3559,7 +3576,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3610,7 +3627,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3652,7 +3669,7 @@ cl_info <- retrieve_info_for(27)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3681,7 +3698,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3732,7 +3749,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3774,7 +3791,7 @@ cl_info <- retrieve_info_for(28)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3803,7 +3820,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3854,7 +3871,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -3896,7 +3913,7 @@ cl_info <- retrieve_info_for(29)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -3925,7 +3942,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -3976,7 +3993,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4018,7 +4035,7 @@ cl_info <- retrieve_info_for(30)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4047,7 +4064,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4098,7 +4115,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4140,7 +4157,7 @@ cl_info <- retrieve_info_for(31)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4169,7 +4186,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4220,7 +4237,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4262,7 +4279,7 @@ cl_info <- retrieve_info_for(32)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4291,7 +4308,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4342,7 +4359,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4384,7 +4401,7 @@ cl_info <- retrieve_info_for(33)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4413,7 +4430,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4464,7 +4481,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4506,7 +4523,7 @@ cl_info <- retrieve_info_for(34)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4535,7 +4552,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4586,7 +4603,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4629,7 +4646,7 @@ cl_info <- retrieve_info_for(35)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4658,7 +4675,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4709,7 +4726,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4751,7 +4768,7 @@ cl_info <- retrieve_info_for(36)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4780,7 +4797,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4831,7 +4848,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4873,7 +4890,7 @@ cl_info <- retrieve_info_for(37)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -4902,7 +4919,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -4953,7 +4970,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -4995,7 +5012,7 @@ cl_info <- retrieve_info_for(38)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5024,7 +5041,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5075,7 +5092,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5117,7 +5134,7 @@ cl_info <- retrieve_info_for(39)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5146,7 +5163,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5197,7 +5214,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5239,7 +5256,7 @@ cl_info <- retrieve_info_for(40)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5268,7 +5285,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5319,7 +5336,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5361,7 +5378,7 @@ cl_info <- retrieve_info_for(41)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5390,7 +5407,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5441,7 +5458,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5483,7 +5500,7 @@ cl_info <- retrieve_info_for(42)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5512,7 +5529,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5563,7 +5580,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5605,7 +5622,7 @@ cl_info <- retrieve_info_for(43)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5634,7 +5651,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5685,7 +5702,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5727,7 +5744,7 @@ cl_info <- retrieve_info_for(44)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5756,7 +5773,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5807,7 +5824,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5849,7 +5866,7 @@ cl_info <- retrieve_info_for(45)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -5878,7 +5895,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -5929,7 +5946,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +
@@ -5971,7 +5988,7 @@ cl_info <- retrieve_info_for(46)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby` - `r length(unique(cl_info$ntranscript_sens))` transcripts (\~ 25% \< `r cl_info$cl_sens$firstquartile` μg/L)**
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
 >
 > Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
@@ -6000,7 +6017,7 @@ cp <- DRomics::curvesplot(
   colorby = "trend",
   npoints= 100, 
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100,
   dose_log_transfo = TRUE,
   line.size = 1,
@@ -6051,7 +6068,7 @@ bp <- DRomics::bmdplot(
   line.alpha = 0.7,
   add.label = TRUE,
   BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") + 
+  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
   scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
                                 "U" = "#7570B3", "bell" = "#E7298A")) +
   guides(shape = "none") +

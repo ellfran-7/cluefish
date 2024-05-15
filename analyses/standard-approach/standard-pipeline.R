@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------------
 
 # ** Load DRomics drcfit object (which holds the background transcript list) **
-f <- readRDS(file = "data/raw-data/zebra_fitted_05")
+f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
 
 # ** Load DRomics bmdboot object **
 b <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.rds")
@@ -49,6 +49,6 @@ standard_gostres <- gprofiler2::gost(
   highlight = TRUE 
 ) 
 
-saveRDS(standard_gostres, "analyses/standard-approach/standard_gostres")
+saveRDS(standard_gostres, "analyses/standard-approach/standard_gostres.rds")
 
 ## The output is a named list where 'result' contains data.frame with the enrichment analysis results and 'meta' contains metadata needed for Manhattan plot.

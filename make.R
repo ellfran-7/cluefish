@@ -104,7 +104,7 @@ bg_t_ids <- getids(
 # Save the "time-consuming" data if already created
 write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024-04-26.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024-05-02.txt")
 
 
 
@@ -185,8 +185,8 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("clustr_enrichres_cs09_cf4_2024-04-30.rds"),
-  overwrite = FALSE
+  output_filename = paste0("clustr_enrichres_cs09_cf4_2024-05-13.rds"),
+  overwrite = TRUE
 )
 
 
@@ -217,8 +217,8 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("lonely_fishres_cs09_cf4_2024-04-30.rds"),
-  overwrite = FALSE
+  output_filename = paste0("lonely_fishres_cs09_cf4_2024-05-13.rds"),
+  overwrite = TRUE
 )
 
 
@@ -235,7 +235,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/",
-  output_filename = paste0("summary_workflow_cs09_cf4_2024-04-30.csv"),
+  output_filename = paste0("summary_workflow_cs09_cf4_2024-05-13.csv"),
   overwrite = TRUE
 )
 
@@ -260,7 +260,7 @@ curves_to_pdf(
   scaling = TRUE,
   npoints= 100,
   free.y.scales = FALSE,
-  xmin = 0.01, 
+  xmin = 0.1, 
   xmax = 100, 
   dose_log_transfo = TRUE, 
   line.size = 0.7, 
@@ -272,7 +272,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = paste0("workflow_curvesplots_cs09_cf4_2024-04-30.pdf"),
+  output_filename = paste0("workflow_curvesplots_cs09_cf4_2024-05-13.pdf"),
   overwrite = TRUE
 )
 

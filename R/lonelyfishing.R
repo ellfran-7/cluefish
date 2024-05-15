@@ -125,23 +125,26 @@ lonelyfishing <- function(
     # Select remaining lonely data
     dr_t_unfished_lonely_data <- dr_data[!(dr_data$ensembl_gene_id %in% dr_g_c_a_lonely_results$ensembl_gene_id), ]
     
-    # Prepare data for rbind with gene annotations
+    # Prepare the unfished gene data for rbind 
     dr_g_c_unfished_lonely_4rbind <- data.frame(ensembl_gene_id = dr_t_unfished_lonely_data$ensembl_gene_id,
-                                     old_clustr = "Lonely",
-                                     new_clustr = "Lonely")
+                                                old_clustr = "Lonely",
+                                                new_clustr = "Lonely")
+    
+    # Prepare the lonely result data (what we have fished so far and the cluster fusion results) for rbind  
+    dr_g_c_a_lonely_results_4rbind <- dr_g_c_a_lonely_results |> 
+      dplyr::select(ensembl_gene_id, old_clustr, new_clustr)
+    
+    # Combine both datasets by row harboring all the deregulated transcript's genes in order to merge with the annotation dataframe
+    dr_g_c_a_fishing_4merge <- rbind(dr_g_c_a_lonely_results_4rbind, dr_g_c_unfished_lonely_4rbind)
     
     ## Select enriched GO terms, all KEGG pathways, and Wikipathways. 
-    # The function specifically focuses on the driver GO terms to avoid excessive redundancy, as the GO term tree is already highly redundant and present in massive quantities. Including all GO terms would significantly inflate the size of the dataframes and therefore the results to explore.
+    # The function specifically focuses on the driver GO terms to avoid excessive redundancy, as the GO term tree is already highly redundant and present in massive quantities. Including all GO terms would significantly inflate the size of the dataframes and therefore the results to explore.We also want to remove pointless mother root tems such as "KEGG root term" and "WIKIPATHWAYS"
     dr_g_a_annot_data <- clustrenrich_data$dr_g_a_whole |> 
       dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name & source == "GO:BP" |
-                      source %in% c("KEGG", "WP"))
+                      source %in% c("KEGG", "WP") & !(term_name %in% c("KEGG root term", "WIKIPATHWAYS")))
     
-    # Merge datasets: lonely data with filtered gene annotation data.
-    # This combination retains only the enriched driver GO terms, while including all KEGG and Wikipathways in the term_name column.
-    dr_g_c_a_unfished_lonely_4rbind <- merge(dr_g_c_unfished_lonely_4rbind, dr_g_a_annot_data, by = "ensembl_gene_id", all.x = TRUE)
-    
-    # Combine both datasets by rows
-    dr_g_c_a_fishing <- rbind(dr_g_c_a_lonely_results, dr_g_c_a_unfished_lonely_4rbind)
+    # Combine the lonely fishing results with the driver GO, KEGG and Wikipathways annotations
+    dr_g_c_a_fishing <- merge(dr_g_c_a_fishing_4merge, dr_g_a_annot_data, by = "ensembl_gene_id", all.x = TRUE)
     
     
     ## But what about gene  part of many clusters ? The friendly genes !
