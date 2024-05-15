@@ -1,0 +1,391 @@
+---
+title: "Report comparison of standard and proposed workflow"
+author: "Ellis Franklin"
+date: last-modified
+date-format: iso 
+theme: "flatly"
+highlight-style: "breeze"
+toc: true
+number-sections: true
+number-depth: 2
+format:
+  html: 
+    embed-resources: true
+    self-contained: true
+    grid: 
+      margin-width: 350px
+execute: 
+  warning: false
+reference-location: margin
+citation-location: margin
+editor: visual
+cap-location: margin
+output-file: "comparison_results_report_sc09_cf4_2024-05-13.html"
+---
+
+```{r}
+#| label: load-fun-data
+#| include: false
+
+### Load everything : from packages to functions to data ---------
+
+knitr::opts_chunk$set(warning = F, message = F)
+options(scipen = 1, digits = 2) 
+
+## Packages required ---------
+require(ggplot2)
+require(kableExtra)
+require(DT)
+require(gt)
+require(VennDiagram)
+
+### Load Project Addins (R Functions and Packages) ------
+devtools::load_all(here::here())
+
+## Load DRomics drcfit object (which holds the background transcript list) 
+f <- readRDS(file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
+## Load DRomics bmdboot object
+b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
+
+## We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
+BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
+
+#### THE STANDARD WORKFLOW DATA
+
+stand_res <- readRDS(here::here("analyses", "standard-approach", "standard_gostres.rds"))
+
+## Get the highlighted GO terms
+stand_gostres <- stand_res$result |> 
+        dplyr::filter(
+          ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
+        )
+
+## Get g_a format 
+dr_g_a_stand <- stand_gostres |> 
+      tidyr::separate_rows(intersection, sep = ",") |> 
+      dplyr::select(intersection, term_name, term_id, source) |> 
+      dplyr::rename(ensembl_gene_id = intersection)
+
+#### THE PROPOSED WORKFLOW DATA
+
+## Retrieve the background identifiers
+bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-05-02.txt"))
+
+## Retrieve the deregulated identifiers
+dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
+
+## Retrieve the getclustrs() output
+dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"))
+
+## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
+dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
+  
+## Create a dataframe for seamless merge with the 'getregs_data' dataframe
+dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 
+                                   clustr = dr_g_string_clustr$X__mclCluster)
+  
+## Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
+dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "ensembl_gene_id")
+  
+## Remove genes not associated with a cluster 
+dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 
+
+## Retrieve the clustrfiltr() output
+sizelimit <- 4
+
+dr_t_clustrs_filtr <- clustrfiltr(
+  getclustrs_data = dr_t_clustr_data,
+  size_filtr = sizelimit
+)
+
+## Retrieve the clustr_enrichres 
+clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-05-13.rds"))
+
+## Gte the highlighted GO terms
+clustr_enrichres_gostres <- clustr_enrichres$gostres$result |> 
+        dplyr::filter(
+          ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
+        )
+
+## Retrieve the  clustr_fusionres
+clustr_fusionres <- clustrfusion(
+  clustrenrich_data = clustr_enrichres
+)
+
+## Load the workflow results 
+lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-05-13.rds"))
+
+# Filtering all genes not part of clusters : the lonely genes
+dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id),] 
+
+# Filtering annotations based on enriched biological functions
+# In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
+dr_g_a_annots_filtr <- clustr_enrichres$dr_g_a_whole |> 
+      dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name)
+    
+# Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
+dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id", relationship = "many-to-many")
+    
+# Select columns for fishing: "ensembl_gene_id" to fish and "term_name" for fishing. Remove duplicates.
+dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
+      dplyr::select(ensembl_gene_id, term_name) |> 
+      dplyr::distinct()
+# This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
+    
+## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
+    
+# Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+dr_a_fusion_modif <- clustr_fusionres$dr_g_a_fusion |> 
+      dplyr::select(-ensembl_gene_id) |> 
+      dplyr::distinct()
+    
+# Merge modified cluster fusion data and annotated lonely gene data
+dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
+    
+    
+# Get biologicaly annotated genes without clusters for the following messages
+dr_g_a_no_clustr_annotated <- dr_t_ids |> 
+      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id) &
+                      ensembl_gene_id %in% clustr_enrichres$dr_g_a_whole$ensembl_gene_id)
+    
+# Get genes without clusters for the following messages
+dr_g_a_no_clustr <- dr_t_ids |> 
+      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id))
+    
+
+# Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
+names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
+
+
+# Combine DRomics info and the workflow info
+b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,  by = "id")
+
+```
+
+ 
+
+## Introduction
+
+The proposed workflow seeks to enhance the biological interpretation of transcriptomic dose-response modeling data, particularly following the DRomics analysis. Its primary goal is to comprehensively characterize the data while ensuring an unbiased and non-targeted approach. By doing so, we aim to not only maximize the depth of the analysis but also maintain objectivity throughout.
+
+To evaluate the efficacy of this workflow, we can contrast its outcomes with those of a standard workflow, which typically involves functional enrichment analysis on the single list of deregulated transcript genes. This comparative analysis will provide insights into the strengths and potential advantages of the proposed approach.
+
+ 
+
+## Comparing initial enriched term content
+
+Here we exclusively compare the enriched terms identified by the two distinct workflows: the standard workflow, which uses the entire gene list as query for the functional enrichment, and the proposed workflow, which uses all clusters as individual queries. This comparison is conducted separately for each data source.
+
+::: {.callout-important appearance="simple"}
+## Important
+
+This comparison solely focuses on the enriched terms and without any filtering performed. Thus, the results for the proposed workflow are derived specifically from the **clustrenrich\$gostres** output of the **clustrenrich()** function.
+:::
+
+### Standard workflow results
+
+::: fullwidth
+```{r}
+#| label: tbl-standenrich
+#| tbl-cap: "Standard workflow functional enrichment results"
+#| tbl-cap-location: margin
+#| echo: false
+
+# Generate the interactive table 
+stand_gostres |> 
+  dplyr::select(term_name, term_id, term_size, query_size, intersection_size, p_value, effective_domain_size) |> 
+  DT::datatable(options = list(pageLength = 5), class = c("compact", "hover", "row-border", "order-column")) |> 
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
+```
+:::
+
+### Proposed workflow results
+
+::: fullwidth
+```{r}
+#| label: tbl-propoenrich
+#| tbl-cap: "Proposed workflow functional enrichment results"
+#| tbl-cap-location: margin
+#| echo: false
+
+# Generate the interactive table 
+clustr_enrichres_gostres |> 
+  dplyr::select(query, term_name, term_id, term_size, query_size, intersection_size, p_value, effective_domain_size) |> 
+  DT::datatable(options = list(pageLength = 5), class = c("compact", "hover", "row-border", "order-column")) |> 
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
+```
+:::
+
+### Venn diagrams between both workflow per source
+
+```{r}
+#| label: fig-venn1
+#| fig-cap: "Venn diagram of highlighted enriched GO terms between the standard and proposed workflow "
+#| cap-location: margin
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+stand_go <- unique((stand_gostres |> 
+  dplyr::filter(source == "GO:BP"))$term_name)
+propo_go <- unique((clustr_enrichres_gostres |> 
+  dplyr::filter(source == "GO:BP"))$term_name)
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
+                   cross.area = length(which(stand_go %in% propo_go)), 
+                   category = c("standard", "proposed"),
+                   cat.col=c("black", "black"), col=c("black", "black"), 
+                   fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
+grid.draw(venn.plot)
+```
+
+```{r}
+#| label: fig-venn2
+#| fig-cap: "Venn diagram of enriched KEGG pathways between the standard and proposed workflow "
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+stand_go <- unique((stand_gostres |> 
+  dplyr::filter(source == "KEGG"))$term_name)
+propo_go <- unique((clustr_enrichres_gostres |> 
+  dplyr::filter(source == "KEGG"))$term_name)
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
+                   cross.area = length(which(stand_go %in% propo_go)), 
+                   category = c("standard", "proposed"),
+                   cat.col=c("black", "black"), col=c("black", "black"), 
+                   fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
+grid.draw(venn.plot)
+
+```
+
+```{r}
+#| label: fig-venn3
+#| fig-cap: "Venn diagram of enriched Wikipathways between the standard and proposed workflow "
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+stand_go <- unique((stand_gostres |> 
+  dplyr::filter(source == "WP"))$term_name)
+propo_go <- unique((clustr_enrichres_gostres |> 
+  dplyr::filter(source == "WP"))$term_name)
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
+                   cross.area = length(which(stand_go %in% propo_go)), 
+                   category = c("standard", "proposed"),
+                   cat.col=c("black", "black"), col=c("black", "black"), 
+                   fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
+grid.draw(venn.plot)
+```
+
+## Comparing enriched term content after filters in the proposed workflow
+
+With filters applied to the enriched terms within following steps of the proposed workflow, we can re-examine the discrepancies between enriched terms considered between both workflow.
+
+### Venn diagrams between both workflows per source after filters in the proposed workflow
+
+```{r}
+#| label: fig-venn4
+#| fig-cap: "Venn diagram of highlighted enriched GO temrs in the standard and filtered highlighted enriched GO terms in the proposed workflow"
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+stand_go <- unique((stand_gostres |> 
+  dplyr::filter(source == "GO:BP"))$term_name)
+propo_go <- unique((clustr_enrichres$dr_g_a_enrich |> 
+  dplyr::filter(source == "GO:BP"))$term_name)
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
+                   cross.area = length(which(stand_go %in% propo_go)), 
+                   category = c("standard", "proposed"),
+                   cat.col=c("black", "black"), col=c("black", "black"), 
+                   fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
+grid.draw(venn.plot)
+```
+
+```{r}
+#| label: fig-venn5
+#| fig-cap: "Venn diagram of enriched KEGG pathways in the standard and filtered enriched KEGG pathways in the proposed workflow"
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+stand_go <- unique((stand_gostres |> 
+  dplyr::filter(source == "KEGG"))$term_name)
+propo_go <- unique((clustr_enrichres$dr_g_a_enrich |> 
+  dplyr::filter(source == "KEGG"))$term_name)
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
+                   cross.area = length(which(stand_go %in% propo_go)), 
+                   category = c("standard", "proposed"),
+                   cat.col = c("black", "black"), col=c("black", "black"), 
+                   fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
+grid.draw(venn.plot)
+```
+
+```{r}
+#| label: fig-venn6
+#| fig-cap: "Venn diagram of enriched Wikipathways in the standard and filtered enriched Wikipathways in the proposed workflow"
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+stand_go <- unique((stand_gostres |> 
+  dplyr::filter(source == "WP"))$term_name)
+propo_go <- unique((clustr_enrichres$dr_g_a_enrich |> 
+  dplyr::filter(source == "WP"))$term_name)
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
+                   cross.area = length(which(stand_go %in% propo_go)), 
+                   category = c("standard", "proposed"),
+                   cat.col=c("black", "black"), col=c("black", "black"), 
+                   fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
+grid.draw(venn.plot)
+```
+
+ 
+
+## A short summary
+
+The extent of what we can gather, or *what are we working with*, is based on the following question: *how many transcript are considered in the interpretation phase?* And *what is left to be overlooked?*
+
+```{r}
+#| echo: false
+
+dr_g_a_stand_ids <- merge(dr_g_a_stand, dr_t_ids, by = "ensembl_gene_id")
+
+stand_lonely <- dr_t_ids[!dr_t_ids$ensembl_transcript_id_version %in% dr_g_a_stand_ids$ensembl_transcript_id_version,]$ensembl_transcript_id_version
+
+
+propof_notlonely <- (b_lonely_fishres |> 
+  dplyr::filter(new_clustr != "Lonely"))$id
+
+propof_lonely <- (b_lonely_fishres |> 
+  dplyr::filter(new_clustr == "Lonely"))$id
+
+```
+
+| Metric                           | Standard                                                           | Proposed                             |
+|----------------------------------|--------------------------------------------------------------------|--------------------------------------|
+| Number of transcripts considered | `r length(unique(dr_g_a_stand_ids$ensembl_transcript_id_version))` | `r length(unique(propof_notlonely))` |
+| Number of lonely transcripts     | `r length(unique(stand_lonely))`                                   | `r length(unique(propof_lonely))`    |
+
+: Summary of the comparison between both workflow {#tbl-dromics .bordered .light}
+
+However, within the proposed workflow, the lonely cluster consisting of all the lonely content (transcripts/genes) remains open for exploration. Within the **"lonely_results_report.qmd"**, an additional functional enrichment analysis is conducted using the lonely gene list as the query. This approach enables us to delve into what might be overlooked and whether there is any biological significance within this group.
