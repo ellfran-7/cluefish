@@ -21,7 +21,7 @@ reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "lonely_results_report_sc09_cf4_2024-05-13.html"
+output-file: "lonely_results_report_sc09_cf4_2024-05-15.html"
 ---
 
 ```{r}
@@ -84,88 +84,87 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 ## We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
-## Retrieve the background identifiers
-bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-05-02.txt"))
+# ## Retrieve the background identifiers
+# bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-05-02.txt"))
+# 
+# ## Retrieve the deregulated identifiers
+# dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
 
-## Retrieve the deregulated identifiers
-dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
+# ## Retrieve the getclustrs() output
+# dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"))
+# 
+# ## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
+# dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
+#   
+# ## Create a dataframe for seamless merge with the 'getregs_data' dataframe
+# dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 
+#                                    clustr = dr_g_string_clustr$X__mclCluster)
+#   
+# ## Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
+# dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "ensembl_gene_id")
+#   
+# ## Remove genes not associated with a cluster 
+# dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 
+# 
+# ## Retrieve the clustrfiltr() output
+# sizelimit <- 4
+# 
+# dr_t_clustrs_filtr <- clustrfiltr(
+#   getclustrs_data = dr_t_clustr_data,
+#   size_filtr = sizelimit
+# )
 
-## Retrieve the getclustrs() output
-dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"))
-
-## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
-dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
-  
-## Create a dataframe for seamless merge with the 'getregs_data' dataframe
-dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 
-                                   clustr = dr_g_string_clustr$X__mclCluster)
-  
-## Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
-dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "ensembl_gene_id")
-  
-## Remove genes not associated with a cluster 
-dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 
-
-## Retrieve the clustrfiltr() output
-sizelimit <- 4
-
-dr_t_clustrs_filtr <- clustrfiltr(
-  getclustrs_data = dr_t_clustr_data,
-  size_filtr = sizelimit
-)
-
-## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-05-13.rds"))
-
-## Retrieve the  clustr_fusionres
-clustr_fusionres <- clustrfusion(
-  clustrenrich_data = clustr_enrichres
-)
+# ## Retrieve the clustr_enrichres 
+# clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-05-13.rds"))
+# 
+# ## Retrieve the  clustr_fusionres
+# clustr_fusionres <- clustrfusion(
+#   clustrenrich_data = clustr_enrichres
+# )
 
 ## Load the workflow results 
 lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-05-13.rds"))
 
-# Filtering all genes not part of clusters : the lonely genes
-dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id),] 
-
-# Filtering annotations based on enriched biological functions
-# In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
-dr_g_a_annots_filtr <- clustr_enrichres$dr_g_a_whole |> 
-      dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name)
-    
-# Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
-dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id", relationship = "many-to-many")
-    
-# Select columns for fishing: "ensembl_gene_id" to fish and "term_name" for fishing. Remove duplicates.
-dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
-      dplyr::select(ensembl_gene_id, term_name) |> 
-      dplyr::distinct()
-# This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
-    
-## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
-    
-# Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
-dr_a_fusion_modif <- clustr_fusionres$dr_g_a_fusion |> 
-      dplyr::select(-ensembl_gene_id) |> 
-      dplyr::distinct()
-    
-# Merge modified cluster fusion data and annotated lonely gene data
-dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
-    
-    
-# Get biologicaly annotated genes without clusters for the following messages
-dr_g_a_no_clustr_annotated <- dr_t_ids |> 
-      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id) &
-                      ensembl_gene_id %in% clustr_enrichres$dr_g_a_whole$ensembl_gene_id)
-    
-# Get genes without clusters for the following messages
-dr_g_a_no_clustr <- dr_t_ids |> 
-      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id))
-    
+# # Filtering all genes not part of clusters : the lonely genes
+# dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id),] 
+# 
+# # Filtering annotations based on enriched biological functions
+# # In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
+# dr_g_a_annots_filtr <- clustr_enrichres$dr_g_a_whole |> 
+#       dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name)
+#     
+# # Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
+# dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id", relationship = "many-to-many")
+#     
+# # Select columns for fishing: "ensembl_gene_id" to fish and "term_name" for fishing. Remove duplicates.
+# dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
+#       dplyr::select(ensembl_gene_id, term_name) |> 
+#       dplyr::distinct()
+# # This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
+#     
+# ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
+#     
+# # Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+# dr_a_fusion_modif <- clustr_fusionres$dr_g_a_fusion |> 
+#       dplyr::select(-ensembl_gene_id) |> 
+#       dplyr::distinct()
+#     
+# # Merge modified cluster fusion data and annotated lonely gene data
+# dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
+#     
+#     
+# # Get biologicaly annotated genes without clusters for the following messages
+# dr_g_a_no_clustr_annotated <- dr_t_ids |> 
+#       dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id) &
+#                       ensembl_gene_id %in% clustr_enrichres$dr_g_a_whole$ensembl_gene_id)
+#     
+# # Get genes without clusters
+# dr_g_a_no_clustr <- dr_t_ids |> 
+#       dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id))
+#     
 
 # Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
 names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
-
 
 # Combine DRomics info and the workflow info
 b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,  by = "id")
@@ -173,6 +172,9 @@ b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,
 # Only select the lonely cluster
 b_only_lonely_fishres <- b_lonely_fishres |> 
   dplyr::filter(new_clustr == "Lonely")
+
+# Load the lonely cluster functional enrichment results
+lonely_cluster_analysis_res <- readRDS(here::here("analyses", "lonely_cluster_analysis", "lonely_cluster_analysis_res.rds"))
 
 ```
 
@@ -237,55 +239,11 @@ names(b_only_lonely_fishres)[names(b_only_lonely_fishres) == "external_gene_name
 
 ## Characterizing the Lonely cluster by functional enrichment
 
-```{r}
-#| echo: false
-
-lonely_gostres <- gprofiler2::gost(
-  query = b_only_lonely_fishres$ensembl_gene_id, 
-  organism = "drerio", 
-  ordered_query = FALSE, 
-  multi_query = FALSE, 
-  significant = TRUE, 
-  exclude_iea = FALSE, 
-  measure_underrepresentation = FALSE, 
-  evcodes = TRUE, 
-  user_threshold = 0.05, 
-  correction_method = "fdr", 
-  domain_scope = "custom_annotated",
-  custom_bg = bg_t_ids$ensembl_gene_id, 
-  numeric_ns = "", 
-  sources = c("GO:BP", "KEGG", "WP"), 
-  as_short_link = FALSE, 
-  highlight = TRUE 
-) 
-
-# Transform the dataframe from "cluster per row" to "gene per row":
-dr_c_a_lonely <- lonely_gostres$result |> 
-      dplyr::filter(
-        ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
-      ) |> 
-      dplyr::filter(
-        5 <= term_size & term_size <= 500
-      ) 
-      dplyr::select(term_name, term_size, intersection_size, p_value, source) 
-  
-
-    
-# Remove duplicate rows
-dr_c_a_lonely <- unique(dr_c_a_lonely)
-    
-# Reset the row numbers
-rownames(dr_c_a_lonely) <- NULL
-
-
-
-```
-
- 
-
-| Query size                              | Background size                                    |
-|--------------------------------|----------------------------------------|
-| `r lonely_gostres$result$query_size[1]` | `r lonely_gostres$result$effective_domain_size[1]` |
+| Source | Query size                                                                                      | Background size                                                                                                  |
+|----------------|-------------------------------|---------------------------------------|
+| GO:BP  | `r unique(lonely_cluster_analysis_res$dr_c_a_lonely[lonely_cluster_analysis_res$dr_c_a_lonely$source == "GO:BP",]$query)` | `r unique(lonely_cluster_analysis_res$dr_c_a_lonely[lonely_cluster_analysis_res$dr_c_a_lonely$source == "GO:BP",]$effective_domain_size)` |
+| KEGG   | `r unique(lonely_cluster_analysis_res$dr_c_a_lonely[lonely_cluster_analysis_res$dr_c_a_lonely$source == "KEGG",]$query)`    | `r unique(lonely_cluster_analysis_res$dr_c_a_lonely[lonely_cluster_analysis_res$dr_c_a_lonely$source == "KEGG",]$effective_domain_size)`     |
+| WP     | `r unique(lonely_cluster_analysis_res$dr_c_a_lonely[lonely_cluster_analysis_res$dr_c_a_lonely$source == "WP",]$query)`      | `r unique(lonely_cluster_analysis_res$dr_c_a_lonely[lonely_cluster_analysis_res$dr_c_a_lonely$source == "WP",]$effective_domain_size)`       |
 
 : Number of genes involved in the query and background of the ORA {#tbl-loenrich .bordered .light}
 
@@ -294,7 +252,7 @@ rownames(dr_c_a_lonely) <- NULL
 #| echo: false
 
 # Generate the interactive table 
-dr_c_a_lonely |> 
+lonely_cluster_analysis_res$filtered$dr_c_a_lonely |> 
   DT::datatable(options = list(pageLength = 10)) |> 
   DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), fontSize = '80%')
 

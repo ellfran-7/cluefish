@@ -20,7 +20,7 @@ reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "comparison_results_report_sc09_cf4_2024-05-13.html"
+output-file: "comparison_results_report_sc09_cf4_2024-05-15.html"
 ---
 
 ```{r}
@@ -54,14 +54,14 @@ BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 stand_res <- readRDS(here::here("analyses", "standard-approach", "standard_gostres.rds"))
 
-## Get the highlighted GO terms
-stand_gostres <- stand_res$result |> 
-        dplyr::filter(
-          ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
-        )
+# the unfiltered results
+stand_unfiltered <- stand_res$unfiltered
+
+# the filtered results
+stand_filtered <- stand_res$filtered
 
 ## Get g_a format 
-dr_g_a_stand <- stand_gostres |> 
+dr_g_a_stand <- stand_filtered |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::select(intersection, term_name, term_id, source) |> 
       dplyr::rename(ensembl_gene_id = intersection)
@@ -101,11 +101,39 @@ dr_t_clustrs_filtr <- clustrfiltr(
 ## Retrieve the clustr_enrichres 
 clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-05-13.rds"))
 
-## Gte the highlighted GO terms
+## Select only the highlighted GO terms
 clustr_enrichres_gostres <- clustr_enrichres$gostres$result |> 
         dplyr::filter(
           ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
         )
+
+# Select only pathways within 5<x<500 of gene set size
+clustr_enrichres_gostres_filtered <- clustr_enrichres_gostres |> 
+  dplyr::filter(
+    5 <= term_size & term_size <= 500
+  )
+
+# Transform the dataframe from c_a to g_a format. The intersection column holds the gene ids that intersect between the query and term. The term_name a,d term_id are the respective names and ids for each term. The source represents the databases from which the term is from.
+dr_g_a_clustr_enrichres_gostres_filtered <- clustr_enrichres_gostres_filtered |> 
+      tidyr::separate_rows(intersection, sep = ",") |> 
+      dplyr::select(intersection, query, term_name, term_id, source) |> 
+      dplyr::rename(ensembl_gene_id = intersection, 
+                    clustr = query)
+
+# Group the data by cluster and term name, count the number of unique Ensembl gene IDs per combination of cluster and term name, then ungroup the data to remove groupings      
+termcount <- dr_g_a_clustr_enrichres_gostres_filtered  |> 
+        dplyr::group_by(clustr, term_name) |> 
+        dplyr::summarise(n_genes = length(unique(ensembl_gene_id)), .groups = "drop") |> 
+        dplyr::ungroup()  
+      
+# Filter out biological functions enriched by less than the specified number of genes
+clustr_enrichres_gostres_filtered_more <- subset(termcount, n_genes >= 3)
+      
+# Merge the filtered biological functions with the gprofiler2::gost() results
+clustr_enrichres_gostres_filtered_more <- merge(clustr_enrichres_gostres_filtered, clustr_enrichres_gostres_filtered_more, by.x = c("query", "term_name"), by.y = c("clustr", "term_name"))
+
+# Remove the "n_genes" column
+clustr_enrichres_gostres_filtered_more$n_genes <- NULL
 
 ## Retrieve the  clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -160,6 +188,8 @@ names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fis
 # Combine DRomics info and the workflow info
 b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,  by = "id")
 
+# Load the lonely cluster functional enrichment results
+lonely_cluster_analysis_res <- readRDS(here::here("analyses", "lonely_cluster_analysis", "lonely_cluster_analysis_res.rds"))
 ```
 
  
@@ -192,7 +222,7 @@ This comparison solely focuses on the enriched terms and without any filtering p
 #| echo: false
 
 # Generate the interactive table 
-stand_gostres |> 
+stand_res$unfiltered |> 
   dplyr::select(term_name, term_id, term_size, query_size, intersection_size, p_value, effective_domain_size) |> 
   DT::datatable(options = list(pageLength = 5), class = c("compact", "hover", "row-border", "order-column")) |> 
   DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
@@ -228,13 +258,19 @@ clustr_enrichres_gostres |>
 #| fig-align: "center"
 #| fig-asp: 0.618
 
-stand_go <- unique((stand_gostres |> 
+stand_go <- unique((stand_unfiltered |> 
   dplyr::filter(source == "GO:BP"))$term_name)
+
 propo_go <- unique((clustr_enrichres_gostres |> 
   dplyr::filter(source == "GO:BP"))$term_name)
 
-venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
-                   cross.area = length(which(stand_go %in% propo_go)), 
+lonely_go <- unique((lonely_cluster_analysis_res$unfiltered |> 
+                      dplyr::filter(source == "GO:BP"))$term_name)
+
+propo_lonely_go <- unique(c(propo_go, lonely_go))
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
+                   cross.area = length(which(stand_go %in% propo_lonely_go)), 
                    category = c("standard", "proposed"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
@@ -250,13 +286,19 @@ grid.draw(venn.plot)
 #| fig-align: "center"
 #| fig-asp: 0.618
 
-stand_go <- unique((stand_gostres |> 
+stand_go <- unique((stand_unfiltered |> 
   dplyr::filter(source == "KEGG"))$term_name)
 propo_go <- unique((clustr_enrichres_gostres |> 
   dplyr::filter(source == "KEGG"))$term_name)
 
-venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
-                   cross.area = length(which(stand_go %in% propo_go)), 
+lonely_go <- unique((lonely_cluster_analysis_res$unfiltered |> 
+                      dplyr::filter(source == "KEGG"))$term_name)
+
+propo_lonely_go <- unique(c(propo_go, lonely_go))
+
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
+                   cross.area = length(which(stand_go %in% propo_lonely_go)), 
                    category = c("standard", "proposed"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
@@ -273,13 +315,19 @@ grid.draw(venn.plot)
 #| fig-align: "center"
 #| fig-asp: 0.618
 
-stand_go <- unique((stand_gostres |> 
+stand_go <- unique((stand_unfiltered |> 
   dplyr::filter(source == "WP"))$term_name)
 propo_go <- unique((clustr_enrichres_gostres |> 
   dplyr::filter(source == "WP"))$term_name)
 
-venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
-                   cross.area = length(which(stand_go %in% propo_go)), 
+lonely_go <- unique((lonely_cluster_analysis_res$unfiltered |> 
+                      dplyr::filter(source == "WP"))$term_name)
+
+propo_lonely_go <- unique(c(propo_go, lonely_go))
+
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
+                   cross.area = length(which(stand_go %in% propo_lonely_go)), 
                    category = c("standard", "proposed"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
@@ -289,7 +337,41 @@ grid.draw(venn.plot)
 
 ## Comparing enriched term content after filters in the proposed workflow
 
-With filters applied to the enriched terms within following steps of the proposed workflow, we can re-examine the discrepancies between enriched terms considered between both workflow.
+With filters applied to the enriched terms within following steps of the standard and proposed workflow, we can re-examine the discrepancies between enriched terms considered between both workflow.
+
+### Standard workflow results
+
+::: fullwidth
+```{r}
+#| label: tbl-standenrichfilter
+#| tbl-cap: "Standard workflow functional enrichment results"
+#| tbl-cap-location: margin
+#| echo: false
+
+# Generate the interactive table 
+stand_res$filtered |> 
+  dplyr::select(term_name, term_id, term_size, query_size, intersection_size, p_value, effective_domain_size) |> 
+  DT::datatable(options = list(pageLength = 5), class = c("compact", "hover", "row-border", "order-column")) |> 
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
+```
+:::
+
+### Proposed workflow results
+
+::: fullwidth
+```{r}
+#| label: tbl-propoenrichfilter
+#| tbl-cap: "Proposed workflow functional enrichment results"
+#| tbl-cap-location: margin
+#| echo: false
+
+# Generate the interactive table 
+clustr_enrichres_gostres_filtered_more |> 
+  dplyr::select(query, term_name, term_id, term_size, query_size, intersection_size, p_value, effective_domain_size) |> 
+  DT::datatable(options = list(pageLength = 5), class = c("compact", "hover", "row-border", "order-column")) |> 
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7), fontSize = '80%')
+```
+:::
 
 ### Venn diagrams between both workflows per source after filters in the proposed workflow
 
@@ -301,16 +383,23 @@ With filters applied to the enriched terms within following steps of the propose
 #| fig-align: "center"
 #| fig-asp: 0.618
 
-stand_go <- unique((stand_gostres |> 
+stand_go <- unique((stand_filtered |> 
   dplyr::filter(source == "GO:BP"))$term_name)
 propo_go <- unique((clustr_enrichres$dr_g_a_enrich |> 
   dplyr::filter(source == "GO:BP"))$term_name)
 
-venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
-                   cross.area = length(which(stand_go %in% propo_go)), 
+lonely_go <- unique((lonely_cluster_analysis_res$filtered$dr_c_a_lonely |> 
+                      dplyr::filter(source == "WP"))$term_name)
+
+propo_lonely_go <- unique(c(propo_go, lonely_go))
+
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
+                   cross.area = length(which(stand_go %in% propo_lonely_go)), 
                    category = c("standard", "proposed"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
+
 
 grid.draw(venn.plot)
 ```
@@ -323,15 +412,21 @@ grid.draw(venn.plot)
 #| fig-align: "center"
 #| fig-asp: 0.618
 
-stand_go <- unique((stand_gostres |> 
+stand_go <- unique((stand_filtered |> 
   dplyr::filter(source == "KEGG"))$term_name)
 propo_go <- unique((clustr_enrichres$dr_g_a_enrich |> 
   dplyr::filter(source == "KEGG"))$term_name)
 
-venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
-                   cross.area = length(which(stand_go %in% propo_go)), 
+lonely_go <- unique((lonely_cluster_analysis_res$filtered$dr_c_a_lonely |> 
+                      dplyr::filter(source == "WP"))$term_name)
+
+propo_lonely_go <- unique(c(propo_go, lonely_go))
+
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
+                   cross.area = length(which(stand_go %in% propo_lonely_go)), 
                    category = c("standard", "proposed"),
-                   cat.col = c("black", "black"), col=c("black", "black"), 
+                   cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
 grid.draw(venn.plot)
@@ -345,13 +440,19 @@ grid.draw(venn.plot)
 #| fig-align: "center"
 #| fig-asp: 0.618
 
-stand_go <- unique((stand_gostres |> 
+stand_go <- unique((stand_filtered |> 
   dplyr::filter(source == "WP"))$term_name)
 propo_go <- unique((clustr_enrichres$dr_g_a_enrich |> 
   dplyr::filter(source == "WP"))$term_name)
 
-venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_go), 
-                   cross.area = length(which(stand_go %in% propo_go)), 
+lonely_go <- unique((lonely_cluster_analysis_res$filtered$dr_c_a_lonely |> 
+                      dplyr::filter(source == "WP"))$term_name)
+
+propo_lonely_go <- unique(c(propo_go, lonely_go))
+
+
+venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
+                   cross.area = length(which(stand_go %in% propo_lonely_go)), 
                    category = c("standard", "proposed"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
@@ -368,23 +469,25 @@ The extent of what we can gather, or *what are we working with*, is based on the
 ```{r}
 #| echo: false
 
-dr_g_a_stand_ids <- merge(dr_g_a_stand, dr_t_ids, by = "ensembl_gene_id")
+dr_t_a_stand_ids <- merge(dr_g_a_stand, dr_t_ids, by = "ensembl_gene_id")
 
-stand_lonely <- dr_t_ids[!dr_t_ids$ensembl_transcript_id_version %in% dr_g_a_stand_ids$ensembl_transcript_id_version,]$ensembl_transcript_id_version
-
-
-propof_notlonely <- (b_lonely_fishres |> 
+cluster_transcripts <- (b_lonely_fishres |> 
   dplyr::filter(new_clustr != "Lonely"))$id
 
-propof_lonely <- (b_lonely_fishres |> 
-  dplyr::filter(new_clustr == "Lonely"))$id
+# Retrieve transcript ids for the lonely genes
+lonely_ids_data <- merge(lonely_cluster_analysis_res$filtered$dr_g_a_lonely, dr_t_ids, by = "ensembl_gene_id")
+
+lonely_transcripts_enrich <- unique(lonely_ids_data$ensembl_transcript_id)
+
+total_considered_in_propos <- unique(c(cluster_transcripts, lonely_transcripts_enrich))
+
 
 ```
 
-| Metric                           | Standard                                                           | Proposed                             |
-|----------------------------------|--------------------------------------------------------------------|--------------------------------------|
-| Number of transcripts considered | `r length(unique(dr_g_a_stand_ids$ensembl_transcript_id_version))` | `r length(unique(propof_notlonely))` |
-| Number of lonely transcripts     | `r length(unique(stand_lonely))`                                   | `r length(unique(propof_lonely))`    |
+| Metric                           | Standard                                                                                                 | Proposed                                                                             |
+|----------------------------------|----------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| Number of transcripts considered | `r length(unique(dr_t_a_stand_ids$ensembl_transcript_id_version))`                                       | `r length(unique(total_considered_in_propos))`                                       |
+| Number of lonely transcripts     | `r length(unique(BMDres_definedCI$id)) - length(unique(dr_t_a_stand_ids$ensembl_transcript_id_version))` | `r length(unique(BMDres_definedCI$id)) - length(unique(total_considered_in_propos))` |
 
 : Summary of the comparison between both workflow {#tbl-dromics .bordered .light}
 

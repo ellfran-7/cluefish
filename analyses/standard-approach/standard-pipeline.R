@@ -49,6 +49,27 @@ standard_gostres <- gprofiler2::gost(
   highlight = TRUE 
 ) 
 
-saveRDS(standard_gostres, "analyses/standard-approach/standard_gostres.rds")
+# Filter the results by gene set size and only keep GO terms when they are highlighted
+dr_c_a_standard <- standard_gostres$result |> 
+  dplyr::filter(
+    ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
+  ) 
 
-## The output is a named list where 'result' contains data.frame with the enrichment analysis results and 'meta' contains metadata needed for Manhattan plot.
+dr_c_a_standard_filter <- dr_c_a_standard |> 
+  dplyr::filter(
+    5 <= term_size & term_size <= 500
+  ) 
+
+# Reset the row numbers
+rownames(dr_c_a_standard) <- NULL
+
+# Create a list containing the enrichment results, annotations, and the trace of biological function filtering
+dr_c_a_standard_gostres <- list(
+  unfiltered = dr_c_a_standard,
+  filtered = dr_c_a_standard_filter
+)
+
+# Save the output
+saveRDS(dr_c_a_standard_gostres, file.path("analyses/standard-approach/standard_gostres.rds"))
+
+## The output is a named list where 'unfiltered' is the gost 'result' dataframe before filtering and 'filtered' is the gost 'results dataframe after filtering. 
