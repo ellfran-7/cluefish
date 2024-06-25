@@ -24,9 +24,9 @@
 
 curves_to_pdf <- function(
     lonelyfishing_data, 
-    bmdboot_data, 
+    bmdboot_data,
     clustrfusion_data,
-    tested_doses, 
+    tested_doses,
     ...,
     xunit,
     xtitle,
@@ -53,15 +53,15 @@ curves_to_pdf <- function(
     # Merge loenlyfishing results with bmdboots results after DRomics::bmdfilter()
     dr_t_c_a_workflow_res <- merge(dr_t_c_a_fishing4curvesplot, bmdboot_data, by = "id")
     
-    # Subset columns from the merged data, removing non-essential ones
+    # Subset columns from the merged data, removing non-essential ones for the dose-response curves
     dr_t_workflow_res <- subset(dr_t_c_a_workflow_res, select = -c(ensembl_gene_id,
-                                                                 external_gene_name,
-                                                                 old_clustr,
-                                                                 friendliness,
-                                                                 term_name,
-                                                                 term_id,
-                                                                 source,
-                                                                 TF))
+                                                                   external_gene_name,
+                                                                   old_clustr,
+                                                                   friendliness,
+                                                                   term_name,
+                                                                   term_id,
+                                                                   source,
+                                                                   TF))
     
     
     # Remove repeated rows

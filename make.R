@@ -94,6 +94,7 @@ BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 bg_t_ids <- getids(
   id_query = f$omicdata$item, 
+  biomart_db = "ENSEMBL_MART_ENSEMBL",
   species_dataset = "drerio_gene_ensembl",
   id_filter = "ensembl_transcript_id_version", 
   id_attribut = c("ensembl_transcript_id_version",
@@ -101,12 +102,15 @@ bg_t_ids <- getids(
                   "external_gene_name")
   )
 
+# Note: The final dataframe must include the 'ensembl_gene_id' column !!!!!!!!!!
+
 # Save the "time-consuming" data if already created
 write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
 # Load the "time-consuming" data if already created
 bg_t_ids <- read.table("outputs/bg_t_ids_2024-05-02.txt")
 
-
+# The "ensembl_gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "ensembl_gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
+dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
 
 
 
@@ -114,9 +118,6 @@ bg_t_ids <- read.table("outputs/bg_t_ids_2024-05-02.txt")
 
 #>> STEP 3 - Retrieve regulatory status of deregulated genes
 #>----------------------------------------------------------
-
-# We only need the annotations for the deregulated transcripts/genes derived from the DRomics pipeline :
-dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
 
 dr_t_regs <- getregs(
   getids_data = dr_t_ids,
@@ -132,7 +133,7 @@ dr_t_regs <- getregs(
 #>> STEP 4 - Create and retrieve the clustered PPIN data from the StringApp in Cytoscape
 #>--------------------------------------------------------------------------------------
 
-# Create the data to be exported
+# Create the data to be exported into Cytoscape
 DR_output4string <- merge(BMDres_definedCI, dr_t_regs, 
                           by.x = "id", by.y = "ensembl_transcript_id_version")
 
@@ -147,7 +148,8 @@ write.table(DR_output4string, file = paste0("outputs/DR_output4string_", Sys.Dat
 # This table, found in the "outputs/" folder, can then be imported back into the Rstudio environment in order to pursue the workflow : 
 
 dr_t_clustrs <- getclustrs(
-  getregs_data = dr_t_regs,
+  gene_data = dr_t_regs,
+  merge_col_name = "ensembl_gene_id",
   path = "outputs/cytoscape-files/",
   nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"
 )
@@ -176,9 +178,12 @@ clustr_enrichres <- clustrenrich(
   clustrfiltr_data = dr_t_clustrs_filtr,
   dr_genes = dr_t_regs$ensembl_gene_id,
   bg_genes = bg_t_ids$ensembl_gene_id,
+  bg_type = "custom_annotated",
+  sources = c("GO:BP", "GO:MF", "KEGG", "WP"), 
   organism = "drerio",
   user_threshold = 0.05,
   correction_method = "fdr",
+  exclude_iea = FALSE, 
   enrich_size_filtr = TRUE,
   min_term_size = 5,
   max_term_size = 500,
@@ -234,6 +239,7 @@ lonely_fishres <- lonelyfishing(
 results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
+  readable_gene_id = "external_gene_name",
   path = "outputs/",
   output_filename = paste0("summary_workflow_cs09_cf4_2024-05-13.csv"),
   overwrite = TRUE

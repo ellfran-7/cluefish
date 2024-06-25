@@ -7,11 +7,12 @@
 #' @param clustrfiltr_data The named `list` output from the `clustrfiltr()` function. 
 #' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `ensembl_gene_id` column in the output of the `geteregs()` function. The `gprofiler2::gost()` function handles duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
 #' @param bg_genes The vector of background Ensembl genes (preferably from the experiment) that typically corresponds to the `ensemble_gene_id` column in the output of the `getids()` function.
+#' @param bg_type The background type, i.e. the statistical domain, that can be one of "annotated", "known", "custom" or "custom_annotated"
 #' @param sources A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.
 #' @param organism Organism ID defined for the chosen sources (e.g. if zebrafish = "drerio")
 #' @param user_threshold Adjusted p-value cutoff for Over-Representation analysis (default at 0.05 in `gost()` function)
 #' @param correction_method P-value adjustment method: one of “gSCS” ,“fdr” and “bonferroni (default set at "fdr")
-#' @param excude_iea Exclude GO electronic annotations (IEA). Recommended to keep for weakly referenced organisms (default set as "FALSE")
+#' @param exclude_iea Option to exclude GO electronic annotations (IEA)
 #' @param enrich_size_filtr Option to filter out enriched terms that have too little (`min_term_size`) and/or too large (`max_term_size`) gene sets. Recommended for well-annotated organisms (default = TRUE).
 #' @param min_term_size Minimum gene set size to consider a biological pathway as relevant to the analysis (default set at 5)
 #' @param max_term_size Maximum gene set size to consider a biological pathway as relevant to the analysis (default set at 500)
@@ -20,6 +21,7 @@
 #' @param path Destination folder for the output data results.
 #' @param output_filename Output enrichment result filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
+#' @param exclude_iea 
 #'
 #' @return A named `list` holding 4 components, where :
 #'      -`dr_g_a_enrich` is a dataframe of type *g_a* holding the enrichment results with each row being a combination of gene and biological function annotation
@@ -35,6 +37,7 @@ clustrenrich <- function(
     clustrfiltr_data,
     dr_genes,
     bg_genes,  
+    bg_type = "custom_annotated",
     sources = c("GO:BP", "KEGG", "WP"), 
     organism, 
     user_threshold = 0.05,  
@@ -48,7 +51,7 @@ clustrenrich <- function(
     path, 
     output_filename, 
     overwrite = FALSE 
-    )
+)
 
 {
   
@@ -91,7 +94,7 @@ clustrenrich <- function(
       evcodes = TRUE,
       user_threshold = user_threshold, 
       correction_method = correction_method, 
-      domain_scope = "custom_annotated",
+      domain_scope = bg_type,
       custom_bg = bg_genes, 
       numeric_ns = "", 
       sources = sources, 
@@ -108,17 +111,30 @@ clustrenrich <- function(
     # ---------------
     # using the "multi_gostres$result" the function gradually creates one of the components the output of clustrenrich(), which is the $c_simplifylog. It holds the number of biological functions enriched per cluster, before and after each filtering step for each source. In this first block, we create the base dataframe with no filters performed yet.
     
+    # Define the mapping of original column names to new names based on sources
+    column_mapping <- setNames(paste0("all_", gsub(":", "_", sources)), sources)
+    
     # Create a dataframe holding the number of terms (term_name) enriched by clusters before and after each condition. This will be updated after each sub-step of this function.
     dr_c_a_gostres <- multi_gostres$result |> 
       dplyr::select(query, term_name, source)
     
-    # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster, rename the columns for coherence and turn the tibble into a dataframe.
+    # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster
     dr_c_a_termcount <- dr_c_a_gostres |>
       dplyr::group_by(query, source) |>
       dplyr::summarize(count = dplyr::n_distinct(term_name), .groups = "drop") |>
       tidyr::pivot_wider(names_from = source, values_from = count, values_fill = 0) |> 
-      dplyr::rename(clustr = query, all_GO = 'GO:BP', all_KEGG = KEGG, all_WP = WP) |> 
       as.data.frame()
+    
+    # Rename the columns based on the mapping if they exist
+    for (original_name in names(column_mapping)) {
+      if (original_name %in% colnames(dr_c_a_termcount)) {
+        new_name <- column_mapping[[original_name]]
+        dr_c_a_termcount <- dplyr::rename(dr_c_a_termcount, !!new_name := !!rlang::sym(original_name))
+      }
+    }
+    
+    # Rename the 'query' column to 'clustr'
+    dr_c_a_termcount <- dplyr::rename(dr_c_a_termcount, clustr = query)
     # ---------------
     
     # Conditionally filter out non-highlighted GO terms
@@ -134,19 +150,34 @@ clustrenrich <- function(
       
       # Select only the cluster ('query'), term_name and source columns.
       dr_c_a_high_go <- multi_gostres$result |> 
-        dplyr::select(query, term_name, source)
+        dplyr::select(query, term_name, source) |> 
+        dplyr::filter(grepl("GO", source))
       
-      # Select only terms associated to the GO:BP source, remove the source column, group the data by the query column, summarise the groups with a new column "driver_GO" thats counts the number of unique occurences of term names within each query group, rename the query column to "clustr" and turn the tibble into a dataframe.
-      dr_c_a_high_go_count <- dr_c_a_high_go |>
-        dplyr::filter(source == "GO:BP") |> 
-        dplyr::select(-source) |> 
-        dplyr::group_by(query) |> 
-        dplyr::summarize(driver_GO = dplyr::n_distinct(term_name), .groups = "drop") |> 
+      # Generate column mappings for GO categories
+      column_mapping <- setNames(paste0("driver_", gsub(":", "_", dr_c_a_high_go$source)), dr_c_a_high_go$source)
+      
+      # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster
+      driver_dr_c_a_termcount <- dr_c_a_high_go |>
+        dplyr::group_by(query, source) |>
+        dplyr::summarize(count = dplyr::n_distinct(term_name), .groups = "drop") |>
+        tidyr::pivot_wider(names_from = source, values_from = count, values_fill = 0) |> 
         dplyr::rename(clustr = query) |> 
         as.data.frame()
       
-      # Crush the previous "dr_c_a_termcount" with the newly merged dataframe also holding driver_GO.term occurrence counting
-      dr_c_a_termcount <- merge(dr_c_a_termcount, dr_c_a_high_go_count, by = "clustr", all = TRUE)
+      # Rename the columns based on the mapping if they exist
+      for (original_name in names(column_mapping)) {
+        if (original_name %in% colnames(driver_dr_c_a_termcount)) {
+          new_name <- column_mapping[[original_name]]
+          driver_dr_c_a_termcount <- dplyr::rename(driver_dr_c_a_termcount, !!new_name := !!rlang::sym(original_name))
+        }
+      }
+      
+      # Merge the previous dr_c_a_termcount with the dataframe also holding driver_GO term occurrence counting, arranging by cluster and keeping all rows from both dataframes
+      dr_c_a_termcount <- merge(dr_c_a_termcount, driver_dr_c_a_termcount, by = 'clustr', all = TRUE)
+      
+      # Replace all NA values with 0 to handle cases where enrichment filtering removed clusters
+      dr_c_a_termcount <- dr_c_a_termcount |> 
+        dplyr::mutate_all(~replace(., is.na(.), 0))
       # ----------------
       
     }
@@ -198,7 +229,7 @@ clustrenrich <- function(
       # Transform the cluster column to numeric to order the data by cluster
       dr_g_a_termkept$clustr <- as.numeric(dr_g_a_termkept$clustr)
       dr_g_a_termkept <- dr_g_a_termkept[order(dr_g_a_termkept$clustr), ]
-
+      
       # Update the dr_g_a_gostres df with the filtered and sorted data
       dr_g_a_gostres <- dr_g_a_termkept
       
@@ -213,31 +244,46 @@ clustrenrich <- function(
     # --------------
     # After filtering the gene set sizes and the enrichment sizes of biological functions, we also want to get the number of occurences for each cluster and source combination.
     
+    # Define the mapping of original column names to new names based on sources
+    if (only_highlighted_GO == TRUE) {
+      
+      column_mapping <- setNames(paste0("kept_", ifelse(grepl("^GO", sources), "driver_", ""), gsub(":", "_", sources)), sources)
+      
+    } else {
+      
+      column_mapping <- setNames(paste0("kept_", gsub(":", "_", sources)), sources)
+      
+    }
+    
     # Group and count the number of distinct term names per combination of clustr and source
     dr_g_a_terms_afterfiltr <- dr_g_a_gostres |> 
       dplyr::select(clustr, term_name, source)
     
-    # Group the data by cluster and source, count the number of distinct term names per combination of cluster and source, pivot the data to have source categories as columns associated with their respective count by cluster, rename the columns for coherence, remove unnecessary columns, and convert the tibble to a dataframe.
+    # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster
     kept_dr_c_a_termcount <- dr_g_a_terms_afterfiltr |>
       dplyr::group_by(clustr, source) |>
       dplyr::summarize(count = dplyr::n_distinct(term_name), .groups = "drop") |>
       tidyr::pivot_wider(names_from = source, values_from = count, values_fill = 0) |> 
-      dplyr::rename(kept_driver_GO = 'GO:BP', kept_KEGG = KEGG, kept_WP = WP) |> 
       as.data.frame()
+    
+    # Rename the columns based on the mapping if they exist
+    for (original_name in names(column_mapping)) {
+      if (original_name %in% colnames(kept_dr_c_a_termcount)) {
+        new_name <- column_mapping[[original_name]]
+        kept_dr_c_a_termcount <- dplyr::rename(kept_dr_c_a_termcount, !!new_name := !!rlang::sym(original_name))
+      }
+    }
+    
     
     # Merge the previous dr_c_a_termcount with the dataframe also holding driver_GO term occurrence counting, arranging by cluster and keeping all rows from both dataframes
     dr_c_a_termcount <- merge(dr_c_a_termcount, kept_dr_c_a_termcount, by = 'clustr', all = TRUE)
-    
-    # Rearrange the rows to have source columns grouped together within the function order
-    dr_c_a_termcount <- dr_c_a_termcount |> 
-      dplyr::select(clustr, all_GO, driver_GO, kept_driver_GO, all_KEGG, kept_KEGG, all_WP, kept_WP)
     
     # Replace all NA values with 0 to handle cases where enrichment filtering removed clusters
     dr_c_a_termcount <- dr_c_a_termcount |> 
       dplyr::mutate_all(~replace(., is.na(.), 0))
     # --------------
     
-  
+    
     # After conducting enrichment analysis, the dataset now exclusively contains genes and data involved in the enrichment of terms. Consequently, genes within a string cluster but not engaged in any enrichment are absent from the direct results. These genes must be reintegrated into the results.
     
     # Retrieve data for Ensembl gene IDs not involved in any enrichment
@@ -275,7 +321,7 @@ clustrenrich <- function(
       evcodes = TRUE,
       user_threshold = user_threshold, 
       correction_method = correction_method, 
-      domain_scope = "custom_annotated",
+      domain_scope = bg_type,
       custom_bg = bg_genes, 
       numeric_ns = "", 
       sources = sources, 
@@ -313,5 +359,5 @@ clustrenrich <- function(
     return(clustr_enrichres)
     
   }
-
+  
 }

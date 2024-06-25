@@ -185,7 +185,7 @@ This document is a comprehensive report, meticulously encapsulating the pivotal 
 The total number of transcripts derived from this experiment : **`r length(unique(f$omicdata$item))`**
 
 | Step                                   | Number of transcripts concerned         |
-|------------------------------------|------------------------------------|
+|----------------------------------------|-----------------------------------------|
 | Selection of deregulated transcripts   | `r length(unique(f$fitres$id))`         |
 | Computation of BMD-1SD values          | `r length(unique(b$res$id))`            |
 | Defined confidence interval around BMD | `r length(unique(BMDres_definedCI$id))` |
@@ -199,7 +199,7 @@ The total number of transcripts derived from this experiment : **`r length(uniqu
 ### Identifier retrieval
 
 | Type of identifier                                                               | Background count                                           | Deregulated count                                          |
-|-----------------------------|----------------------|----------------------|
+|----------------------------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
 | [Ensembl transcript](https://mart.ensembl.org/info/genome/stable_ids/index.html) | `r length(unique(bg_t_ids$ensembl_transcript_id_version))` | `r length(unique(dr_t_ids$ensembl_transcript_id_version))` |
 | [Ensembl gene](https://mart.ensembl.org/info/genome/stable_ids/index.html)       | `r length(unique(bg_t_ids$ensembl_gene_id))`               | `r length(unique(dr_t_ids$ensembl_gene_id))`               |
 
@@ -216,7 +216,7 @@ The [external_gene_name](https://zfin.org/) identifiers, which depict human-read
 Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
 
 | Step                 | Ensembl Gene Count                                          | Cluster Count                                      |
-|----------------|------------------------------|--------------------------|
+|----------------------|-------------------------------------------------------------|----------------------------------------------------|
 | Before clustrfiltr() | `r length(unique(dr_t_clustr_data$ensembl_gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
 | After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$ensembl_gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
 
@@ -247,20 +247,20 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 ```
 
 | Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
-|---------------|--------------------|-------------------|-------------------|
+|-----------------|------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
 
 : Summary of background gene lists involved in functional enrichment for each source {#tbl-backenrich .bordered .light}
 
 | Metric                                   | Query Ensembl Gene Count                                                                          | Cluster Count                                                                            | Total Term Count                                                                            |
-|----------------|--------------------|------------------|-------------------|
+|------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | Enrichment results before term filtering | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$ensembl_gene_id))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$clustr))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$term_name))` |
 | Enrichment results after term filtering  | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$ensembl_gene_id))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$clustr))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$term_name))`   |
 
 : Summary table of gene, cluster and total term count during the cluster enrichment step {#tbl-enrichfiltr .bordered .light}
 
 | Metric                                      | GO:BP                                                                                                             | KEGG                                                                                                             | Wikipathways                                                                                                   |
-|----------------|-------------------|-------------------|-------------------|
+|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
 | Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
 | Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
@@ -272,7 +272,7 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 Clusters merge when they share identical enriched terms.
 
 | Metric        | Cluster count                                                 |
-|-----------------|-------------------------------------------------------|
+|---------------|---------------------------------------------------------------|
 | Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
 | After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
 
@@ -299,7 +299,7 @@ gt::gt(same_value_rows) |>
 Lonely genes are incorporated into clusters if they share a common term with any given cluster.
 
 | Metric                      | All                                                                                                                              | Annotated                                                                                                                                            |
-|---------------|--------------------------|-------------------------------|
+|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$ensembl_gene_id))`                                                                             | `r length(unique(dr_g_a_no_clustr_annotated$ensembl_gene_id))`                                                                                       |
 | Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                           | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                               |
 | Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` |

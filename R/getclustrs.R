@@ -3,16 +3,20 @@
 #' @description
 #' This function retrieves and reformats the clustered PPIN data from the StringApp in Cytoscape. 
 #'
-#' @param getregs_data A dataframe of type *t* that typically corresponds to the output of the `getregs()` function. This input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
-#' @param string_clustr_file The path with the filename of the `node table` .csv file previously downloaded following clustering of the PPIN made using the StringApp in Cytoscape. This node table must hold a `query.term` and `X__mclCluster` column.
-#' @return A `dataframe` of type *t* similar to the *getregs_data* dataframe input with an added column indicating to which cluster belongs each gene (if no cluster is associated : NA)
+#' @param gene_data A dataframe of type *t* that typically corresponds to the output of the `getids()` or `getregs()` function. This input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
+#' @param merge_col_name The identifier column used as query in order to create the PPIN in Cytoscape using the StringApp (e.g. "ensembl_gene_id" or "uniprotsptrembl")
+#' @param path Folder where the nodetable exported from Cytoscape is found
+#' @param nodetable_filename Filename of the nodetable
+#'
+#' @return A `dataframe` of type *t* similar to the *gene_data* dataframe input with an added column indicating to which cluster belongs each gene (if no cluster is associated : NA)
 #' 
 #' @export
 #'
 #' @examples
 
 getclustrs <- function(
-    getregs_data, 
+    gene_data,
+    string_query_col,
     path,
     nodetable_filename
     )
@@ -24,11 +28,14 @@ getclustrs <- function(
   dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
   
   # Create a dataframe for seamless merge with the 'getregs_data' dataframe
-  dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 
+  dr_g_string_clustr <- data.frame(query_term = dr_g_string_clustr$query.term, 
                                    clustr = dr_g_string_clustr$X__mclCluster)
   
+  # Rename the column in the gene_data dataframe to match the 'query_term' column in dr_g_string_clustr
+  colnames(dr_g_string_clustr)[1] <- string_query_col
+  
   # Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
-  dr_t_clustr_data <- merge(getregs_data, dr_g_string_clustr, by = "ensembl_gene_id")
+  dr_t_clustr_data <- merge(gene_data, dr_g_string_clustr, by = string_query_col)
   
   # Remove genes not associated with a cluster 
   dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 

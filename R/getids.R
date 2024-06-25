@@ -4,6 +4,7 @@
 #' This function connects to the Ensembl database, queries a specified species dataset using the biomaRt package, and returns the results of the query. If the query includes the 'external_gene_name' attribute, representing readable gene symbols, the function examines whether any duplicates of this identifier exist across various Ensembl transcript and gene IDs rows. This situation occurs when a gene symbol corresponds to different Ensembl gene IDs and Ensembl transcript IDs. If duplicates are detected, the function modifies the external gene name to address this discrepancy.
 #'
 #' @param id_query A vector of transcript IDs that typically corresponds to the background transcript list
+#' @param biomart_db The name of the BioMart database hosted by Ensembl or Ensembl Metazoa. Use `listMarts()` to view available Ensembl databases, or `listEnsemblGenomes()` to view available Ensembl Metazoa databases.
 #' @param species_dataset The name of the species dataset desired on `ensembl.org`.
 #' @param id_filter The transcript ID type used in the query (e.g., "ensembl_transcript_id_version")
 #' @param id_attribut A vector of new ID types to retrieve from the Ensembl dataset of the specified species (e.g., c("ensembl_gene_id", "external_gene_name"))
@@ -16,13 +17,14 @@
 
 getids <- function(
     id_query, 
+    biomart_db,
     species_dataset, 
     id_filter,
     id_attribut
     )
 { 
   # Connection to the ENSEMBL database and the species dataset 
-  ensembl <- biomaRt::useMart("ENSEMBL_MART_ENSEMBL", dataset = species_dataset) 
+  ensembl <- biomaRt::useMart(biomart = biomart_db, dataset = species_dataset) 
   
   # Retrieves the specified attributes from the BioMart database given a set of filters and corresponding query values
   query_results <- biomaRt::getBM(
