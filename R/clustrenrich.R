@@ -5,7 +5,7 @@
 #' An option is added to filter pathways that are enriched by "too few" genes. Secondly, it adds the data for genes in a string cluster but not participating in the enrichment. Throughout the pipeline, there is trace of the number of enriched biological functions before and after filters. Lastly, it retrieves all the biological funciton annotations for the entirety of deregulated genes from within the g:profiler database. 
 #'
 #' @param clustrfiltr_data The named `list` output from the `clustrfiltr()` function. 
-#' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `ensembl_gene_id` column in the output of the `geteregs()` function. The `gprofiler2::gost()` function handles duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
+#' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `gene_id` column in the output of the `getids()` or  `getregs()`  function. The `gprofiler2::gost()` function handles duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
 #' @param bg_genes The vector of background Ensembl genes (preferably from the experiment) that typically corresponds to the `ensemble_gene_id` column in the output of the `getids()` function.
 #' @param bg_type The background type, i.e. the statistical domain, that can be one of "annotated", "known", "custom" or "custom_annotated"
 #' @param sources A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.
@@ -21,7 +21,6 @@
 #' @param path Destination folder for the output data results.
 #' @param output_filename Output enrichment result filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
-#' @param exclude_iea 
 #'
 #' @return A named `list` holding 4 components, where :
 #'      -`dr_g_a_enrich` is a dataframe of type *g_a* holding the enrichment results with each row being a combination of gene and biological function annotation
@@ -67,18 +66,18 @@ clustrenrich <- function(
     
     # Select the necessary columns from kept clusters data: Ensembl gene ID and cluster ID, removing duplicates
     dr_g_clustrfiltr_data <- clustrfiltr_data$kept |> 
-      dplyr::select(ensembl_gene_id, clustr) |> 
+      dplyr::select(gene_id, clustr) |> 
       dplyr::group_by(clustr) 
     
     # Set the “clustr” column values to factors for proper list names
     dr_g_clustrfiltr_data$clustr <- factor(dr_g_clustrfiltr_data$clustr,
                                            levels = unique(dr_g_clustrfiltr_data$clustr))
     
-    # Convert the “ensembl_gene_id” column values to characters
-    dr_g_clustrfiltr_data$ensembl_gene_id <- as.character(dr_g_clustrfiltr_data$ensembl_gene_id)
+    # Convert the “gene_id” column values to characters
+    dr_g_clustrfiltr_data$gene_id <- as.character(dr_g_clustrfiltr_data$gene_id)
     
-    # Create a list by dividing gene set data (“ensembl_gene_id”) into groups (“clustr”). This is reassembled in the form of a list of vectors containing the values for the groups. This list format is input for gprofiler2::gost() function, allowing for gost() analysis on each cluster
-    cluster_list <- split(dr_g_clustrfiltr_data$ensembl_gene_id, 
+    # Create a list by dividing gene set data (“gene_id”) into groups (“clustr”). This is reassembled in the form of a list of vectors containing the values for the groups. This list format is input for gprofiler2::gost() function, allowing for gost() analysis on each cluster
+    cluster_list <- split(dr_g_clustrfiltr_data$gene_id, 
                           dr_g_clustrfiltr_data$clustr)
     
     
@@ -192,7 +191,7 @@ clustrenrich <- function(
     dr_g_a_gostres <- multi_gostres$result |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::select(intersection, query, term_name, term_id, source) |> 
-      dplyr::rename(ensembl_gene_id = intersection, 
+      dplyr::rename(gene_id = intersection, 
                     clustr = query)
     
     # Conditionally remove biological functions that are not sufficiently enriched by a cluster
@@ -201,7 +200,7 @@ clustrenrich <- function(
       # Group the data by cluster and term name, count the number of unique Ensembl gene IDs per combination of cluster and term name, then ungroup the data to remove groupings      
       dr_g_a_termcount <- dr_g_a_gostres  |> 
         dplyr::group_by(clustr, term_name) |> 
-        dplyr::summarise(n_genes = length(unique(ensembl_gene_id)), .groups = "drop") |> 
+        dplyr::summarise(n_genes = length(unique(gene_id)), .groups = "drop") |> 
         dplyr::ungroup()  
       
       # Filter out biological functions enriched by less than the specified number of genes
@@ -218,7 +217,7 @@ clustrenrich <- function(
       
       # Order the data by cluster and keep the selected columns
       dr_g_a_termkept <- dr_g_a_termkept |> 
-        dplyr::select(ensembl_gene_id, clustr, term_name, term_id, source)
+        dplyr::select(gene_id, clustr, term_name, term_id, source)
       
       # Print the ratio of clusters participating in enrichment
       cat(length(unique(dr_g_a_termkept$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment.", "\n")
@@ -287,10 +286,10 @@ clustrenrich <- function(
     # After conducting enrichment analysis, the dataset now exclusively contains genes and data involved in the enrichment of terms. Consequently, genes within a string cluster but not engaged in any enrichment are absent from the direct results. These genes must be reintegrated into the results.
     
     # Retrieve data for Ensembl gene IDs not involved in any enrichment
-    dr_g_no_enrich <- clustrfiltr_data$kept[!(clustrfiltr_data$kept$ensembl_gene_id %in% dr_g_a_gostres$ensembl_gene_id),]
+    dr_g_no_enrich <- clustrfiltr_data$kept[!(clustrfiltr_data$kept$gene_id %in% dr_g_a_gostres$gene_id),]
     
     # Construct a dataframe for the rbind operation with the GO enrichment output
-    dr_g_no_enrich_4_rbind <- data.frame(ensembl_gene_id = dr_g_no_enrich$ensembl_gene_id,
+    dr_g_no_enrich_4_rbind <- data.frame(gene_id = dr_g_no_enrich$gene_id,
                                          clustr = dr_g_no_enrich$clustr,
                                          term_name = NA,
                                          term_id = NA,
@@ -333,7 +332,7 @@ clustrenrich <- function(
     dr_g_a_annots <- annot_gostres$result |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::select(intersection, term_name, term_id, source) |> 
-      dplyr::rename(ensembl_gene_id = intersection)
+      dplyr::rename(gene_id = intersection)
     
     # Remove duplicate rows
     dr_g_a_annots <- unique(dr_g_a_annots)

@@ -33,7 +33,7 @@ getregs <- function(
   reg_coreg_items <- c(coregs_items, regs_items) 
   
   # Create a logical column 'TF' indicating whether the gene is either a known regulator or co-regulator
-  getids_data$TF <- getids_data$ensembl_gene_id %in% reg_coreg_items
+  getids_data$TF <- getids_data$gene_id %in% reg_coreg_items
   
   # Return the results
   return(getids_data)

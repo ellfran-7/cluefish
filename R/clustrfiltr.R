@@ -3,7 +3,7 @@
 #' @description
 #' This function removes genes belonging to clusters that are considered "too small" by the user.
 #' 
-#' @param getclustrs_data A `dataframe` of type *t* that typically corresponds to the output of the `getclustrs()` function. This input holds at least the columns named `ensembl_gene_id` and `clustr` respectively holding Ensembl gene and cluster identifiers for the deregulated genes.
+#' @param getclustrs_data A `dataframe` of type *t* that typically corresponds to the output of the `getclustrs()` function. This input holds at least the columns named `gene_id` and `clustr` respectively holding Ensembl gene and cluster identifiers for the deregulated genes.
 #' @param size_filtr The number of genes in a cluster to consider sufficiently large enough to be a biological complex (by default: 3). 
 #' @return A named `list` holding 2 components, where : 
 #'      -`kept` is a dataframe of type *t* similar to the *getclustrs_data* dataframe input with the rows kept after the filter (the Ensembl genes are part of a cluster over the size limit)
@@ -20,7 +20,7 @@ clustrfiltr <- function(
 { 
   # Select necessary columns: Ensembl gene ID and cluster ID, removing duplicate rows in order to pass from transcript per row to gene per row
   dr_g_clustrs <- getclustrs_data |> 
-    dplyr::select(ensembl_gene_id, clustr) |> 
+    dplyr::select(gene_id, clustr) |> 
     dplyr::distinct()
   
   # Calculate the distribution of genes within clusters
@@ -42,7 +42,7 @@ clustrfiltr <- function(
   dr_t_clustrs_filtr$kept <- dr_t_clustrs_filtr$kept |> 
     dplyr::arrange(clustr)
   
-  dr_t_clustrs_filtr$removed <- dr_t_clustrs_filtr$kept |> 
+  dr_t_clustrs_filtr$removed <- dr_t_clustrs_filtr$removed |> 
     dplyr::arrange(clustr)
   
   # Reset row names for clarity

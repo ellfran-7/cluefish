@@ -9,7 +9,7 @@
 #' @return A named `list` holding 3 components, where :
 #'      -`dr_g_a_fusion` is a dataframe of type *g_a* holding the cluster fusion results. It shares a similar structure to the *clustrenrich_data$dr_g_a_enrich* dataframe with each row being a combination of gene and biological function annotation.
 #'      -`dr_c_a_fusion` is a dataframe of type *c_a* holding the cluster fusion results with each row being a combination of cluster ID and biological function annotation
-#'      -`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the source sfrom which they originated (e.g. GO, KEGG).
+#'      -`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the sources from which they originated (e.g. GO, KEGG).
 #' 
 #' @examples
 #' 
@@ -17,7 +17,7 @@
 clustrfusion <- function(
     clustrenrich_data,
     monoterm_fusion = FALSE
-    )
+)
 {
   
   # Extract the enrichment results for gene data
@@ -69,6 +69,9 @@ clustrfusion <- function(
         
         # Determine which clusters enrich all the same terms (all or nothing)
         clusterstomerge <- which(sapply(split(dr_g_a_enriched_terms$term_name, dr_g_a_enriched_terms$new_clustr), function(x) setequal(x, clusterterms)))
+        
+        # Get the numeric cluster IDs of the clusters that are to merge
+        clusterstomerge <- as.numeric(names(clusterstomerge))
         
         # If multiple clusters associated with the term, proceed
         if (length(clusterstomerge) > 1){
@@ -127,6 +130,9 @@ clustrfusion <- function(
         # Create a vector of clusters enriching the unique term and remove duplicates
         clusterstomerge <- unique(dr_g_a_unique_enriched_term$new_clustr)
         
+        # Get the numeric cluster IDs of the clusters that are to merge
+        clusterstomerge <- as.numeric(names(clusterstomerge))
+        
         # If multiple clusters associated with the term, proceed
         if (length(clusterstomerge) > 1){
           
@@ -158,7 +164,6 @@ clustrfusion <- function(
     
   }
   
-  
   # Add fusion information to the fusion log dataframe
   c_fusionlog$after_GO_fusion <- after_GO_fusion
   c_fusionlog$after_KEGG_fusion <- after_KEGG_fusion
@@ -179,14 +184,14 @@ clustrfusion <- function(
   
   # Order columns
   dr_g_a_fusion <- dr_g_a_enrich |> 
-    dplyr::select(ensembl_gene_id, old_clustr, new_clustr, everything())
+    dplyr::select(gene_id, old_clustr, new_clustr, everything())
   
   # Renew rownames
   rownames(dr_g_a_fusion) <- NULL
   
   # Create cluster dataset from gene dataset
   dr_c_a_fusion <- dr_g_a_fusion |> 
-    dplyr::select(-ensembl_gene_id) |> 
+    dplyr::select(-gene_id) |> 
     dplyr::select(old_clustr, new_clustr, term_name, term_id, source)
   
   # Prepare dataframe to integrate term_size and highlighted columns from enrichment results

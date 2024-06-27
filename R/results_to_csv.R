@@ -5,7 +5,6 @@
 #' 
 #' @param lonelyfishing_data The named `list` output of the `lonelyfishing()` function.
 #' @param bmdboot_data The DRomics bmdboot `dataframe` results after DRomics::bmdfilter() 
-#' @param readable_gene_id Name of the readable gene ID column to add to the summary table as "gene_name" (e.g. "external_gene_name". If none is provided, no additional column will be created (default is set to "NULL")
 #' @param path Destination folder for the output data results.
 #' @param output_filename Output CSV filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
@@ -20,7 +19,6 @@
 results_to_csv <- function(
     lonelyfishing_data,
     bmdboot_data,
-    readable_gene_id = NULL,
     path,
     output_filename,
     overwrite = TRUE
@@ -35,42 +33,35 @@ results_to_csv <- function(
   } else {
     
     # Merge lonelyfishing results with bmdboots results after DRomics::bmdfilter()
-    dr_t_c_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by.x = "ensembl_transcript_id_version", by.y = "id")
+    dr_t_c_a_workflow_res <- merge(lonelyfishing_data$dr_t_c_a_fishing, bmdboot_data, by.x = "transcript_id", by.y = "id")
     
     
     # Prepare the structure for the summary dataframe
     dr_t_c_a_summary <- data.frame(
-      ensembl_transcript_id = dr_t_c_a_workflow_res$ensembl_transcript_id_version,
-      ensembl_gene_id = dr_t_c_a_workflow_res$ensembl_gene_id,
-      gene_name = dr_t_c_a_workflow_res$readable_gene_id,
-      NewCluster = dr_t_c_a_workflow_res$new_clustr,
-      Friendliness = dr_t_c_a_workflow_res$friendliness,
-      Term_name = dr_t_c_a_workflow_res$term_name,
-      Source = dr_t_c_a_workflow_res$source,
-      BMD.zSD = as.numeric(dr_t_c_a_workflow_res$BMD.zSD),
-      Trend = dr_t_c_a_workflow_res$trend
+      transcript_id = dr_t_c_a_workflow_res$transcript_id,
+      gene_id = dr_t_c_a_workflow_res$gene_id,
+      newcluster = dr_t_c_a_workflow_res$new_clustr,
+      friendliness = dr_t_c_a_workflow_res$friendliness,
+      term_name = dr_t_c_a_workflow_res$term_name,
+      source = dr_t_c_a_workflow_res$source,
+      bmd = as.numeric(dr_t_c_a_workflow_res$BMD.zSD),
+      trend = dr_t_c_a_workflow_res$trend
     )
     
-    # Add readable gene ID column if provided and exists in the data
-    if (!is.null(readable_gene_id) && readable_gene_id %in% names(dr_t_c_a_workflow_res)) {
-      
-      dr_t_c_a_summary$gene_name <- dr_t_c_a_workflow_res[[readable_gene_id]]
-      
-      dr_t_c_a_summary <- dr_t_c_a_summary[, c("ensembl_transcript_id", "ensembl_gene_id", "gene_name", 
-                                               "NewCluster", "Friendliness", "Term_name", "Source", 
-                                               "BMD.zSD", "Trend")]
+    ## Insert columns conditionally if they exist in the input data
+    optional_columns <- c("gene_name", "description", "TF")
+    for (col in optional_columns) {
+      if (col %in% names(dr_t_c_a_workflow_res)) {
+        dr_t_c_a_summary[[col]] <- dr_t_c_a_workflow_res[[col]]
+      }
     }
     
-    
-    # If TF column exists in input data, add it to the summary dataframe
-    if ("TF" %in% names(dr_t_c_a_workflow_res)) {
-      
-      dr_t_c_a_summary$TF <- dr_t_c_a_workflow_res[[tf_column]]
-      
-    }
+    # Use relocate to move optional columns after 'gene_id'
+    dr_t_c_a_summary <- dr_t_c_a_summary |> 
+      dplyr::relocate(dplyr::any_of(optional_columns), .after = gene_id)
     
     # Round BMD.zSD to the tenth for easier reading
-    dr_t_c_a_summary$BMD.zSD <- round(dr_t_c_a_summary$BMD.zSD, 1) 
+    dr_t_c_a_summary$BMD.zSD <- round(dr_t_c_a_summary$bmd, 2) 
     
     # Remove repeated rows
     dr_t_c_a_summary <- unique(dr_t_c_a_summary)
