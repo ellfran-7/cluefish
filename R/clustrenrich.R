@@ -5,8 +5,8 @@
 #' An option is added to filter pathways that are enriched by "too few" genes. Secondly, it adds the data for genes in a string cluster but not participating in the enrichment. Throughout the pipeline, there is trace of the number of enriched biological functions before and after filters. Lastly, it retrieves all the biological funciton annotations for the entirety of deregulated genes from within the g:profiler database. 
 #'
 #' @param clustrfiltr_data The named `list` output from the `clustrfiltr()` function. 
-#' @param dr_genes The vector of deregulated Ensembl genes that can correspond to the `gene_id` column in the output of the `getids()` or  `getregs()`  function. The `gprofiler2::gost()` function handles duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
-#' @param bg_genes The vector of background Ensembl genes (preferably from the experiment) that typically corresponds to the `ensemble_gene_id` column in the output of the `getids()` function.
+#' @param dr_genes The character vector of deregulated Ensembl genes that can correspond to the `gene_id` column in the output of the `getids()` or  `getregs()`  function. The `gprofiler2::gost()` function handles mixed types of gene IDs and even duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
+#' @param bg_genes The character vector of background Ensembl genes (preferably from the experiment) that typically corresponds to the `gene_id` column in the output of the `getids()` function.
 #' @param bg_type The background type, i.e. the statistical domain, that can be one of "annotated", "known", "custom" or "custom_annotated"
 #' @param sources A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.
 #' @param organism Organism ID defined for the chosen sources (e.g. if zebrafish = "drerio")

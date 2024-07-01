@@ -111,7 +111,7 @@ write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
 # Load the "time-consuming" data if already created
 bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-01.txt")
 
-# The "ensembl_gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "ensembl_gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
+# The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 
