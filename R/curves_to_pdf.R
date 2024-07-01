@@ -7,6 +7,7 @@
 #' @param bmdboot_data The DRomics bmdboot dataframe results after DRomics::bmdfilter() 
 #' @param clustrfusion_data The named `list` output of the `clustrfusion()` function. 
 #' @param tested_doses A vector of the tested doses that can be found in the output of the `DRomics::drcfit()`function (unique(f$omicdata$dose))
+#' @param annot_order A vector specifying the prioritized order of annotation sources used in the `clustrenrich()` function. This order determines which term or pathway will be used as primary descriptor for each cluster. The relevance of each source can be based on the quantity or quality of information they provide, tailored to the specific case study. For example, for Danio rerio, you might prioritize sources like c("GO:BP", "KEGG", "WP") based on the abundance of information they offer.
 #' @param ... Additional arguments passed to the `DRomics::curvesplot()` function
 #' @param xunit Unit for the x scale
 #' @param xtitle X-axis title 
@@ -27,6 +28,7 @@ curves_to_pdf <- function(
     bmdboot_data,
     clustrfusion_data,
     tested_doses,
+    annot_order,
     ...,
     xunit,
     xtitle,
@@ -48,21 +50,26 @@ curves_to_pdf <- function(
     dr_t_c_a_fishing4curvesplot <- lonely_fishres$dr_t_c_a_fishing
     
     # Turn the "ensembl_transcript_id" version to "id" for compatibility with the DRomics bmdboot results and for the curvesplot
-    names(dr_t_c_a_fishing4curvesplot)[names(dr_t_c_a_fishing4curvesplot) == "ensembl_transcript_id_version"] <- "id"
+    names(dr_t_c_a_fishing4curvesplot)[names(dr_t_c_a_fishing4curvesplot) == "transcript_id"] <- "id"
     
     # Merge loenlyfishing results with bmdboots results after DRomics::bmdfilter()
     dr_t_c_a_workflow_res <- merge(dr_t_c_a_fishing4curvesplot, bmdboot_data, by = "id")
     
     # Subset columns from the merged data, removing non-essential ones for the dose-response curves
-    dr_t_workflow_res <- subset(dr_t_c_a_workflow_res, select = -c(ensembl_gene_id,
-                                                                   external_gene_name,
+    dr_t_workflow_res <- subset(dr_t_c_a_workflow_res, select = -c(gene_id,
                                                                    old_clustr,
                                                                    friendliness,
                                                                    term_name,
                                                                    term_id,
-                                                                   source,
-                                                                   TF))
+                                                                   source))
     
+    ## Insert columns conditionally if they exist in the input data
+    optional_columns <- c("gene_name", "description", "TF")
+    for (col in optional_columns) {
+      if (col %in% names(dr_t_workflow_res)) {
+        dr_t_workflow_res <- dr_t_workflow_res[, !names(dr_t_workflow_res) %in% col]
+      }
+    }
     
     # Remove repeated rows
     dr_t_workflow_res <- unique(dr_t_workflow_res)
@@ -91,9 +98,14 @@ curves_to_pdf <- function(
     }
     
     # Arrange the data by cluster and by source order : GO:BP, KEGG and then WP. GO:BP terms take precedence and are pasted first in the curvesplot title. If there are no enriched GO:BP terms, a KEGG term is pasted. If neither GO:BP nor KEGG terms are present, a WP term is pasted.
-    order_sources <- c("GO:BP", "KEGG", "WP")
     dr_g_a_fusion_ordered <- clustrfusion_data$dr_g_a_fusion |> 
-      dplyr::arrange(new_clustr, match(source, order_sources))
+      dplyr::arrange(new_clustr, match(source, annot_order))
+    
+    
+    
+    
+    
+    
     
     
     # Calculate the first quartile value for each cluster

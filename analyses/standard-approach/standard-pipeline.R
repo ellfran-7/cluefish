@@ -49,27 +49,53 @@ standard_gostres <- gprofiler2::gost(
   highlight = TRUE 
 ) 
 
-# Filter the results by gene set size and only keep GO terms when they are highlighted
-dr_c_a_standard <- standard_gostres$result |> 
-  dplyr::filter(
-    ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
-  ) 
+## Create dataframe in "gene x annotation per row" (g_a) format for the unfiltered category. 
+## The "annotation per row" (a) is already the output of the gprofiler2::gost() function.
+dr_g_a_standard_filtered_unfiltered <- standard_gostres$result |> 
+  dplyr::select(intersection, term_name, term_size, query_size, 
+                intersection_size, effective_domain_size, p_value, source) |> 
+  tidyr::separate_rows(intersection, sep = ",") |> 
+  dplyr::rename(gene_id = intersection) |> 
+  dplyr::distinct()
 
-dr_c_a_standard_filter <- dr_c_a_standard |> 
+## Create dataframes in "gene x annotation per row" (g_a) and "annotation per row" (a) formats for the filtered category
+
+# Filter the results by gene set size and only keep GO terms when they are highlighted
+dr_a_standard_filtered <- standard_gostres$result |> 
   dplyr::filter(
-    5 <= term_size & term_size <= 500
-  ) 
+    ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))) |> 
+  dplyr::filter(5 <= term_size & term_size <= 500)
+
+# Keep only rows where the number of IDs in the intersection column is 3 or more
+dr_a_standard_filtered <- dr_a_standard_filtered |> 
+  dplyr::mutate(num_genes = sapply(strsplit(intersection, ","), length)) |> 
+  dplyr::filter(num_genes >= 3) |> 
+  dplyr::select(-num_genes)  # Remove the temporary column
+
+# Format the dataframe from "annotation per row" (a) to "gene per row": (g_a)
+dr_g_a_standard_filtered <- dr_a_standard_filtered |> 
+  dplyr::select(intersection, term_name, term_size, query_size, 
+                intersection_size, effective_domain_size, p_value, source) |> 
+  tidyr::separate_rows(intersection, sep = ",") |> 
+  dplyr::rename(gene_id = intersection)
+
+# Remove duplicate rows
+dr_g_a_standard_filtered <- unique(dr_g_a_standard_filtered)
 
 # Reset the row numbers
-rownames(dr_c_a_standard) <- NULL
+rownames(dr_g_a_standard_filtered_unfiltered) <- NULL
+rownames(dr_g_a_standard_filtered) <- NULL
+rownames(dr_a_standard_filtered) <- NULL
 
 # Create a list containing the enrichment results, annotations, and the trace of biological function filtering
-dr_c_a_standard_gostres <- list(
-  unfiltered = dr_c_a_standard,
-  filtered = dr_c_a_standard_filter
+standard_pipeline_res <- list(
+  unfiltered = list(dr_g_a_standard_filtered_unfiltered = dr_g_a_standard_filtered_unfiltered,
+                    standard_gostres = standard_gostres),
+  filtered = list(dr_g_a_standard_filtered = dr_g_a_standard_filtered,
+                  dr_a_standard_filtered = dr_a_standard_filtered)
 )
 
 # Save the output
-saveRDS(dr_c_a_standard_gostres, file.path("analyses/standard-approach/standard_gostres.rds"))
+saveRDS(standard_pipeline_res, file.path(paste0("analyses/standard-approach/standard_pipeline_res_", Sys.Date(), ".rds")))
 
 ## The output is a named list where 'unfiltered' is the gost 'result' dataframe before filtering and 'filtered' is the gost 'results dataframe after filtering. 

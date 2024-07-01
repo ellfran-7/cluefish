@@ -109,7 +109,7 @@ bg_t_ids <- getids(
 # Save the "time-consuming" data if already created
 write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024-05-02.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-01.txt")
 
 # The "ensembl_gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "ensembl_gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -153,7 +153,7 @@ dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
   path = "outputs/cytoscape-files/",
-  nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"
+  nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2024-07-01.csv"
 )
 
 
@@ -192,7 +192,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("clustr_enrichres_cs09_cf4_2024-05-13.rds"),
+  output_filename = paste0("clustr_enrichres_cs09_", Sys.Date(), ".rds"),
   overwrite = TRUE
 )
 
@@ -224,7 +224,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("lonely_fishres_cs09_cf4_2024-05-13.rds"),
+  output_filename = paste0("lonely_fishres_cs09_cf4_", Sys.Date(), ".rds"),
   overwrite = TRUE
 )
 
@@ -241,7 +241,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("summary_workflow_test_cs09_cf4_2024-05-13.csv"),
+  output_filename = paste0("summary_workflow_cs09_cf4_", Sys.Date(), ".csv"),
   overwrite = TRUE
 )
 
@@ -261,6 +261,7 @@ curves_to_pdf(
   bmdboot_data = BMDres_definedCI, 
   clustrfusion_data = clustr_fusionres,
   tested_doses = unique(f$omicdata$dose), 
+  annot_order = c("GO:BP", "KEGG", "WP"),
   colorby = "trend",
   addBMD = TRUE,
   scaling = TRUE,
@@ -278,7 +279,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/",
-  output_filename = paste0("workflow_curvesplots_cs09_cf4_2024-05-13.pdf"),
+  output_filename = paste0("workflow_curvesplots_cs09_cf4_", Sys.Date(), ".pdf"),
   overwrite = TRUE
 )
 

@@ -25,3 +25,5 @@ NAMESPACE
 # Unwanted files (e.g. in derived-data/ the files are too large)
 outputs/
 derived-data/
+analyses/standard-approach/results
+analyses/lonely_cluster_analysis/results
