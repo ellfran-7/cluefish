@@ -3,7 +3,7 @@
 #' @description
 #' This function retrieves and reformats the clustered PPIN data from the StringApp in Cytoscape. 
 #'
-#' @param gene_data A dataframe of type *t* that typically corresponds to the output of the `getids()` or `getregs()` function. This input holds at least one column named ”ensembl_gene_id” holding Ensembl identifiers for the deregulated genes.
+#' @param gene_data A dataframe of type *t* that typically corresponds to the output of the `getids()` or `getregs()` function. This input holds at least one column named "gene_id” holding gene identifiers for the deregulated genes.
 #' @param colname_for_merge The identifier column used as query in order to create the PPIN in Cytoscape using the StringApp (e.g. "ensembl_gene_id" or "uniprotsptrembl")
 #' @param path Folder where the nodetable exported from Cytoscape is found
 #' @param nodetable_filename Filename of the nodetable
