@@ -172,21 +172,13 @@ lonelyfishing <- function(
     # Merge expanded cluster data with getregs() output
     dr_t_c_a_fishing <- merge(dr_g_c_a_fishing, dr_data, by = "gene_id", all = TRUE)
     
-    # Order columns and rows by new_clustr, then source, then term_name
+    # Sorts the data frame by columns and then rows: by the 'new_clustr' column, followed by 'source' and 'term_name'. Numeric values in 'new_clustr' (e.g., "1", "2") are sorted numerically. If 'new_clustr' contains non-numeric values (e.g., "Lonely"), they are treated as numbers for sorting purposes and will appear after numeric values.
     dr_t_c_a_fishing <- dr_t_c_a_fishing |>
       dplyr::select(transcript_id, gene_id, old_clustr, new_clustr, friendliness, everything()) |>
-      dplyr::arrange(new_clustr, source, term_name)
-    
-    # # Position the readable gene name column following the other ids if provided and exists in the data
-    # if ("gene_name" %in% names(dr_t_c_a_fishing)) {
-    #   dr_t_c_a_fishing <- dr_t_c_a_fishing |>
-    #     dplyr::select(transcript_id, gene_id, gene_name, old_clustr, new_clustr, friendliness, everything())
-    # }
-    # # Position the TF column if provided and exists in the data
-    # if ("TF" %in% names(dr_t_c_a_fishing)) {
-    #   dr_t_c_a_fishing <- dr_t_c_a_fishing |>
-    #     dplyr::select(transcript_id, gene_id, gene_name, TF, old_clustr, new_clustr, friendliness, everything())
-    # }
+      dplyr::arrange(as.numeric(ifelse(grepl("^\\d+$", new_clustr), new_clustr, NA)), 
+                     as.numeric(ifelse(grepl("^\\d+$", old_clustr), old_clustr, NA)),
+                     source, 
+                     term_name)
     
     ## Insert columns if they exist in the input data
     optional_columns <- c("gene_name", "description", "TF")
@@ -213,11 +205,12 @@ lonelyfishing <- function(
     # Remove row repetitions
     dr_c_a_fishing <- unique(dr_c_a_fishing)
     
-    # Organize dataframe for better readability: order columns, and rows by "old_clustr"
+    # Organize dataframe for better readability: order columns, and rows by "new_clustr" and then "old_clustr. Numeric values in 'new_clustr' (e.g., "1", "2") are sorted numerically. If 'new_clustr' contains non-numeric values (e.g., "Lonely"), they are treated as numbers for sorting purposes and will appear after numeric values.
     dr_c_a_fishing <- dr_c_a_fishing |>
       dplyr::select(old_clustr, new_clustr, term_name,
                     term_size, term_id, source, highlighted) |>
-      dplyr::arrange(as.numeric(old_clustr))
+      dplyr::arrange(as.numeric(ifelse(grepl("^\\d+$", new_clustr), new_clustr, NA)),
+                     as.numeric(ifelse(grepl("^\\d+$", old_clustr), old_clustr, NA)))
     
     # Reset row numbers
     rownames(dr_t_c_a_fishing) <- NULL
