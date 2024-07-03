@@ -20,7 +20,7 @@ reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "workflow_results_report_sc09_cf4_2024-05-15.html"
+output-file: "workflow_results_report_sc09_cf4_2024-07-03.html"
 ---
 
 ```{r}
@@ -32,7 +32,7 @@ output-file: "workflow_results_report_sc09_cf4_2024-05-15.html"
 knitr::opts_chunk$set(warning = F, message = F)
 options(scipen = 1, digits = 2) 
 
-## Packages required ---------
+## Packages required for tables and vizualisations ---------
 require(ggplot2)
 require(kableExtra)
 require(DT)
@@ -48,7 +48,7 @@ retrieve_info_for <- function(number) {
   ntranscript_sens <- lonelyfishing_data$dr_t_c_a_fishing[lonelyfishing_data$dr_t_c_a_fishing$new_clustr %in% as.character(cl_sens$groupby),]$id
   
   # Number of gene symbols within cluster
-  ngene_sens <- lonelyfishing_data$dr_t_c_a_fishing[lonelyfishing_data$dr_t_c_a_fishing$new_clustr %in% as.character(cl_sens$groupby),]$external_gene_name
+  ngene_sens <- lonelyfishing_data$dr_t_c_a_fishing[lonelyfishing_data$dr_t_c_a_fishing$new_clustr %in% as.character(cl_sens$groupby),]$gene_name
   
   # Driver GO terms
   go_sens <- subset(clustr_fusionres$dr_g_a_fusion, 
@@ -85,23 +85,23 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 ## Retrieve the background identifiers
-bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-05-02.txt"))
+bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-07-01.txt"))
 
 ## Retrieve the deregulated identifiers
-dr_t_ids <- bg_t_ids[bg_t_ids$ensembl_transcript_id_version %in% BMDres_definedCI$id,]
+dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 ## Retrieve the getclustrs() output
-dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", "Resp_PPIN_clustered_cs09_mcl4_2023-10-05.csv"))
+dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", "Resp_PPIN_clustered_cs09_mcl4_2024-07-01.csv"))
 
 ## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
 dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
   
 ## Create a dataframe for seamless merge with the 'getregs_data' dataframe
-dr_g_string_clustr <- data.frame(ensembl_gene_id = dr_g_string_clustr$query.term, 
+dr_g_string_clustr <- data.frame(gene_id = dr_g_string_clustr$query.term, 
                                    clustr = dr_g_string_clustr$X__mclCluster)
   
 ## Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
-dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "ensembl_gene_id")
+dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "gene_id")
   
 ## Remove genes not associated with a cluster 
 dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 
@@ -115,7 +115,7 @@ dr_t_clustrs_filtr <- clustrfiltr(
 )
 
 ## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-05-13.rds"))
+clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-07-03.rds"))
 
 ## Retrieve the  clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -123,10 +123,10 @@ clustr_fusionres <- clustrfusion(
 )
 
 ## Load the workflow results 
-lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-05-13.rds"))
+lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-07-03.rds"))
 
 # Filtering all genes not part of clusters : the lonely genes
-dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id),] 
+dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id),] 
 
 # Filtering annotations based on enriched biological functions
 # In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
@@ -134,19 +134,19 @@ dr_g_a_annots_filtr <- clustr_enrichres$dr_g_a_whole |>
       dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name)
     
 # Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
-dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "ensembl_gene_id", relationship = "many-to-many")
+dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "gene_id", relationship = "many-to-many")
     
-# Select columns for fishing: "ensembl_gene_id" to fish and "term_name" for fishing. Remove duplicates.
+# Select columns for fishing: "gene_id" to fish and "term_name" for fishing. Remove duplicates.
 dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
-      dplyr::select(ensembl_gene_id, term_name) |> 
+      dplyr::select(gene_id, term_name) |> 
       dplyr::distinct()
 # This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
     
 ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
     
-# Remove "ensembl_gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+# Remove "gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
 dr_a_fusion_modif <- clustr_fusionres$dr_g_a_fusion |> 
-      dplyr::select(-ensembl_gene_id) |> 
+      dplyr::select(-gene_id) |> 
       dplyr::distinct()
     
 # Merge modified cluster fusion data and annotated lonely gene data
@@ -155,16 +155,16 @@ dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name
     
 # Get biologicaly annotated genes without clusters for the following messages
 dr_g_a_no_clustr_annotated <- dr_t_ids |> 
-      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id) &
-                      ensembl_gene_id %in% clustr_enrichres$dr_g_a_whole$ensembl_gene_id)
+      dplyr::filter((!gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id) &
+                      gene_id %in% clustr_enrichres$dr_g_a_whole$gene_id)
     
 # Get genes without clusters for the following messages
 dr_g_a_no_clustr <- dr_t_ids |> 
-      dplyr::filter((!ensembl_gene_id %in% clustr_fusionres$dr_g_a_fusion$ensembl_gene_id))
+      dplyr::filter((!gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id))
     
 
-# Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
-names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "ensembl_transcript_id_version"] <- "id"
+# Modify the "transcript_id" column to "id" for easier merge and integration to DRomics visualisations
+names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "transcript_id"] <- "id"
 
 
 # Combine DRomics info and the workflow info
@@ -185,7 +185,7 @@ This document is a comprehensive report, meticulously encapsulating the pivotal 
 The total number of transcripts derived from this experiment : **`r length(unique(f$omicdata$item))`**
 
 | Step                                   | Number of transcripts concerned         |
-|----------------------------------------|-----------------------------------------|
+|-----------------------------------|------------------------------------|
 | Selection of deregulated transcripts   | `r length(unique(f$fitres$id))`         |
 | Computation of BMD-1SD values          | `r length(unique(b$res$id))`            |
 | Defined confidence interval around BMD | `r length(unique(BMDres_definedCI$id))` |
@@ -198,27 +198,27 @@ The total number of transcripts derived from this experiment : **`r length(uniqu
 
 ### Identifier retrieval
 
-| Type of identifier                                                               | Background count                                           | Deregulated count                                          |
-|----------------------------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
-| [Ensembl transcript](https://mart.ensembl.org/info/genome/stable_ids/index.html) | `r length(unique(bg_t_ids$ensembl_transcript_id_version))` | `r length(unique(dr_t_ids$ensembl_transcript_id_version))` |
-| [Ensembl gene](https://mart.ensembl.org/info/genome/stable_ids/index.html)       | `r length(unique(bg_t_ids$ensembl_gene_id))`               | `r length(unique(dr_t_ids$ensembl_gene_id))`               |
+| Type of identifier                                                               | Background count                           | Deregulated count                          |
+|-----------------------------|----------------------|----------------------|
+| [Ensembl transcript](https://mart.ensembl.org/info/genome/stable_ids/index.html) | `r length(unique(bg_t_ids$transcript_id))` | `r length(unique(dr_t_ids$transcript_id))` |
+| [Ensembl gene](https://mart.ensembl.org/info/genome/stable_ids/index.html)       | `r length(unique(bg_t_ids$gene_id))`       | `r length(unique(dr_t_ids$gene_id))`       |
 
 : Summary table of indentifier mapping {#tbl-getids .bordered .light}
 
 ::: callout-note
 ## Note
 
-The [external_gene_name](https://zfin.org/) identifiers, which depict human-readable gene names, have been adjusted to address redundancy between Ensembl transcript or gene identifiers. As a result, the count of [external_gene_name](https://zfin.org/) IDs matches the number of transcripts: `r length(unique(dr_t_ids$ensembl_transcript_id_version))`.
+The [external_gene_name](https://zfin.org/) identifiers, which depict human-readable gene names, have been adjusted to address redundancy between Ensembl transcript or gene identifiers. As a result, the count of [external_gene_name](https://zfin.org/) IDs matches the number of transcripts: `r length(unique(dr_t_ids$transcript_id))`.
 :::
 
 ### Cluster Gene Set Size Filtering
 
 Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
 
-| Step                 | Ensembl Gene Count                                          | Cluster Count                                      |
-|----------------------|-------------------------------------------------------------|----------------------------------------------------|
-| Before clustrfiltr() | `r length(unique(dr_t_clustr_data$ensembl_gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
-| After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$ensembl_gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
+| Step                 | Ensembl Gene Count                                  | Cluster Count                                      |
+|-----------------|------------------------------|--------------------------|
+| Before clustrfiltr() | `r length(unique(dr_t_clustr_data$gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
+| After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
 
 : Summary table of cluster and gene count before and after cluster filtering step {#tbl-clfiltr .bordered .light}
 
@@ -239,7 +239,7 @@ dr_g_a_enrich_before <- clustr_enrichres$gostres$result |>
       dplyr::mutate(clustr = as.numeric(query)) |> 
       dplyr::select(-query) |> 
       dplyr::arrange(clustr) |> 
-      dplyr::rename(ensembl_gene_id = intersection)
+      dplyr::rename(gene_id = intersection)
     
 # Remove duplicate rows
 dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
@@ -247,20 +247,20 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 ```
 
 | Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
-|-----------------|------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+|---------------|--------------------|-------------------|-------------------|
 | Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
 
 : Summary of background gene lists involved in functional enrichment for each source {#tbl-backenrich .bordered .light}
 
-| Metric                                   | Query Ensembl Gene Count                                                                          | Cluster Count                                                                            | Total Term Count                                                                            |
-|------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| Enrichment results before term filtering | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$ensembl_gene_id))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$clustr))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$term_name))` |
-| Enrichment results after term filtering  | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$ensembl_gene_id))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$clustr))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$term_name))`   |
+| Metric                                   | Query Ensembl Gene Count                                                                  | Cluster Count                                                                            | Total Term Count                                                                            |
+|----------------|--------------------|------------------|-------------------|
+| Enrichment results before term filtering | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$gene_id))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$clustr))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$term_name))` |
+| Enrichment results after term filtering  | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$gene_id))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$clustr))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$term_name))`   |
 
 : Summary table of gene, cluster and total term count during the cluster enrichment step {#tbl-enrichfiltr .bordered .light}
 
 | Metric                                      | GO:BP                                                                                                             | KEGG                                                                                                             | Wikipathways                                                                                                   |
-|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+|----------------|-------------------|-------------------|-------------------|
 | All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
 | Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
 | Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
@@ -272,7 +272,7 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 Clusters merge when they share identical enriched terms.
 
 | Metric        | Cluster count                                                 |
-|---------------|---------------------------------------------------------------|
+|-----------------|-------------------------------------------------------|
 | Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
 | After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
 
@@ -290,7 +290,10 @@ same_value_rows <- clustr_fusionres$c_fusionlog[apply(clustr_fusionres$c_fusionl
 #   kableExtra::kable_styling(bootstrap_options = c("basic", "bordered"))
 
 gt::gt(same_value_rows) |> 
-  gt::tab_style(style = list(cell_borders(), cell_fill("#Ffffff")), locations = cells_body(columns = everything(), rows = everything()))
+  gt::tab_style(style = list(cell_borders(),
+                             cell_fill("#Ffffff")), 
+                locations = cells_body(columns = everything(), 
+                                       rows = everything()))
 
 ```
 
@@ -298,11 +301,11 @@ gt::gt(same_value_rows) |>
 
 Lonely genes are incorporated into clusters if they share a common term with any given cluster.
 
-| Metric                      | All                                                                                                                              | Annotated                                                                                                                                            |
-|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$ensembl_gene_id))`                                                                             | `r length(unique(dr_g_a_no_clustr_annotated$ensembl_gene_id))`                                                                                       |
-| Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                           | `r length(unique(dr_g_a_lonely_data$ensembl_gene_id))`                                                                                               |
-| Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$ensembl_gene_id %in% dr_g_a_lonely_data$ensembl_gene_id,]$ensembl_gene_id))` |
+| Metric                      | All                                                                                                      | Annotated                                                                                                                    |
+|---------------|---------------------------|-------------------------------|
+| Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$gene_id))`                                                             | `r length(unique(dr_g_a_no_clustr_annotated$gene_id))`                                                                       |
+| Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                           | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                                               |
+| Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` |
 
 : Summary table of all and only biologically annotated genes involved in the lonely fishing {#tbl-lofish .bordered .light}
 
@@ -319,9 +322,9 @@ Lonely genes are incorporated into clusters if they share a common term with any
 
 # Prepare the structure for the summary dataframe
 b_lonely_fishres_summary <- data.frame(
-  ensembl_transcript_id = b_lonely_fishres$id,
-  ensembl_gene_id = b_lonely_fishres$ensembl_gene_id,
-  external_gene_name = b_lonely_fishres$external_gene_name,
+  transcript_id = b_lonely_fishres$id,
+  gene_id = b_lonely_fishres$gene_id,
+  gene_name = b_lonely_fishres$gene_name,
   NewCluster = b_lonely_fishres$new_clustr,
   Friendliness = b_lonely_fishres$friendliness,
   Term_name = b_lonely_fishres$term_name,
@@ -357,8 +360,8 @@ b_lonely_fishres_summary |>
 #| fig-asp: 1
 
 b_lonely_fishres_no_redund <- subset(b_lonely_fishres, 
-                                     select = -c(ensembl_gene_id,
-                                                 external_gene_name,
+                                     select = -c(gene_id,
+                                                 gene_name,
                                                  TF,
                                                  old_clustr,
                                                  friendliness,
@@ -462,11 +465,11 @@ dnb$firstquartile <- tapply(variable, groupby, firstquartilefun)
 
 dnb_sens <- dnb[order(dnb$firstquartile),]
 
-# Switch the "id" column from "ensembl_transcript_id_version" content to "external_gene_name" content for visualizing the gene symbols
+# Switch the "id" column from "transcript_id" content to "gene_name" content for visualizing the gene symbols
 
-names(b_lonely_fishres)[names(b_lonely_fishres) == "id"] <- "ensembl_transcript_id_version"
+names(b_lonely_fishres)[names(b_lonely_fishres) == "id"] <- "transcript_id"
 
-names(b_lonely_fishres)[names(b_lonely_fishres) == "external_gene_name"] <- "id"
+names(b_lonely_fishres)[names(b_lonely_fishres) == "gene_name"] <- "id"
 
 ```
 
@@ -535,8 +538,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -659,8 +662,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -782,8 +785,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -905,8 +908,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1028,8 +1031,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1151,8 +1154,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1274,8 +1277,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1397,8 +1400,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1520,8 +1523,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1643,8 +1646,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1766,8 +1769,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -1889,8 +1892,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2012,8 +2015,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2135,8 +2138,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2258,8 +2261,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2381,8 +2384,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2504,8 +2507,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2627,8 +2630,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2751,8 +2754,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2873,8 +2876,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -2995,8 +2998,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3117,8 +3120,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3239,8 +3242,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3361,8 +3364,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3483,8 +3486,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3605,8 +3608,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3727,8 +3730,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3849,8 +3852,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -3971,8 +3974,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4093,8 +4096,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4215,8 +4218,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4337,8 +4340,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4459,8 +4462,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4581,8 +4584,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4704,8 +4707,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4826,8 +4829,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -4948,8 +4951,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5070,8 +5073,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5192,8 +5195,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5314,8 +5317,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5436,8 +5439,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5558,8 +5561,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5680,8 +5683,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5802,8 +5805,8 @@ plotly::ggplotly(cp, tooltip = c("x", "id"))
 # For the bmdplots, we need to remove redundancy of rows : 
 
 clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
+  dplyr::select(-c(gene_id,
+                transcript_id,
                 TF,
                 old_clustr,
                 friendliness,
@@ -5859,246 +5862,4 @@ clustr_df4drplots_redund |>
 
 \
 
-```{r}
-#| echo: false
-
-cl_info <- retrieve_info_for(45)
-
-```
-
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
->
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
->
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
->
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
-
-::: panel-tabset
-#### Curvesplot
-
-```{r}
-#| label: fig-curvesplot45
-#| fig-cap: "DR curves for the 45th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
-
-# Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(
-  clustr_df4drplots, 
-  addBMD = TRUE, 
-  scaling = TRUE, 
-  colorby = "trend",
-  npoints= 100, 
-  free.y.scales = FALSE,
-  xmin = 0.1, 
-  xmax = 100,
-  dose_log_transfo = TRUE,
-  line.size = 1,
-  line.alpha = 0.4,
-  point.size = 4,
-  point.alpha = 1) +
-  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
-  xlab("Dose (µg/L)") + ylab("Signal")+
-  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
-  theme_light()
-
-plotly::ggplotly(cp, tooltip = c("x", "id"))
-
-```
-
-#### BMDplot
-
-```{r}
-#| label: fig-bmdplot45
-#| fig-cap: "BMDplot for the 45th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-# For the bmdplots, we need to remove redundancy of rows : 
-
-clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
-                TF,
-                old_clustr,
-                friendliness,
-                term_name,
-                term_id,
-                source)) |> 
-  dplyr::distinct()
-
-# Create a BMDplot of cluster transcripts
-
-bp <- DRomics::bmdplot(
-  clustr_df4drplots_no_redund, 
-  add.CI = TRUE,
-  colorby = "trend",
-  point.size = 3,
-  point.alpha = 1,
-  line.size = 1,
-  line.alpha = 0.7,
-  add.label = TRUE,
-  BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
-  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
-                                "U" = "#7570B3", "bell" = "#E7298A")) +
-  guides(shape = "none") +
-  theme_light()
-
-plotly::ggplotly(bp, tooltip = c("x", "id"))
-```
-:::
-
-```{r}
-#| label: tbl-table45
-#| tbl-cap: "Table of the 45th cluster content"
-#| echo: false
-#| message: false
-
-clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 BMD.zSD,
-                                                                 TF,
-                                                                 trend,                                                                  friendliness))
-clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
-
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
-
-clustr_df4drplots_redund |> 
-  knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
-  kable_styling(bootstrap_options = "striped", full_width = T) |> 
-  kable_styling(font_size = 14, position = "center") |>  
-  kable_styling(latex_options = "hold_position") |>  
-  column_spec(1, bold = TRUE) |> 
-  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
-```
-
-\
-
-```{r}
-#| echo: false
-
-cl_info <- retrieve_info_for(46)
-
-```
-
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
->
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
->
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
->
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
-
-::: panel-tabset
-#### Curvesplot
-
-```{r}
-#| label: fig-curvesplot46
-#| fig-cap: "DR curves for the 46th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-clustr_df4drplots <- b_lonely_fishres[b_lonely_fishres$new_clustr %in% as.character(cl_info$cl_sens$groupby),]
-
-# Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
-cp <- DRomics::curvesplot(
-  clustr_df4drplots, 
-  addBMD = TRUE, 
-  scaling = TRUE, 
-  colorby = "trend",
-  npoints= 100, 
-  free.y.scales = FALSE,
-  xmin = 0.1, 
-  xmax = 100,
-  dose_log_transfo = TRUE,
-  line.size = 1,
-  line.alpha = 0.4,
-  point.size = 4,
-  point.alpha = 1) +
-  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, size = 0.3) +
-  xlab("Dose (µg/L)") + ylab("Signal")+
-  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A")) +
-  theme_light()
-
-plotly::ggplotly(cp, tooltip = c("x", "id"))
-
-```
-
-#### BMDplot
-
-```{r}
-#| label: fig-bmdplot46
-#| fig-cap: "BMDplot for the 46th cluster"
-#| echo: false
-#| message: false
-#| fig-align: "center"
-#| fig-asp: 0.618
-
-# For the bmdplots, we need to remove redundancy of rows : 
-
-clustr_df4drplots_no_redund <- clustr_df4drplots |> 
-  dplyr::select(-c(ensembl_gene_id,
-                ensembl_transcript_id_version,
-                TF,
-                old_clustr,
-                friendliness,
-                term_name,
-                term_id,
-                source)) |> 
-  dplyr::distinct()
-
-# Create a BMDplot of cluster transcripts
-
-bp <- DRomics::bmdplot(
-  clustr_df4drplots_no_redund, 
-  add.CI = TRUE,
-  colorby = "trend",
-  point.size = 3,
-  point.alpha = 1,
-  line.size = 1,
-  line.alpha = 0.7,
-  add.label = TRUE,
-  BMD_log_transfo = TRUE) +
-  xlab("BMD.zSD (μg/L)") +    xlim(0.1, 100) +
-  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
-                                "U" = "#7570B3", "bell" = "#E7298A")) +
-  guides(shape = "none") +
-  theme_light()
-
-plotly::ggplotly(bp, tooltip = c("x", "id"))
-```
-:::
-
-```{r}
-#| label: tbl-table46
-#| tbl-cap: "Table of the 46th cluster content"
-#| echo: false
-#| message: false
-
-clustr_df4drplots_redund <- subset(clustr_df4drplots, select = c(id,
-                                                                 BMD.zSD,
-                                                                 TF,
-                                                                 trend,                                                                  friendliness))
-clustr_df4drplots_redund <- unique(clustr_df4drplots_redund)
-
-clustr_df4drplots_redund <- clustr_df4drplots_redund[order(clustr_df4drplots_redund$id),]
-
-clustr_df4drplots_redund |> 
-  knitr::kable(booktabs = TRUE, linesep = "2pt", align = "c", row.names = FALSE)  |> 
-  kable_styling(bootstrap_options = "striped", full_width = T) |> 
-  kable_styling(font_size = 14, position = "center") |>  
-  kable_styling(latex_options = "hold_position") |>  
-  column_spec(1, bold = TRUE) |> 
-  column_spec(2, color = "white", background = spec_color(clustr_df4drplots_redund$BMD.zSD, alpha = 0.8, begin = 0.2, end = 0.9, option = "viridis", direction = -1, scale_from = c(0, 100)))
-```
-
-\
+For a more detailed analysis of the lonely cluster (all of the lonely genes not affiliated with any pre-existing cluster), which is not covered here, a second Quarto report can be generated. This report performs a simple functional enrichment on the lonely genes, thereby shedding light on its context. You can find the Quarto document at [lonely_cluster_analysis.qmd](analyses/lonely_cluster_analysis/lonely_cluster_analysis.qmd).
