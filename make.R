@@ -192,7 +192,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("clustr_enrichres_cs09_", Sys.Date(), ".rds"),
+  output_filename = paste0("clustr_enrichres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-01
   overwrite = TRUE
 )
 
@@ -224,7 +224,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("lonely_fishres_cs09_cf4_", Sys.Date(), ".rds"),
+  output_filename = paste0("lonely_fishres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-01
   overwrite = TRUE
 )
 
@@ -278,7 +278,7 @@ curves_to_pdf(
   xtitle = "Dose (µg/L)",
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
-  path = "outputs/",
+  path = "outputs/cs09_cf3/",
   output_filename = paste0("workflow_curvesplots_cs09_cf4_", Sys.Date(), ".pdf"),
   overwrite = TRUE
 )
@@ -295,4 +295,11 @@ file_name = paste0("workflow_results_report_", Sys.Date(), ".pdf")
 
 # Render and preview the html report in the Viewer panel
 quarto::quarto_render(output_file = here::here("analyses", "quarto", file_name), output_format = "html")
+
+
+
+
+
+
+
 

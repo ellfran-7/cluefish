@@ -59,7 +59,7 @@ lonelyfishing <- function(
     # This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
     
     
-    ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
+    ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as an existing cluster
     # Remove "gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
     dr_a_fusion_modif <- clustrfusion_data$dr_g_a_fusion |>
       dplyr::select(-gene_id) |>
@@ -67,6 +67,9 @@ lonelyfishing <- function(
     
     # Merge modified cluster fusion data and annotated lonely gene data
     dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
+    
+    # As we merged this way, the "old_clustr" column does not correspond to the actual cluster which is here always the "Lonely". Replace all values in this column with "Lonely"
+    dr_g_a_lonely_data$old_clustr <- "Lonely"
     
     # Get biologicaly annotated genes without clusters for the following messages
     dr_g_a_no_clustr_annotated <- dr_data |>
