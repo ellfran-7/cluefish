@@ -101,13 +101,6 @@ curves_to_pdf <- function(
     dr_g_a_fusion_ordered <- clustrfusion_data$dr_g_a_fusion |> 
       dplyr::arrange(new_clustr, match(source, annot_order))
     
-    
-    
-    
-    
-    
-    
-    
     # Calculate the first quartile value for each cluster
     groupby <- as.factor(dr_t_data4pdf[, "new_clustr"])
     variable <- dr_t_data4pdf[, "BMD.zSD"]
@@ -121,7 +114,7 @@ curves_to_pdf <- function(
     options(scipen = 999) 
     
     # Create a blank PDF document to which the function will print each cluster's curvesplot 
-    pdf(file.path(path, output_filename), width = 5, height = 3, onefile = TRUE)
+    pdf(file = file.path(path, output_filename), width = 5, height = 3, onefile = TRUE)
     
     # Loop through each cluster to create a curvesplot and print to the PDF file
     for (i in 1:length(cluster_names))
