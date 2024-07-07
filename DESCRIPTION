@@ -22,6 +22,7 @@ Imports:
     dplyr,
     DRomics,
     gprofiler2,
+    rlang,
     stats,
     stringr,
     tidyr,
