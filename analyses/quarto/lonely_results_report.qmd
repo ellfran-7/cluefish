@@ -21,7 +21,9 @@ reference-location: margin
 citation-location: margin
 editor: visual
 cap-location: margin
-output-file: "lonely_results_report_sc09_cf4_2024-07-01.html"
+params:
+  file-date: "2024-07-07"
+output-file: "lonely_results_report_sc09_cf4_2024-07-07.html"
 ---
 
 ```{r}
@@ -50,13 +52,18 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 ## Retrieve the background identifiers
-bg_t_ids <- read.table(here::here("outputs", "bg_t_ids_2024-07-01.txt"))
+bg_t_ids <- read.table(here::here("outputs", paste0("bg_t_ids_", params$`file-date`, ".txt")))
 
 ## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", "clustr_enrichres_cs09_cf4_2024-07-03.rds"))
+clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", paste0("clustr_enrichres_cs09_cf4_", params$`file-date`, ".rds")))
 
-## Load the workflow results 
-lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", "lonely_fishres_cs09_cf4_2024-07-03.rds"))
+## Retrieve the  clustr_fusionres
+clustr_fusionres <- clustrfusion(
+  clustrenrich_data = clustr_enrichres
+)
+
+## Load the lonely fishing results 
+lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", paste0("lonely_fishres_cs09_cf4_", params$`file-date`, ".rds")))
 
 # Modify the "transcript_id" column to "id" for easier merge and integration to DRomics visualisations
 names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "transcript_id"] <- "id"
@@ -69,7 +76,7 @@ b_only_lonely_fishres <- b_lonely_fishres |>
   dplyr::filter(new_clustr == "Lonely")
 
 # Load the lonely cluster functional enrichment results
-lonely_cluster_analysis_res <- readRDS(here::here("analyses", "lonely_cluster_analysis", "results", "lonely_cluster_analysis_res_2024-07-01.rds"))
+lonely_cluster_analysis_res <- readRDS(here::here("analyses", "lonely_cluster_analysis", "results", paste0("lonely_cluster_analysis_res_", params$`file-date`, ".rds")))
 
 ```
 
