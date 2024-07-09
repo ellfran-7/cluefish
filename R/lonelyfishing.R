@@ -49,75 +49,103 @@ lonelyfishing <- function(
     dr_g_a_annots_filtr <- clustrenrich_data$dr_g_a_whole |>
       dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name)
     
-    # Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
-    dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "gene_id", relationship = "many-to-many")
+    # If the output file does not exist or overwrite is set to TRUE, proceed with the fishing
+    # Filtering all genes not part of any cluster : the lonely genes
+    dr_t_no_clustr <- dr_data[!(dr_data$gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id),]
     
-    # Select columns for fishing: "gene_id" to fish and "term_name" for fishing. Remove duplicates.
-    dr_g_a_no_clustr <- dr_g_a_no_clustr |>
-      dplyr::select(gene_id, term_name) |>
-      dplyr::distinct()
-    # This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
+    # Filtering annotations based on enriched biological functions
+    # In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
+    dr_g_a_annots_filtr <- clustrenrich_data$dr_g_a_whole |>
+      dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name)
     
-    
-    ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as an existing cluster
-    # Remove "gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
-    dr_a_fusion_modif <- clustrfusion_data$dr_g_a_fusion |>
-      dplyr::select(-gene_id) |>
-      dplyr::distinct()
-    
-    # Merge modified cluster fusion data and annotated lonely gene data
-    dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
-    
-    # As we merged this way, the "old_clustr" column does not correspond to the actual cluster which is here always the "Lonely". Replace all values in this column with "Lonely"
-    dr_g_a_lonely_data$old_clustr <- "Lonely"
-    
-    # Get biologicaly annotated genes without clusters for the following messages
-    dr_g_a_no_clustr_annotated <- dr_data |>
-      dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id) &
-                      gene_id %in% clustrenrich_data$dr_g_a_whole$gene_id)
-    
-    # Get genes without clusters for the following messages
-    dr_g_a_no_clustr <- dr_data |>
-      dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id))
-    
-    
-    ## Print info about lonely genes fished
-    
-    # Before fishing summary
-    cat("Before Fishing:", "\n")
-    
-    # Print the number of total genes
-    cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr$gene_id)), "\n")
-    
-    # Print the number of annotated genes
-    cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated$gene_id)), "\n")
-    
-    # Space
-    cat("", "\n")
-    
-    # Print the number of lonely genes fishes
-    cat("Fished", length(unique(dr_g_a_lonely_data$gene_id)), "Lonely Genes !", "\n")
-    
-    # Space
-    cat("", "\n")
-    
-    # Before fishing summary
-    cat("After Fishing:", "\n")
-    
-    # Print the number of lonely genes remaining
-    cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id)), "\n")
-    
-    # Print the number of annotated lonely genes remaining
-    cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id)), "\n")
-    
-    # Combine both objects by rows
-    dr_g_c_a_lonely_results <- rbind(clustrfusion_data$dr_g_a_fusion, dr_g_a_lonely_data)
-    
-    ## Dataframe contains all clusters with genes types:
-    ## - genes in original cluster but not annotated
-    ## - genes in original cluster enriching kept annotations
-    ## - genes from different clusters but fused together
-    ## - lonely genes not originally in cluster but sharing biological annotation
+    # Check if there are no lonely genes to be fished (no lonely gene shares a functional annotation with a cluster)
+    if (!any(dr_t_no_clustr$gene_id %in% dr_g_a_annots_filtr$gene_id)) {
+      
+      cat("No lonely genes were fished\n")
+      
+      cat(length(unique(dr_t_no_clustr$gene_id)), "remain\n")
+      
+      # Associate the fusion results to the lonely results as there has been no change
+      dr_g_c_a_lonely_results <- clustrfusion_data$dr_g_a_fusion
+      
+      ## Dataframe contains all clusters with genes types:
+      ## - genes in original cluster but not annotated
+      ## - genes in original cluster enriching kept annotations
+      ## - genes from different clusters but fused together
+      
+    } else {
+      
+      # Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
+      dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "gene_id", relationship = "many-to-many")
+      
+      # Select columns for fishing: "gene_id" to fish and "term_name" for fishing. Remove duplicates.
+      dr_g_a_no_clustr <- dr_g_a_no_clustr |>
+        dplyr::select(gene_id, term_name) |>
+        dplyr::distinct()
+      # This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
+      
+      
+      ## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as an existing cluster
+      # Remove "gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+      dr_a_fusion_modif <- clustrfusion_data$dr_g_a_fusion |>
+        dplyr::select(-gene_id) |>
+        dplyr::distinct()
+      
+      # Merge modified cluster fusion data and annotated lonely gene data
+      dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
+      
+      # As we merged this way, the "old_clustr" column does not correspond to the actual cluster which is here always the "Lonely". Replace all values in this column with "Lonely"
+      dr_g_a_lonely_data$old_clustr <- "Lonely"
+      
+      # Get biologicaly annotated genes without clusters for the following messages
+      dr_g_a_no_clustr_annotated <- dr_data |>
+        dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id) &
+                        gene_id %in% clustrenrich_data$dr_g_a_whole$gene_id)
+      
+      # Get genes without clusters for the following messages
+      dr_g_a_no_clustr <- dr_data |>
+        dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id))
+      
+      
+      ## Print info about lonely genes fished
+      
+      # Before fishing summary
+      cat("Before Fishing:", "\n")
+      
+      # Print the number of total genes
+      cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr$gene_id)), "\n")
+      
+      # Print the number of annotated genes
+      cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated$gene_id)), "\n")
+      
+      # Space
+      cat("", "\n")
+      
+      # Print the number of lonely genes fishes
+      cat("Fished", length(unique(dr_g_a_lonely_data$gene_id)), "Lonely Genes !", "\n")
+      
+      # Space
+      cat("", "\n")
+      
+      # Before fishing summary
+      cat("After Fishing:", "\n")
+      
+      # Print the number of lonely genes remaining
+      cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id)), "\n")
+      
+      # Print the number of annotated lonely genes remaining
+      cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id)), "\n")
+      
+      # Combine both objects by rows
+      dr_g_c_a_lonely_results <- rbind(clustrfusion_data$dr_g_a_fusion, dr_g_a_lonely_data)
+      
+      ## Dataframe contains all clusters with genes types:
+      ## - genes in original cluster but not annotated
+      ## - genes in original cluster enriching kept annotations
+      ## - genes from different clusters but fused together
+      ## - lonely genes not originally in cluster but sharing biological annotation
+      
+    }
     
     ## But what are the remaining genes not fished into a cluster?
     
