@@ -1,11 +1,11 @@
 #' bio_int_workflow: A workflow to alleviate biological interpretation of the dose-response (DR) modeling results of DR transcriptomic data
 #' 
 #' @description 
-#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modeling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data.
+#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modeling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data. Each step in the workflow builds on the results of the previous steps, although some steps can be performed independently. Additionally, in some cases, certain steps are not specifically required to proceed to the next phase.
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
-#' @date 2024/02/29
+#' @date 2024/07/07
 
 
 
@@ -20,37 +20,18 @@ devtools::install_deps(upgrade = "never")
 devtools::load_all(here::here())
 
 
-
-## Run Project using separate files ----
-
-# source(here::here("analyses", "proposed-approach", "0-download-data.R"))
-# source(here::here("analyses", "proposed-approach", "1-load-data.R"))
-# source(here::here("analyses", "proposed-approach", "2-get-ids.R"))
-# source(here::here("analyses", "proposed-approach", "3-get-reg-annot.R"))
-# source(here::here("analyses", "proposed-approach", "4-create-data-4-string.R"))
-# source(here::here("analyses", "proposed-approach", "5-get-clustr-data.R"))
-# source(here::here("analyses", "proposed-approach", "6-clustr-size-filtr.R"))
-# source(here::here("analyses", "proposed-approach", "7-clustr-enrich.R"))
-# source(here::here("analyses", "proposed-approach", "8-clustr-fusion.R"))
-# source(here::here("analyses", "proposed-approach", "9-lonely-gene-fishing.R"))
-# source(here::here("analyses", "proposed-approach", "10-generate-summary-table.R"))
-# source(here::here("analyses", "proposed-approach", "11-curves2pdf.R"))
+## Run Project Workflow  ----
 
 
-
-
-## Run project in the one file ----
-
-
-#>> STEP 0 - Download TF and CoTF data 
+#>> STEP 0 - Download TF and CoTF Data 
 #>------------------------------------
 
 dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
   url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
   path = "data/derived-data/",
-  filename_tf = "Danio_rerio_TF.txt",
-  filename_cof = "Danio_rerio_Cof.txt",
+  filename_tf = paste0("Danio_rerio_TF_", Sys.Date(), ".txt"),
+  filename_cof = paste0("Danio_rerio_Cof_", Sys.Date(), ".txt"),
   overwrite = TRUE
 )
 
@@ -62,6 +43,7 @@ dl_regulation_data(
 
 #>> STEP 1 - Load and filter the DRomics results
 #>----------------------------------------------
+
 # This workflow necessitates data from the experiment and the DRomics pipeline !
 # This script will load the following data :
 #   - DRomics workflow results : 
@@ -101,7 +83,7 @@ bg_t_ids <- getids(
   gene_name = "external_gene_name"
 )
 
-# Note: The output dataframe must include identfiers supporting the organism:
+# Note: The output dataframe must include identifiers supporting the organism:
 #               *in the STRING db to create Protein-Protein Interaction Networks
 #               *in the g:profiler db to perform functional enrichment
 #       For example, with Danio rerio, the "ensembl_gene_id" identifier is supported in STRING and g:profiler.
@@ -109,7 +91,7 @@ bg_t_ids <- getids(
 # Save the "time-consuming" data if already created
 write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-01.txt")
+bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-07.txt")
 
 # The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -123,8 +105,8 @@ dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 dr_t_regs <- getregs(
   getids_data = dr_t_ids,
-  regulator_file = "data/derived-data/Danio_rerio_TF.txt",
-  coregulator_file = "data/derived-data/Danio_rerio_Cof.txt")
+  regulator_file = "data/derived-data/Danio_rerio_TF_2024-07-07.txt",
+  coregulator_file = "data/derived-data/Danio_rerio_Cof_2024-07-07.txt")
 
 
 
@@ -153,7 +135,7 @@ dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
   path = "outputs/cytoscape-files/",
-  nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2024-07-01.csv"
+  nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2024-07-07.csv"
 )
 
 
@@ -192,8 +174,8 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("clustr_enrichres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-01
-  overwrite = TRUE
+  output_filename = paste0("clustr_enrichres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-07
+  overwrite = FALSE
 )
 
 
@@ -224,8 +206,8 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("lonely_fishres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-01
-  overwrite = TRUE
+  output_filename = paste0("lonely_fishres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-07
+  overwrite = FALSE
 )
 
 
@@ -249,11 +231,11 @@ results_to_csv(
 
 
 
-
 #>> STEP 10 - Generate cluster-level curvesplots to a PDF file
 #>------------------------------------------------------------
 
 # Finally, this last step consists of generating the output PDF file containing a plot of dose-response curves for each cluster of genes, with each plot labeled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labeled with "Dose (µg/L)" and "Signal", and the y-axis is scaled to be the same across all plots.
+
 require(ggplot2)
 
 curves_to_pdf(
@@ -278,7 +260,7 @@ curves_to_pdf(
   xtitle = "Dose (µg/L)",
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
-  path = "outputs/cs09_cf3/",
+  path = "outputs/cs09_cf4/",
   output_filename = paste0("workflow_curvesplots_cs09_cf4_", Sys.Date(), ".pdf"),
   overwrite = TRUE
 )
@@ -287,19 +269,46 @@ curves_to_pdf(
 
 
 
-
 #>> STEP 11 - Generate the quarto report 
 #>--------------------------------------
 
-file_name = paste0("workflow_results_report_", Sys.Date(), ".pdf")
+# # Define the date, corresponding to the date that the files of the workflow are saved. This only functions if all the outputs have the same date identifiers in the filename (e.g. lonely_fishres_2024-07-07)(you can get todays date dynamically, e.g., from Sys.Date())
+# new_date <- "2024-07-07"  
+# 
+# # Render and preview the html report in the Viewer panel
+# quarto::quarto_render(
+#   input = here::here("analyses", "quarto", "workflow_results_report.qmd"),
+#   execute_params = list(`file-date` = new_date),
+#   output_file = "workflow_results_report_sc09_cf4_2024-07-07.html",
+#   output_format = "html"
+# )
 
-# Render and preview the html report in the Viewer panel
-quarto::quarto_render(output_file = here::here("analyses", "quarto", file_name), output_format = "html")
 
 
+#>> Additional steps 
+#> -----------------
 
-
-
+# # Characterisation of the lonely cluster: basic functional enrichment 
+# source(here::here("analyses", "lonely_cluster_analysis", "lonely_cluster_analysis.R"))
+# 
+# # Render and preview the lonely_results_report html report contextualising the lonely cluster
+# quarto::quarto_render(
+#   input = here::here("analyses", "quarto", "lonely_results_report.qmd"),
+#   execute_params = list(`file-date` = new_date),
+#   output_file = "lonely_results_report_sc09_cf4_2024-07-07.html",
+#   output_format = "html"
+# )
+# 
+# # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the proposed workflow
+# source(here::here("analyses", "standard_approach", "standard_pipeline.R"))
+# 
+# # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
+# quarto::quarto_render(
+#   input = here::here("analyses", "quarto", "comparison_results_report.qmd"),
+#   execute_params = list(`file-date` = new_date),
+#   output_file = "comparison_results_report_sc09_cf4_2024-07-07.html",
+#   output_format = "html"
+# )
 
 
 
