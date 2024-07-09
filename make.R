@@ -20,6 +20,12 @@ devtools::install_deps(upgrade = "never")
 devtools::load_all(here::here())
 
 
+## State the Time Variable for file saving and reading
+
+file_date <- "2024-07-07"
+
+
+
 ## Run Project Workflow  ----
 
 
@@ -30,8 +36,8 @@ dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
   url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
   path = "data/derived-data/",
-  filename_tf = paste0("Danio_rerio_TF_", Sys.Date(), ".txt"),
-  filename_cof = paste0("Danio_rerio_Cof_", Sys.Date(), ".txt"),
+  filename_tf = paste0("Danio_rerio_TF_", file_date, ".txt"),
+  filename_cof = paste0("Danio_rerio_Cof_", file_date, ".txt"),
   overwrite = TRUE
 )
 
@@ -89,9 +95,9 @@ bg_t_ids <- getids(
 #       For example, with Danio rerio, the "ensembl_gene_id" identifier is supported in STRING and g:profiler.
 
 # Save the "time-consuming" data if already created
-write.table(bg_t_ids, paste0("outputs/bg_t_ids_", Sys.Date(), ".txt"))
+write.table(bg_t_ids, paste0("outputs/bg_t_ids_", file_date, ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-07.txt")
+bg_t_ids <- read.table(paste0("outputs/bg_t_ids_", file_date, ".txt"))
 
 # The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -105,8 +111,8 @@ dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 dr_t_regs <- getregs(
   getids_data = dr_t_ids,
-  regulator_file = "data/derived-data/Danio_rerio_TF_2024-07-07.txt",
-  coregulator_file = "data/derived-data/Danio_rerio_Cof_2024-07-07.txt")
+  regulator_file = paste0("data/derived-data/Danio_rerio_TF_", file_date, ".txt"),
+  coregulator_file = paste0("data/derived-data/Danio_rerio_Cof_", file_date, ".txt"))
 
 
 
@@ -122,7 +128,7 @@ DR_output4string <- merge(BMDres_definedCI, dr_t_regs,
                           by.x = "id", by.y = "transcript_id")
 
 # Save the data 
-write.table(DR_output4string, file = paste0("outputs/DR_output4string_", Sys.Date(), ".txt"), row.names = FALSE, sep = "\t")
+write.table(DR_output4string, file = paste0("outputs/DR_output4string_", file_date, ".txt"), row.names = FALSE, sep = "\t")
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
@@ -135,7 +141,7 @@ dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
   path = "outputs/cytoscape-files/",
-  nodetable_filename = "Resp_PPIN_clustered_cs09_mcl4_2024-07-07.csv"
+  nodetable_filename = paste0("Resp_PPIN_clustered_cs09_mcl4_", file_date, ".csv")
 )
 
 
@@ -174,7 +180,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("clustr_enrichres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-07
+  output_filename = paste0("clustr_enrichres_cs09_cf4_", file_date, ".rds"),
   overwrite = FALSE
 )
 
@@ -206,12 +212,12 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("lonely_fishres_cs09_cf4_", Sys.Date(), ".rds"), #2024-07-07
+  output_filename = paste0("lonely_fishres_cs09_cf4_", file_date, ".rds"), 
   overwrite = FALSE
 )
 
 
-
+diffobj::diffObj(test$dr_c_a_fishing, lonely_fishres$dr_c_a_fishing)
 
 
 #>> STEP 9 - Generate a summary dataframe of the workflow
@@ -223,7 +229,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = "outputs/cs09-cf4/",
-  output_filename = paste0("summary_workflow_cs09_cf4_", Sys.Date(), ".csv"),
+  output_filename = paste0("summary_workflow_cs09_cf4_", file_date, ".csv"),
   overwrite = TRUE
 )
 
@@ -261,7 +267,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = "outputs/cs09_cf4/",
-  output_filename = paste0("workflow_curvesplots_cs09_cf4_", Sys.Date(), ".pdf"),
+  output_filename = paste0("workflow_curvesplots_cs09_cf4_", file_date, ".pdf"),
   overwrite = TRUE
 )
 
@@ -272,7 +278,7 @@ curves_to_pdf(
 #>> STEP 11 - Generate the quarto report 
 #>--------------------------------------
 
-# # Define the date, corresponding to the date that the files of the workflow are saved. This only functions if all the outputs have the same date identifiers in the filename (e.g. lonely_fishres_2024-07-07)(you can get todays date dynamically, e.g., from Sys.Date())
+# # Define the date, corresponding to the date that the files of the workflow are saved. This only functions if all the outputs have the same date identifiers in the filename (e.g. lonely_fishres_2024-07-07)(you can get todays date dynamically, e.g., from file_date)
 # new_date <- "2024-07-07"  
 # 
 # # Render and preview the html report in the Viewer panel
