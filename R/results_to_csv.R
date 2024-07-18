@@ -61,7 +61,7 @@ results_to_csv <- function(
       dplyr::relocate(dplyr::any_of(optional_columns), .after = gene_id)
     
     # Round BMD.zSD to the tenth for easier reading
-    dr_t_c_a_summary$BMD.zSD <- round(dr_t_c_a_summary$bmd, 2) 
+    dr_t_c_a_summary$bmd <- round(dr_t_c_a_summary$bmd, 2) 
     
     # Remove repeated rows
     dr_t_c_a_summary <- unique(dr_t_c_a_summary)
