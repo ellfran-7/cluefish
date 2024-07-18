@@ -97,7 +97,7 @@ str(s)
 # - parallel = "snow" : my computer is Window
 # - ncpus = 4 : my computer has 4 cpus
 
-detectCores() # number of computer CPUs
+parallel::detectCores() # number of computer CPUs
 
 system.time(f <- drcfit(s, parallel = "snow", ncpus = 4, information.criterion = "AICc")) 
 
