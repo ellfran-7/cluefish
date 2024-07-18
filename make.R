@@ -80,7 +80,23 @@ BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 #>> STEP 2 - Retrieve deregulated gene identifiers from Ensembl
 #>-------------------------------------------------------------
 
-bg_t_ids <- getids(
+# First, find the names of the BioMart services that Ensembl is currently providing.
+# Use the listEnsembl() (or one of the following) function to display all available Ensembl BioMart web services.
+biomaRt::listMarts()
+biomaRt::listEnsembl()
+
+# Annotation from the vertebrate genomes is provided by the main Ensembl project across taxonomic space, with separate BioMart interfaces for Protists, Plants, Metazoa and Fungi.
+biomaRt::listEnsemblGenomes()
+
+# Next, connect to the desired BioMart database using the useMart(), useEnsembl(), or useEnsemblGenomes() function.
+# The biomart argument should be a valid name from the output of one of the previous functions.
+ensembl <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL")
+
+# BioMart databases can contain several datasets. For instance, within the Ensembl genes mart, each species is a different dataset.
+biomaRt::listDatasets(mart = ensembl)
+
+# Now, run the getids() function with the correct input based on the organism of the study.
+# This retrieves IDs using the specified parameters for the query.bg_t_ids <- getids(
   id_query = f$omicdata$item, 
   biomart_db = "ENSEMBL_MART_ENSEMBL",
   species_dataset = "drerio_gene_ensembl",
@@ -217,7 +233,6 @@ lonely_fishres <- lonelyfishing(
 )
 
 
-diffobj::diffObj(test$dr_c_a_fishing, lonely_fishres$dr_c_a_fishing)
 
 
 #>> STEP 9 - Generate a summary dataframe of the workflow
