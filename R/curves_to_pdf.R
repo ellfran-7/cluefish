@@ -6,6 +6,7 @@
 #' @param lonelyfishing_data The named `list` output of the `lonelyfishing()` function.
 #' @param bmdboot_data The DRomics bmdboot dataframe results after DRomics::bmdfilter() 
 #' @param clustrfusion_data The named `list` output of the `clustrfusion()` function. 
+#' @param id_col_for_curves The column giving the identification of each curve (default is "id")
 #' @param tested_doses A vector of the tested doses that can be found in the output of the `DRomics::drcfit()`function (unique(f$omicdata$dose))
 #' @param annot_order A vector specifying the prioritized order of annotation sources used in the `clustrenrich()` function. This order determines which term or pathway will be used as primary descriptor for each cluster. The relevance of each source can be based on the quantity or quality of information they provide, tailored to the specific case study. For example, for Danio rerio, you might prioritize sources like c("GO:BP", "KEGG", "WP") based on the abundance of information they offer.
 #' @param ... Additional arguments passed to the `DRomics::curvesplot()` function
@@ -27,6 +28,7 @@ curves_to_pdf <- function(
     lonelyfishing_data, 
     bmdboot_data,
     clustrfusion_data,
+    id_col_for_curves = "id",
     tested_doses,
     annot_order,
     ...,
@@ -55,24 +57,21 @@ curves_to_pdf <- function(
     # Merge loenlyfishing results with bmdboots results after DRomics::bmdfilter()
     dr_t_c_a_workflow_res <- merge(dr_t_c_a_fishing4curvesplot, bmdboot_data, by = "id")
     
-    # Subset columns from the merged data, removing non-essential ones for the dose-response curves
-    dr_t_workflow_res <- subset(dr_t_c_a_workflow_res, select = -c(gene_id,
-                                                                   old_clustr,
-                                                                   friendliness,
-                                                                   term_name,
-                                                                   term_id,
-                                                                   source))
+    ## Subset columns from merged data conditionally if they exist in the input data, removing non-essential columns that can cause redundancy for the dose-response curves
+    subset_columns <- c("transcript_id", "gene_id", "gene_name", "description", "TF", 
+                        "old_clustr", "friendliness", "term_name", "term_id", "source")
     
-    ## Insert columns conditionally if they exist in the input data
-    optional_columns <- c("gene_name", "description", "TF")
-    for (col in optional_columns) {
-      if (col %in% names(dr_t_workflow_res)) {
-        dr_t_workflow_res <- dr_t_workflow_res[, !names(dr_t_workflow_res) %in% col]
+    for (col in subset_columns) {
+      
+      if (col %in% names(dr_t_c_a_workflow_res)) {
+        
+        dr_t_c_a_workflow_res <- dr_t_c_a_workflow_res[, !names(dr_t_c_a_workflow_res) %in% col, drop = FALSE]
       }
+      
     }
     
-    # Remove repeated rows
-    dr_t_workflow_res <- unique(dr_t_workflow_res)
+    # Remove duplicate rows to pass from "t_c_a" to "t".
+    dr_t_workflow_res <- unique(dr_t_c_a_workflow_res)
     
     # Add the new_clustr column to the bmdboot results and assign "All" to every row.
     # Assign "All" to represent the entire group of deregulated gene transcripts
