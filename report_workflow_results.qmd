@@ -1,0 +1,3148 @@
+---
+title: "Report of the workflow results"
+author: "Ellis Franklin"
+date: last-modified
+date-format: iso 
+theme: "flatly"
+highlight-style: "breeze"
+toc: true
+number-sections: true
+number-depth: 2
+format:
+  html: 
+    embed-resources: true
+    self-contained: true
+    code-link: false
+    grid: 
+      margin-width: 350px
+execute: 
+  warning: false
+reference-location: margin
+citation-location: margin
+editor: visual
+cap-location: margin
+params:
+  file-date: "2024-07-07"
+output-file: "report_workflow_results_sc09_cf4_2024-07-21.html"
+---
+
+```{r}
+#| label: load-fun-data
+#| include: false
+
+#=========== Load everything : from packages to functions to data ==============
+
+knitr::opts_chunk$set(warning = F, message = F)
+options(scipen = 1, digits = 2) 
+
+
+
+
+### Packages required for tables and vizualisations --------|
+### --------------------------------------------------------|
+require(ggplot2)
+require(kableExtra)
+require(DT)
+require(gt)
+
+
+
+
+### Functions ---------|
+### -------------------|
+
+## -- for specific cluster info retrieval --
+
+retrieve_info_for <- function(number) {
+  
+  # Cluster id and first quartile associated
+  cl_sens <- dnb_sens[number,]
+  
+  # Number of transcript within cluster
+  ntranscript_sens <- lonelyfishing_data$dr_t_c_a_fishing[lonelyfishing_data$dr_t_c_a_fishing$new_clustr %in% as.character(cl_sens$groupby),]$id
+  
+  # Number of gene symbols within cluster
+  ngene_sens <- lonelyfishing_data$dr_t_c_a_fishing[lonelyfishing_data$dr_t_c_a_fishing$new_clustr %in% as.character(cl_sens$groupby),]$gene_name
+  
+  # Driver GO terms
+  go_sens <- subset(clustr_fusionres$dr_g_a_fusion, 
+                      new_clustr == as.character(cl_sens$groupby) & source == "GO:BP")
+  
+  # KEGG pathways
+  kegg_sens <- subset(clustr_fusionres$dr_g_a_fusion, 
+                        new_clustr == as.character(cl_sens$groupby) & source == "KEGG")
+  
+  # Wikipathways
+  wp_sens <- subset(clustr_fusionres$dr_g_a_fusion, 
+                      new_clustr == as.character(cl_sens$groupby) & source == "WP")
+  
+  biglist <- list(cl_sens = cl_sens,
+                  ntranscript_sens = ntranscript_sens,
+                  ngene_sens = ngene_sens,
+                  go_sens = go_sens,
+                  kegg_sens = kegg_sens,
+                  wp_sens = wp_sens)
+  
+  return(biglist)
+}
+
+
+## -- for data manipulation to interactive curvesplots --
+
+interact_curvesplot <- function(data) {
+  
+  # Let's filter the cluster data, remove redundancy of items and therefor remove duplicate rows to make the computations faster 
+  clustr_df4drplots_no_redund <- data |> 
+  dplyr::filter(new_clustr %in% as.character(cl_info$cl_sens$groupby)) |> 
+  dplyr::select(-c(gene_id,
+                transcript_id,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+  
+  # Create a curvesplot of cluster transcripts with 'cluster' identification and 'transcript count' in title
+  cp <- DRomics::curvesplot(
+  clustr_df4drplots_no_redund, 
+  addBMD = TRUE, 
+  scaling = TRUE, 
+  colorby = "trend",
+  npoints= 100, 
+  free.y.scales = FALSE,
+  xmin = 0.1, 
+  xmax = max(f$omicdata$dose),
+  dose_log_transfo = TRUE,
+  line.size = 1,
+  line.alpha = 0.4,
+  point.size = 4,
+  point.alpha = 1) +
+  geom_vline(xintercept = unique(f$omicdata$dose), linetype = 2, colour = "#363636", alpha = 0.7, linewidth = 0.3) +
+  xlab("Dose (µg/L)") + 
+  ylab("Signal")+
+  scale_color_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  theme_light()
+  
+  int_cp <- plotly::ggplotly(cp, tooltip = c("x", "id"))
+  
+  return(int_cp)
+}
+
+
+## -- for data manipulation to interactive bmdplots --
+
+interact_bmdplot <- function(data) {
+  
+  # Let's filter the cluster data, remove redundancy of items and therefor remove duplicate rows to make the computations faster 
+  clustr_df4drplots_no_redund <- data |> 
+  dplyr::filter(new_clustr %in% as.character(cl_info$cl_sens$groupby)) |> 
+  dplyr::select(-c(gene_id,
+                transcript_id,
+                TF,
+                old_clustr,
+                friendliness,
+                term_name,
+                term_id,
+                source)) |> 
+  dplyr::distinct()
+  
+  
+  bp <- DRomics::bmdplot(
+  clustr_df4drplots_no_redund, 
+  add.CI = TRUE,
+  colorby = "trend",
+  point.size = 3,
+  point.alpha = 1,
+  line.size = 1,
+  line.alpha = 0.7,
+  add.label = TRUE,
+  BMD_log_transfo = TRUE) +
+  xlab("BMD.zSD (μg/L)") +    
+  # xlim(0.1, max(f$omicdata$dose)) +   
+  scale_colour_manual(values = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+                                "U" = "#7570B3", "bell" = "#E7298A")) +
+  guides(shape = "none") +
+  theme_light()
+
+  int_bp <- plotly::ggplotly(bp, tooltip = c("x", "id"))
+  
+  return(int_bp)
+  
+}
+
+# -- for data manipulation to interactive tables --
+
+interact_table <- function(data) { 
+  
+  clustr_df4drplots_redund <- data |> 
+    dplyr::filter(new_clustr %in% as.character(cl_info$cl_sens$groupby)) |> 
+    dplyr::select(c(id,
+                    BMD.zSD,
+                    TF,
+                    trend,
+                    friendliness)) |> 
+    dplyr::distinct() |> 
+    dplyr::arrange(id)
+  
+  # Generate the interactive table 
+  clustr_df4drplots_redund |> 
+    DT::datatable(
+      options = list(
+        pageLength = 10,
+        buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+        columnDefs = list(list(className = 'dt-center', targets = '_all')),
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'color': '#363636', 'text-align':
+          'center'});",
+          "}" 
+          )
+        ),
+      class = c("compact", "hover", "row-border", "order-column")
+      ) |> 
+    DT::formatStyle(columns = c(1, 2, 3, 4, 5), 
+                    fontSize = '80%', 
+                    color = '#363636',  # Set font color
+                    backgroundColor = 'white'
+                    ) |>   # Set background color
+    DT::formatStyle("BMD.zSD", 
+                    backgroundColor = styleEqual(unique(b_lonely_fishres$BMD.zSD),
+                                                 color_vals(unique(b_lonely_fishres$BMD.zSD))
+                                                 )
+                    ) |> 
+    DT::formatStyle("trend",
+                  color = styleEqual(c("inc", "dec", "U", "bell"), 
+                                     c("#1B9E77", "#D95F02", "#7570B3", "#E7298A")
+                                     )
+                  )
+}
+
+
+
+
+### Load the data and manipulate for the report -----|
+### -------------------------------------------------|
+devtools::load_all(here::here())
+
+## Load DRomics drcfit object (which holds the background transcript list) 
+f <- readRDS(file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
+## Load DRomics bmdboot object
+b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
+
+## We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
+BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
+
+## Retrieve the background identifiers
+bg_t_ids <- read.table(here::here("outputs", paste0("bg_t_ids_", params$`file-date`, ".txt")))
+
+## Retrieve the deregulated identifiers
+dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
+
+## Retrieve the getclustrs() output
+dr_g_string_clustr <- read.csv(here::here("outputs", "cytoscape-files", paste0("Resp_PPIN_clustered_cs09_mcl4_", params$`file-date`, ".csv")))
+
+## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
+dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
+  
+## Create a dataframe for seamless merge with the 'getregs_data' dataframe
+dr_g_string_clustr <- data.frame(gene_id = dr_g_string_clustr$query.term, 
+                                   clustr = dr_g_string_clustr$X__mclCluster)
+  
+## Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
+dr_t_clustr_data <- merge(dr_t_ids, dr_g_string_clustr, by = "gene_id")
+  
+## Remove genes not associated with a cluster 
+dr_t_clustr_data <- subset(dr_t_clustr_data, !is.na(clustr)) 
+
+## Retrieve the clustrfiltr() output
+sizelimit <- 4
+
+dr_t_clustrs_filtr <- clustrfiltr(
+  getclustrs_data = dr_t_clustr_data,
+  size_filtr = sizelimit
+)
+
+## Retrieve the clustr_enrichres 
+clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", paste0("clustr_enrichres_cs09_cf4_", params$`file-date`, ".rds")))
+
+## Retrieve the  clustr_fusionres
+clustr_fusionres <- clustrfusion(
+  clustrenrich_data = clustr_enrichres
+)
+
+## Load the lonely fishing results 
+lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", paste0("lonely_fishres_cs09_cf4_", params$`file-date`, ".rds")))
+
+# Filtering all genes not part of clusters : the lonely genes
+dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id),] 
+
+# Filtering annotations based on enriched biological functions
+# In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
+dr_g_a_annots_filtr <- clustr_enrichres$dr_g_a_whole |> 
+      dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name)
+    
+# Merge lonely gene data with enriched function annotation data utilizing an inner_join operation. This ensures that only rows existing in both dataframes are retained from the first dataframe. Given that multiple terms are typically linked to one gene, the relationship is designated as many-to-many.
+dr_g_a_no_clustr <- dplyr::inner_join(dr_t_no_clustr, dr_g_a_annots_filtr, by = "gene_id", relationship = "many-to-many")
+    
+# Select columns for fishing: "gene_id" to fish and "term_name" for fishing. Remove duplicates.
+dr_g_a_no_clustr <- dr_g_a_no_clustr |> 
+      dplyr::select(gene_id, term_name) |> 
+      dplyr::distinct()
+# This is the dataframe of lonely genes with Ensembl gene IDs and associated term names, susceptible to be fished into clusters.
+    
+## Expand clusters by fishing lonely genes sharing the same driver-GO and other (KEGG, WP) annotations as a cluster
+    
+# Remove "gene_id" column to avoid conflicts, then remove duplicate rows to pass from "g_a" to "a".
+dr_a_fusion_modif <- clustr_fusionres$dr_g_a_fusion |> 
+      dplyr::select(-gene_id) |> 
+      dplyr::distinct()
+    
+# Merge modified cluster fusion data and annotated lonely gene data
+dr_g_a_lonely_data <- merge(dr_g_a_no_clustr, dr_a_fusion_modif, by = "term_name")
+    
+    
+# Get biologicaly annotated genes without clusters for the following messages
+dr_g_a_no_clustr_annotated <- dr_t_ids |> 
+      dplyr::filter((!gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id) &
+                      gene_id %in% clustr_enrichres$dr_g_a_whole$gene_id)
+    
+# Get genes without clusters for the following messages
+dr_g_a_no_clustr <- dr_t_ids |> 
+      dplyr::filter((!gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id))
+    
+
+# Modify the "transcript_id" column to "id" for easier merge and integration to DRomics visualisations
+names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "transcript_id"] <- "id"
+
+
+# Combine DRomics info and the workflow info
+b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,  by = "id")
+
+# Round the BMD value for better readability
+b_lonely_fishres$BMD.zSD <- round(b_lonely_fishres$BMD.zSD, 1) 
+
+# Create a color gradient function from red to purple through yellow, green, and blue
+color_func <- scales::col_numeric(palette = viridis::viridis_pal(alpha = 0.8, begin = 0.2, end= 0.9, direction = -1)(200), 
+                           domain = range(b_lonely_fishres$BMD.zSD, na.rm = TRUE))
+
+
+# Function to convert numeric values to colors
+color_vals <- function(x) {
+  sapply(x, color_func)
+}
+
+```
+
+ 
+
+## Introduction
+
+This document is a comprehensive report, meticulously encapsulating the pivotal results derived from the DRomics analysis while detailing the workflow. It succinctly summarizes the impacts and outputs of each significant step within the pipeline, supported by visual representations like plots depicting the summary of BMD values per cluster, aiding in prioritization. Moreover, additional specific visualizations for each cluster, such as plots of fitted curves, empirical cumulative distribution function (ECDF) plots of BMD values, and summary tables, enable a more focused exploration.
+
+ 
+
+## Results from the DRomics analysis
+
+The total number of transcripts derived from this experiment : **`r length(unique(f$omicdata$item))`**
+
+| Step                                   | Number of transcripts concerned         |
+|------------------------------------|------------------------------------|
+| Selection of deregulated transcripts   | `r length(unique(f$fitres$id))`         |
+| Computation of BMD-1SD values          | `r length(unique(b$res$id))`            |
+| Defined confidence interval around BMD | `r length(unique(BMDres_definedCI$id))` |
+
+: Summary table of DRomics analysis {#tbl-dromics .bordered .light}
+
+ 
+
+## Summary of the workflow
+
+### Identifier retrieval
+
+| Type of identifier                                                               | Background count                           | Deregulated count                          |
+|----------------------------------|-------------------|-------------------|
+| [Ensembl transcript](https://mart.ensembl.org/info/genome/stable_ids/index.html) | `r length(unique(bg_t_ids$transcript_id))` | `r length(unique(dr_t_ids$transcript_id))` |
+| [Ensembl gene](https://mart.ensembl.org/info/genome/stable_ids/index.html)       | `r length(unique(bg_t_ids$gene_id))`       | `r length(unique(dr_t_ids$gene_id))`       |
+
+: Summary table of indentifier mapping {#tbl-getids .bordered .light}
+
+::: callout-note
+## Note
+
+The [external_gene_name](https://zfin.org/) identifiers, which depict human-readable gene names, have been adjusted to address redundancy between Ensembl transcript or gene identifiers. As a result, the count of [external_gene_name](https://zfin.org/) IDs matches the number of transcripts: `r length(unique(dr_t_ids$transcript_id))`.
+:::
+
+### Cluster Gene Set Size Filtering
+
+Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
+
+| Step                 | Ensembl Gene Count                                  | Cluster Count                                      |
+|------------------|---------------------------|---------------------------|
+| Before clustrfiltr() | `r length(unique(dr_t_clustr_data$gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
+| After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
+
+: Summary table of cluster and gene count before and after cluster filtering step {#tbl-clfiltr .bordered .light}
+
+### Cluster Functional Enrichment
+
+Functional enrichment analysis is conducted individually for each cluster and data source. The assessed sources include GO:BP, KEGG, and Wikipathways (WP). The background gene list is specified as "custom_annotated", restricting the enrichment Fisher test to annotated Ensembl genes only. A significance threshold of 0.05 is applied for adjusted p-value correction using the 'fdr' method. IEA (Electronically Inferred Annotations) GO terms are taken into account during the analysis.
+
+```{r}
+#| echo: false
+
+# Make the code easier to read by pciking out the df from the clustr_enrichresd list:
+dr_g_a_enrich_after <- clustr_enrichres$dr_g_a_enrich
+
+# Transform the dataframe from "cluster per row" to "gene per row":
+dr_g_a_enrich_before <- clustr_enrichres$gostres$result |> 
+      tidyr::separate_rows(intersection, sep = ",") |> 
+      dplyr::select(query, intersection, term_name, term_id, source) |> 
+      dplyr::mutate(clustr = as.numeric(query)) |> 
+      dplyr::select(-query) |> 
+      dplyr::arrange(clustr) |> 
+      dplyr::rename(gene_id = intersection)
+    
+# Remove duplicate rows
+dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
+
+```
+
+| Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
+|-----------------|-------------------|------------------|------------------|
+| Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
+
+: Summary of background gene lists involved in functional enrichment for each source {#tbl-backenrich .bordered .light}
+
+| Metric                                   | Query Ensembl Gene Count                                                                  | Cluster Count                                                                            | Total Term Count                                                                            |
+|------------------|------------------|------------------|------------------|
+| Enrichment results before term filtering | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$gene_id))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$clustr))` | `r length(unique(dr_g_a_enrich_before[!is.na(dr_g_a_enrich_before$term_name),]$term_name))` |
+| Enrichment results after term filtering  | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$gene_id))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$clustr))`   | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name),]$term_name))`   |
+
+: Summary table of gene, cluster and total term count during the cluster enrichment step {#tbl-enrichfiltr .bordered .light}
+
+| Metric                                      | GO:BP                                                                                                             | KEGG                                                                                                             | Wikipathways                                                                                                   |
+|------------------|------------------|------------------|------------------|
+| All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
+| Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
+| Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
+
+: Summary table of term count per source and per characteristic {#tbl-enrichpersource .bordered .light}
+
+### Cluster Fusion
+
+Clusters merge when they share identical enriched terms.
+
+| Metric        | Cluster count                                                 |
+|------------------|------------------------------------------------------|
+| Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
+| After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
+
+: Summary table of the cluster count before and after cluster fusion {#tbl-clfus .bordered .light}
+
+```{r}
+#| label: tbl-fusion
+#| tbl-cap: "Summary table of cluster fusion process"
+#| tbl-colwidths: auto
+#| echo: false
+
+same_value_rows <- clustr_fusionres$c_fusionlog[apply(clustr_fusionres$c_fusionlog, 1, function(x) length(unique(x)) != 1), ]
+
+# kableExtra::kbl(same_value_rows, row.names = FALSE, booktabs = FALSE) |> 
+#   kableExtra::kable_styling(bootstrap_options = c("basic", "bordered"))
+
+gt::gt(same_value_rows) |> 
+  gt::tab_style(style = list(cell_borders(),
+                             cell_fill("#Ffffff")), 
+                locations = cells_body(columns = everything(), 
+                                       rows = everything()))
+
+```
+
+### Lonely fishing
+
+Lonely genes are incorporated into clusters if they share a common term with any given cluster.
+
+| Metric                      | All                                                                                                      | Annotated                                                                                                                    |
+|------------------|-------------------------|------------------------------|
+| Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$gene_id))`                                                             | `r length(unique(dr_g_a_no_clustr_annotated$gene_id))`                                                                       |
+| Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                           | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                                               |
+| Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` |
+
+: Summary table of all and only biologically annotated genes involved in the lonely fishing {#tbl-lofish .bordered .light}
+
+ 
+
+## The results as an interactive table
+
+::: fullwidth
+```{r}
+#| label: tbl-workflow
+#| tbl-cap: "Summary table of the workflow results"
+#| tbl-cap-location: margin
+#| echo: false
+
+# Prepare the structure for the summary dataframe
+b_lonely_fishres_summary <- data.frame(
+  transcript_id = b_lonely_fishres$id,
+  gene_id = b_lonely_fishres$gene_id,
+  gene_name = b_lonely_fishres$gene_name,
+  NewCluster = b_lonely_fishres$new_clustr,
+  Friendliness = b_lonely_fishres$friendliness,
+  Term_name = b_lonely_fishres$term_name,
+  Source = b_lonely_fishres$source,
+  TF = b_lonely_fishres$TF,
+  BMD.zSD = as.numeric(b_lonely_fishres$BMD.zSD),
+  Trend = b_lonely_fishres$trend
+  )
+
+# Round BMD.zSD to the tenth for easier reading
+b_lonely_fishres_summary$BMD.zSD <- round(b_lonely_fishres_summary$BMD.zSD, 1) 
+
+# Remove repeated rows
+b_lonely_fishres_summary <- unique(b_lonely_fishres_summary)
+
+# Generate the interactive table 
+b_lonely_fishres_summary |> 
+  DT::datatable(options = list(pageLength = 10), class = c("compact", "hover", "row-border", "order-column")) |> 
+  DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), fontSize = '80%')
+
+```
+:::
+
+ 
+
+## The results as sensitivity plots
+
+```{r}
+#| label: fig-sensitivityplot1
+#| fig-cap: "Sensitivity plot of clusters summarised by BMD first quartile"
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 1
+
+b_lonely_fishres_no_redund <- b_lonely_fishres |> 
+  dplyr::select(-c(gene_id,
+                   gene_name,
+                   TF,
+                   old_clustr,
+                   friendliness,
+                   term_name,
+                   term_id,
+                   source)
+                ) |> 
+  dplyr::distinct()
+
+b_lonely_fishres_no_redund_selected <- b_lonely_fishres |> 
+  dplyr::filter(!(new_clustr %in% c("Friendly", "Lonely")))
+
+
+sp <- DRomics::sensitivityplot(
+  b_lonely_fishres_no_redund_selected, 
+  group = "new_clustr",
+  BMDsummary = "first.quartile",
+  BMD_log_transfo = TRUE) +
+  geom_point(color = "#363636") +
+  # geom_hline(yintercept = 3, linetype = "dashed", color = "#FF7256", linewidth = 1) +
+  guides(size = guide_legend(title = "nb of transcripts")) +
+  ylab("BMD 25th quantiles (μg/L)") +
+  xlab("Clusters") +
+  theme_light() + 
+  theme(plot.title.position = 'plot', 
+        plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
+  geom_text(aes(label = paste("   ", sp$data$groupby, "   "), y = 0.9*sp$data$firstquartile), color = "#666362", size = 2.5)
+
+sp
+```
+
+```{r}
+#| label: fig-sensitivityplot2
+#| fig-cap: "Sensitivity plot of clusters summarised by BMD median with the interquartile range as an interval"
+#| cap-location: margin
+#| echo: false
+#| fig-align: "center"
+#| fig-asp: 1
+
+
+sp <- DRomics::sensitivityplot(
+  b_lonely_fishres_no_redund_selected, 
+  group = "new_clustr",
+  BMDsummary = "median.and.IQR",
+  BMD_log_transfo = TRUE) +
+  geom_point(color = "#363636") +
+  # geom_hline(yintercept = 3, linetype = "dashed", color = "#FF7256", linewidth = 1) +
+  guides(size = guide_legend(title = "nb of transcripts")) +
+  ylab("BMD medians and IQR (μg/L)") +
+  xlab("Clusters") +
+  theme_light() + 
+  theme(plot.title.position = 'plot', 
+        plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
+  geom_text(aes(label = paste("   ", sp$data$groupby, "   "), y = 0.9*sp$data$firstquartile), color = "#666362", size = 2.5)
+
+sp
+```
+
+ 
+
+## The top **`r length(unique(b_lonely_fishres_no_redund_selected$new_clustr))`** most sensitive clusters
+
+Each cluster is represented by an interactive :
+
+-   a **curvesplot** representing the fitted curves (*with x-axis the dose in log scale and the y-axis the scaled signal*)
+
+-   a **BMDplot** representing an ECDF plot with confidence intervals on each BMD value (*with the x-axis the dose in log scale and the y-axis the empirical cumulative distribution*)
+
+-   a **table** of the cluster content with some columns of interest:
+
+    -   **id**: the gene name associated to the transcript
+
+    -   **BMD.zSD**: the computed BMD for the transcript with the color of the cell associated to the BMD value, following the [*viridis*](https://sjmgarnier.github.io/viridisLite/reference/figures/viridis-scales.png) color palette.
+
+    -   **TF**: the status of the transcripts' gene being either a transcription or co-transcription factor
+
+    -   **Trend**: the shape of the dose-response curve fitted
+
+    -   **Friendliness**: the total number of clusters that the transcript is associated to
+
+```{r}
+#| echo: false
+
+# Retrieve the most sensitive clusters and their BMD 25th quantile in order to visualize them in curvesplots and tables
+
+b_lonely_fishres_no_redund_no_lonely <- b_lonely_fishres_no_redund |> 
+  dplyr::filter(!new_clustr == "Lonely")
+
+variable <- b_lonely_fishres_no_redund_no_lonely[, "BMD.zSD"]
+
+groupby <- as.factor(b_lonely_fishres_no_redund_no_lonely[, "new_clustr"])
+
+firstquartilefun <- function(x) stats::quantile(x, probs = 0.25, na.rm = TRUE)
+
+dnb <- as.data.frame(table(groupby))
+
+colnames(dnb) <- c("groupby", "nb_of_items")
+
+dnb$firstquartile <- tapply(variable, groupby, firstquartilefun)
+
+dnb_sens <- dnb[order(dnb$firstquartile),]
+
+# Switch the "id" column from "transcript_id" content to "gene_name" content for visualizing the gene symbols
+
+names(b_lonely_fishres)[names(b_lonely_fishres) == "id"] <- "transcript_id"
+
+names(b_lonely_fishres)[names(b_lonely_fishres) == "gene_name"] <- "id"
+
+```
+
+```{r}
+#| echo: false
+
+cl_info <- retrieve_info_for(1)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot1
+#| fig-cap: "DR curves for the 1st cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot1
+#| fig-cap: "BMDplot for the 1st cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table1
+#| tbl-cap: "Table of the 1st cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(2)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot2
+#| fig-cap: "DR curves for the 2nd cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot2
+#| fig-cap: "BMDplot for the 2nd cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table2
+#| tbl-cap: "Table of the 2nd cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(3)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot3
+#| fig-cap: "DR curves for the 3rd cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot3
+#| fig-cap: "BMDplot for the 3rd cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table3
+#| tbl-cap: "Table of the 3rd cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(4)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot4
+#| fig-cap: "DR curves for the 4th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot4
+#| fig-cap: "BMDplot for the 4th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table4
+#| tbl-cap: "Table of the 4th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(5)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot5
+#| fig-cap: "DR curves for the 5th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot5
+#| fig-cap: "BMDplot for the 5th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table5
+#| tbl-cap: "Table of the 5th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(6)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot6
+#| fig-cap: "DR curves for the 6th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot6
+#| fig-cap: "BMDplot for the 6th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table6
+#| tbl-cap: "Table of the 6th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(7)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot7
+#| fig-cap: "DR curves for the 7th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot7
+#| fig-cap: "BMDplot for the 7th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table7
+#| tbl-cap: "Table of the 7th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(8)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot8
+#| fig-cap: "DR curves for the 8th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot8
+#| fig-cap: "BMDplot for the 8th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table8
+#| tbl-cap: "Table of the 8th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(9)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot9
+#| fig-cap: "DR curves for the 9th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot9
+#| fig-cap: "BMDplot for the 9th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table9
+#| tbl-cap: "Table of the 9th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(10)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot10
+#| fig-cap: "DR curves for the 10th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot10
+#| fig-cap: "BMDplot for the 10th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table10
+#| tbl-cap: "Table of the 10th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(11)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot11
+#| fig-cap: "DR curves for the 11th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot11
+#| fig-cap: "BMDplot for the 11th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table11
+#| tbl-cap: "Table of the 11th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(12)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot12
+#| fig-cap: "DR curves for the 12th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot12
+#| fig-cap: "BMDplot for the 12th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table12
+#| tbl-cap: "Table of the 12th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(13)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot13
+#| fig-cap: "DR curves for the 13th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot13
+#| fig-cap: "BMDplot for the 13th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table13
+#| tbl-cap: "Table of the 13th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(14)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot14
+#| fig-cap: "DR curves for the 14th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot14
+#| fig-cap: "BMDplot for the 14th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table14
+#| tbl-cap: "Table of the 14th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(15)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot15
+#| fig-cap: "DR curves for the 15th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot15
+#| fig-cap: "BMDplot for the 15th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table15
+#| tbl-cap: "Table of the 15th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(16)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot16
+#| fig-cap: "DR curves for the 16th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot16
+#| fig-cap: "BMDplot for the 16th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table16
+#| tbl-cap: "Table of the 16th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(17)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot17
+#| fig-cap: "DR curves for the 17th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot17
+#| fig-cap: "BMDplot for the 17th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table17
+#| tbl-cap: "Table of the 17th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(18)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot18
+#| fig-cap: "DR curves for the 18th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot18
+#| fig-cap: "BMDplot for the 18th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table18
+#| tbl-cap: "Table of the 18th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(19)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot19
+#| fig-cap: "DR curves for the 19th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot19
+#| fig-cap: "BMDplot for the 19th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table19
+#| tbl-cap: "Table of the 19th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(20)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot20
+#| fig-cap: "DR curves for the 20th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot20
+#| fig-cap: "BMDplot for the 20th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table20
+#| tbl-cap: "Table of the 20th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(21)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot21
+#| fig-cap: "DR curves for the 21th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot21
+#| fig-cap: "BMDplot for the 21th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table21
+#| tbl-cap: "Table of the 21th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(22)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot22
+#| fig-cap: "DR curves for the 22th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot22
+#| fig-cap: "BMDplot for the 22th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table22
+#| tbl-cap: "Table of the 22th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(23)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot23
+#| fig-cap: "DR curves for the 23th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot23
+#| fig-cap: "BMDplot for the 23th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table23
+#| tbl-cap: "Table of the 23th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(24)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot24
+#| fig-cap: "DR curves for the 24th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot24
+#| fig-cap: "BMDplot for the 24th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table24
+#| tbl-cap: "Table of the 24th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(25)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot25
+#| fig-cap: "DR curves for the 25th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot25
+#| fig-cap: "BMDplot for the 25th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table25
+#| tbl-cap: "Table of the 25th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(26)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot26
+#| fig-cap: "DR curves for the 26th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot26
+#| fig-cap: "BMDplot for the 26th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table26
+#| tbl-cap: "Table of the 26th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(27)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot27
+#| fig-cap: "DR curves for the 27th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot27
+#| fig-cap: "BMDplot for the 27th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table27
+#| tbl-cap: "Table of the 27th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(28)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot28
+#| fig-cap: "DR curves for the 28th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot28
+#| fig-cap: "BMDplot for the 28th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table28
+#| tbl-cap: "Table of the 28th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(29)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot29
+#| fig-cap: "DR curves for the 29th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot29
+#| fig-cap: "BMDplot for the 29th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table29
+#| tbl-cap: "Table of the 29th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(30)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot30
+#| fig-cap: "DR curves for the 30th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot30
+#| fig-cap: "BMDplot for the 30th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table30
+#| tbl-cap: "Table of the 30th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(31)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot31
+#| fig-cap: "DR curves for the 31th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot31
+#| fig-cap: "BMDplot for the 31th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table31
+#| tbl-cap: "Table of the 31th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(32)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot32
+#| fig-cap: "DR curves for the 32th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot32
+#| fig-cap: "BMDplot for the 32th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table32
+#| tbl-cap: "Table of the 32th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(33)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot33
+#| fig-cap: "DR curves for the 33th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot33
+#| fig-cap: "BMDplot for the 33th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table33
+#| tbl-cap: "Table of the 33th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(34)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot34
+#| fig-cap: "DR curves for the 34th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot34
+#| fig-cap: "BMDplot for the 34th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table34
+#| tbl-cap: "Table of the 34th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(35)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot35
+#| fig-cap: "DR curves for the 35th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot35
+#| fig-cap: "BMDplot for the 35th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table35
+#| tbl-cap: "Table of the 35th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(36)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot36
+#| fig-cap: "DR curves for the 36th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot36
+#| fig-cap: "BMDplot for the 36th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table36
+#| tbl-cap: "Table of the 36th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(37)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot37
+#| fig-cap: "DR curves for the 37th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot37
+#| fig-cap: "BMDplot for the 37th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table37
+#| tbl-cap: "Table of the 37th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(38)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot38
+#| fig-cap: "DR curves for the 38th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot38
+#| fig-cap: "BMDplot for the 38th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table38
+#| tbl-cap: "Table of the 38th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(39)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot39
+#| fig-cap: "DR curves for the 39th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot39
+#| fig-cap: "BMDplot for the 39th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table39
+#| tbl-cap: "Table of the 39th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(40)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot40
+#| fig-cap: "DR curves for the 40th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot40
+#| fig-cap: "BMDplot for the 40th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table40
+#| tbl-cap: "Table of the 40th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(41)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot41
+#| fig-cap: "DR curves for the 41th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot41
+#| fig-cap: "BMDplot for the 41th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table41
+#| tbl-cap: "Table of the 41th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(42)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot42
+#| fig-cap: "DR curves for the 42th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot42
+#| fig-cap: "BMDplot for the 42th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table42
+#| tbl-cap: "Table of the 42th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(43)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot43
+#| fig-cap: "DR curves for the 43th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot43
+#| fig-cap: "BMDplot for the 43th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table43
+#| tbl-cap: "Table of the 43th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
+
+```{r}
+#| echo: false
+
+cl_info <-retrieve_info_for(44)
+
+```
+
+> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+>
+> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+>
+> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+>
+> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+
+::: panel-tabset
+### Curvesplot
+
+```{r}
+#| label: fig-curvesplot44
+#| fig-cap: "DR curves for the 44th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_curvesplot(b_lonely_fishres)  
+
+```
+
+### BMDplot
+
+```{r}
+#| label: fig-bmdplot44
+#| fig-cap: "BMDplot for the 44th cluster"
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-asp: 0.618
+
+interact_bmdplot(b_lonely_fishres)  
+
+```
+:::
+
+```{r}
+#| label: tbl-table44
+#| tbl-cap: "Table of the 44th cluster content"
+#| echo: false
+#| message: false
+
+interact_table(b_lonely_fishres)
+
+```
+
+\
