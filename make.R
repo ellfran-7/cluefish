@@ -21,7 +21,7 @@ devtools::load_all(here::here())
 
 ## State the Time Variable for file saving and reading
 
-file_date <- "2024-07-07"
+file_date <- "2024-07-21"
 
 
 
@@ -292,43 +292,53 @@ curves_to_pdf(
 #>> STEP 11 - Generate the quarto report 
 #>--------------------------------------
 
-# # Define the date, corresponding to the date that the files of the workflow are saved. This only functions if all the outputs have the same date identifiers in the filename (e.g. lonely_fishres_2024-07-07)(you can get todays date dynamically, e.g., from file_date)
-# new_date <- "2024-07-07"  
+# Note: To ensure that Quarto reports are generated automatically and correctly, follow these guidelines:
 # 
-# # Render and preview the html report in the Viewer panel
-# quarto::quarto_render(
-#   input = here::here("analyses", "quarto", "workflow_results_report.qmd"),
-#   execute_params = list(`file-date` = new_date),
-#   output_file = "workflow_results_report_sc09_cf4_2024-07-07.html",
-#   output_format = "html"
-# )
+# 1. Consistent Filenames: The output files must have the same filenames as those specified in the Quarto .qmd files.
+# 
+# 2. Matching Dates: Output files should:
+#    - Be produced on the same date, meaning they will have a shared "file_date" in their filenames, or
+#    - Be renamed to match filenames as if they were created simultaneously.
+# 
+# For example: `clustr_enrichres_2024-07-07.rds` and `lonely_fishres_2024-07-07.rds`
+# Today's date can be dynamically generated using the "Sys.date()" function.
+file_date <- "2024-07-07" 
 
+# Render and preview the html report in the Viewer panel. The output is moved to the directory chosen in 'output_path'.
+render_qmd(
+  input_file = here::here("report_workflow_results.qmd"), 
+  output_file = paste0("report_workflow_results_sc09_cf4_", file_date),
+  file_ext = "html",
+  output_path = here::here("analyses", "quarto_outputs"), 
+  execute_params = list(`file-date` = file_date)
+  )
 
 
 #>> Additional steps 
 #> -----------------
 
-# # Characterisation of the lonely cluster: basic functional enrichment 
-# source(here::here("analyses", "lonely_cluster_analysis", "lonely_cluster_analysis.R"))
-# 
-# # Render and preview the lonely_results_report html report contextualising the lonely cluster
-# quarto::quarto_render(
-#   input = here::here("analyses", "quarto", "lonely_results_report.qmd"),
-#   execute_params = list(`file-date` = new_date),
-#   output_file = "lonely_results_report_sc09_cf4_2024-07-07.html",
-#   output_format = "html"
-# )
-# 
-# # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the proposed workflow
-# source(here::here("analyses", "standard_approach", "standard_pipeline.R"))
-# 
-# # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
-# quarto::quarto_render(
-#   input = here::here("analyses", "quarto", "comparison_results_report.qmd"),
-#   execute_params = list(`file-date` = new_date),
-#   output_file = "comparison_results_report_sc09_cf4_2024-07-07.html",
-#   output_format = "html"
-# )
+# Characterisation of the lonely cluster: basic functional enrichment
+source(here::here("analyses", "lonely_cluster_analysis", "lonely_cluster_analysis.R"))
 
+# Render and preview the lonely_results_report html report contextualising the lonely cluster
+render_qmd(
+  input_file = here::here("report_lonely_results.qmd"), 
+  output_file = paste0("report_lonely_results_sc09_cf4_", file_date),
+  file_ext = "html",
+  output_path = here::here("analyses", "quarto_outputs"), 
+  execute_params = list(`file-date` = file_date)
+)
+
+# Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the proposed workflow
+source(here::here("analyses", "standard_approach", "standard_pipeline.R"))
+
+# Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
+render_qmd(
+  input_file = here::here("report_comparison_results.qmd"), 
+  output_file = paste0("report_comparison_results_sc09_cf4_", file_date),
+  file_ext = "html",
+  output_path = here::here("analyses", "quarto_outputs"), 
+  execute_params = list(`file-date` = file_date)
+)
 
 
