@@ -17,6 +17,7 @@ format:
       margin-width: 350px
 execute: 
   warning: false
+  cache: true
 reference-location: margin
 citation-location: margin
 editor: visual
