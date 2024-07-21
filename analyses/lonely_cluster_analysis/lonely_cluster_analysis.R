@@ -3,6 +3,9 @@
 # This script serves to characterize the lonely cluster derived from the Lonely Fishing step within the proposed workflow. This step represents the final phase of data manipulation. While the road towards interpretations for the clustered data is already established, this analysis focuses on understanding/characterizing the content of the lonely cluster by conducting functional enrichment one last time. This allows us to pool even more transcripts into the interpretation phase.
 ## ============================================================================
 
+## State the Time Variable for file saving and reading
+file_date <- "2024-07-07"
+
 ## Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
 
@@ -24,10 +27,10 @@ bg_t_ids <- getids(
 
 # OR
 
-bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-01.txt")
+bg_t_ids <- read.table(paste0("outputs/bg_t_ids_", file_date, ".txt"))
 
 ## Load the workflow results 
-lonelyfishing_data <- readRDS("outputs/cs09-cf4/lonely_fishres_cs09_cf4_2024-07-01.rds")
+lonelyfishing_data <- readRDS(paste0("outputs/cs09-cf4/lonely_fishres_cs09_cf4_", file_date, ".rds"))
 
 # Only select the transcripts part of the lonely cluster
 lonelycluster_data <- lonelyfishing_data$dr_t_c_a_fishing |> 
@@ -50,6 +53,6 @@ lonely_cluster_analysis_res <- simplenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "analyses/lonely_cluster_analysis/results",
-  output_filename = paste0("lonely_cluster_analysis_res_", Sys.Date(), ".rds"),
+  output_filename = paste0("lonely_cluster_analysis_res_", file_date, ".rds"),
   overwrite = TRUE
 )

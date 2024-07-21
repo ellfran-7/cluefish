@@ -4,6 +4,9 @@
 ## First and foremost, as the proposed workflow, the standard one begins as such : 
 ## ----------------------------------------------------------------------------
 
+## State the Time Variable for file saving and reading
+file_date <- "2024-07-07"
+
 # Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
 
@@ -25,7 +28,7 @@ bg_t_ids <- getids(
 
 # OR
 
-bg_t_ids <- read.table("outputs/bg_t_ids_2024-07-01.txt")
+bg_t_ids <- read.table(paste0("outputs/bg_t_ids_", file_date, ".txt"))
 
 ## Create a subset of the items of interests (e.g. deregulated transcripts derived from the DRomics workflow)
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -47,6 +50,6 @@ standard_pipeline_res <- simplenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = "analyses/standard_approach/results",
-  output_filename = paste0("standard_pipeline_res_", Sys.Date(), ".rds"),
+  output_filename = paste0("standard_pipeline_res_", file_date, ".rds"),
   overwrite = TRUE
 )
