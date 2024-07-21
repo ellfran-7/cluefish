@@ -27,3 +27,4 @@ outputs/
 derived-data/
 analyses/standard-approach/results
 analyses/lonely_cluster_analysis/results
+analyses/quarto_outputs/*html
