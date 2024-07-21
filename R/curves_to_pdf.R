@@ -41,6 +41,16 @@ curves_to_pdf <- function(
     overwrite = TRUE
     )
 {
+  
+  # Check if the directory exists, and create it if it does not
+  if (!dir.exists(path)) {
+    dir.create(path, showWarnings = FALSE, recursive = TRUE)
+    # `recursive = TRUE` creates intermediate directories as needed
+    
+    message("Directory '", path, "' created.")
+  }
+  
+  
   # Check if the output file already exists locally and overwrite is not set to TRUE
   if (file.exists(file.path(path, output_filename)) && !overwrite) {
     

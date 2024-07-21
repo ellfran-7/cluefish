@@ -24,8 +24,17 @@ dl_regulation_data <- function(
     path,
     filename_tf,
     filename_cof,
-    overwrite = FALSE) {
+    overwrite = FALSE
+    ) 
+  {
   
+  # Check if the directory exists, and create it if it does not
+  if (!dir.exists(path)) {
+    dir.create(path, showWarnings = FALSE, recursive = TRUE)
+    # `recursive = TRUE` creates intermediate directories as needed
+    
+    message("Directory '", path, "' created.")
+  }
   
   if (file.exists(file.path(path, filename_tf)) & !overwrite) {
     
