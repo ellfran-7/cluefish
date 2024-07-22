@@ -17,7 +17,6 @@ format:
       margin-width: 350px
 execute: 
   warning: false
-  cache: true
 reference-location: margin
 citation-location: margin
 editor: visual
@@ -178,7 +177,7 @@ interact_bmdplot <- function(data) {
 
 interact_table <- function(data) { 
   
-  clustr_df4drplots_redund <- data |> 
+  clustr_df4drplots_noredund <- data |> 
     dplyr::filter(new_clustr %in% as.character(cl_info$cl_sens$groupby)) |> 
     dplyr::select(c(id,
                     BMD.zSD,
@@ -186,14 +185,16 @@ interact_table <- function(data) {
                     trend,
                     friendliness)) |> 
     dplyr::distinct() |> 
-    dplyr::arrange(id)
+    dplyr::arrange(id) 
+  
+  clustr_df4drplots_noredund$BMD.zSD <- round(clustr_df4drplots_noredund$BMD.zSD, 3)
   
   # Generate the interactive table 
-  clustr_df4drplots_redund |> 
+  clustr_df4drplots_noredund |> 
     DT::datatable(
       options = list(
         pageLength = 10,
-        buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+        buttons = c('copy', 'csv'),
         columnDefs = list(list(className = 'dt-center', targets = '_all')),
         initComplete = JS(
           "function(settings, json) {",
@@ -202,7 +203,8 @@ interact_table <- function(data) {
           "}" 
           )
         ),
-      class = c("compact", "hover", "row-border", "order-column")
+      class = c("compact", "hover", "row-border", "order-column"),
+      filter = 'top'
       ) |> 
     DT::formatStyle(columns = c(1, 2, 3, 4, 5), 
                     fontSize = '80%', 
@@ -210,9 +212,11 @@ interact_table <- function(data) {
                     backgroundColor = 'white'
                     ) |>   # Set background color
     DT::formatStyle("BMD.zSD", 
-                    backgroundColor = styleEqual(unique(b_lonely_fishres$BMD.zSD),
-                                                 color_vals(unique(b_lonely_fishres$BMD.zSD))
-                                                 )
+                    backgroundColor = styleEqual(unique(clustr_df4drplots_noredund$BMD.zSD),
+                                                 color_vals(unique(clustr_df4drplots_noredund$BMD.zSD))
+                                                 ),
+                    color = "white",
+                    fontWeight = "bold"
                     ) |> 
     DT::formatStyle("trend",
                   color = styleEqual(c("inc", "dec", "U", "bell"), 
@@ -322,12 +326,9 @@ names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fis
 # Combine DRomics info and the workflow info
 b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,  by = "id")
 
-# Round the BMD value for better readability
-b_lonely_fishres$BMD.zSD <- round(b_lonely_fishres$BMD.zSD, 1) 
-
 # Create a color gradient function from red to purple through yellow, green, and blue
 color_func <- scales::col_numeric(palette = viridis::viridis_pal(alpha = 0.8, begin = 0.2, end= 0.9, direction = -1)(200), 
-                           domain = range(b_lonely_fishres$BMD.zSD, na.rm = TRUE))
+                                  domain = range(round(b_lonely_fishres$BMD.zSD, 3), na.rm = TRUE))
 
 
 # Function to convert numeric values to colors
@@ -437,7 +438,7 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 Clusters merge when they share identical enriched terms.
 
 | Metric        | Cluster count                                                 |
-|------------------|------------------------------------------------------|
+|-------------|------------------------------------------------------|
 | Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
 | After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
 
@@ -467,7 +468,7 @@ gt::gt(same_value_rows) |>
 Lonely genes are incorporated into clusters if they share a common term with any given cluster.
 
 | Metric                      | All                                                                                                      | Annotated                                                                                                                    |
-|------------------|-------------------------|------------------------------|
+|--------------------|-------------------------|------------------------------|
 | Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$gene_id))`                                                             | `r length(unique(dr_g_a_no_clustr_annotated$gene_id))`                                                                       |
 | Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                           | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                                               |
 | Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` |
@@ -500,14 +501,16 @@ b_lonely_fishres_summary <- data.frame(
   )
 
 # Round BMD.zSD to the tenth for easier reading
-b_lonely_fishres_summary$BMD.zSD <- round(b_lonely_fishres_summary$BMD.zSD, 1) 
+b_lonely_fishres_summary$BMD.zSD <- signif(b_lonely_fishres_summary$BMD.zSD, 2) 
 
 # Remove repeated rows
 b_lonely_fishres_summary <- unique(b_lonely_fishres_summary)
 
 # Generate the interactive table 
 b_lonely_fishres_summary |> 
-  DT::datatable(options = list(pageLength = 10), class = c("compact", "hover", "row-border", "order-column")) |> 
+  DT::datatable(options = list(pageLength = 10), 
+                class = c("compact", "hover", "row-border", "order-column"),
+                filter = 'top') |> 
   DT::formatStyle(columns = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), fontSize = '80%')
 
 ```
@@ -537,7 +540,7 @@ b_lonely_fishres_no_redund <- b_lonely_fishres |>
                 ) |> 
   dplyr::distinct()
 
-b_lonely_fishres_no_redund_selected <- b_lonely_fishres |> 
+b_lonely_fishres_no_redund_selected <- b_lonely_fishres_no_redund |> 
   dplyr::filter(!(new_clustr %in% c("Friendly", "Lonely")))
 
 
@@ -647,13 +650,13 @@ cl_info <- retrieve_info_for(1)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -704,13 +707,13 @@ cl_info <-retrieve_info_for(2)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -761,13 +764,13 @@ cl_info <-retrieve_info_for(3)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -818,13 +821,13 @@ cl_info <-retrieve_info_for(4)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -875,13 +878,13 @@ cl_info <-retrieve_info_for(5)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -932,13 +935,13 @@ cl_info <-retrieve_info_for(6)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -989,13 +992,13 @@ cl_info <-retrieve_info_for(7)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1046,13 +1049,13 @@ cl_info <-retrieve_info_for(8)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1103,13 +1106,13 @@ cl_info <-retrieve_info_for(9)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1160,13 +1163,13 @@ cl_info <-retrieve_info_for(10)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1217,13 +1220,13 @@ cl_info <-retrieve_info_for(11)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1274,13 +1277,13 @@ cl_info <-retrieve_info_for(12)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1331,13 +1334,13 @@ cl_info <-retrieve_info_for(13)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1388,13 +1391,13 @@ cl_info <-retrieve_info_for(14)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1445,13 +1448,13 @@ cl_info <-retrieve_info_for(15)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1502,13 +1505,13 @@ cl_info <-retrieve_info_for(16)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1559,13 +1562,13 @@ cl_info <-retrieve_info_for(17)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1616,13 +1619,13 @@ cl_info <-retrieve_info_for(18)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1673,13 +1676,13 @@ cl_info <-retrieve_info_for(19)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1730,13 +1733,13 @@ cl_info <-retrieve_info_for(20)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1787,13 +1790,13 @@ cl_info <-retrieve_info_for(21)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1844,13 +1847,13 @@ cl_info <-retrieve_info_for(22)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1901,13 +1904,13 @@ cl_info <-retrieve_info_for(23)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -1958,13 +1961,13 @@ cl_info <-retrieve_info_for(24)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2015,13 +2018,13 @@ cl_info <-retrieve_info_for(25)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2072,13 +2075,13 @@ cl_info <-retrieve_info_for(26)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2129,13 +2132,13 @@ cl_info <-retrieve_info_for(27)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2186,13 +2189,13 @@ cl_info <-retrieve_info_for(28)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2243,13 +2246,13 @@ cl_info <-retrieve_info_for(29)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2300,13 +2303,13 @@ cl_info <-retrieve_info_for(30)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2357,13 +2360,13 @@ cl_info <-retrieve_info_for(31)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2414,13 +2417,13 @@ cl_info <-retrieve_info_for(32)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2471,13 +2474,13 @@ cl_info <-retrieve_info_for(33)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2528,13 +2531,13 @@ cl_info <-retrieve_info_for(34)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2585,13 +2588,13 @@ cl_info <-retrieve_info_for(35)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2642,13 +2645,13 @@ cl_info <-retrieve_info_for(36)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2699,13 +2702,13 @@ cl_info <-retrieve_info_for(37)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2756,13 +2759,13 @@ cl_info <-retrieve_info_for(38)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2813,13 +2816,13 @@ cl_info <-retrieve_info_for(39)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2870,13 +2873,13 @@ cl_info <-retrieve_info_for(40)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2927,13 +2930,13 @@ cl_info <-retrieve_info_for(41)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -2984,13 +2987,13 @@ cl_info <-retrieve_info_for(42)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -3041,13 +3044,13 @@ cl_info <-retrieve_info_for(43)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
@@ -3098,13 +3101,13 @@ cl_info <-retrieve_info_for(44)
 
 ```
 
-> **Cluster `r cl_info$cl_sens$groupby`** - `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)
+> [**Cluster `r cl_info$cl_sens$groupby`**]{style="color: #008B8B; font-size: 30px; font-weight: bold;"} [- `r length(unique(cl_info$ntranscript_sens))` transcripts (BMD q25 = `r cl_info$cl_sens$firstquartile` μg/L)]{style="font-size: 20px"}
 >
-> Driver GO terms : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
+> **Driver GO terms** : `r paste(unique(cl_info$go_sens$term_name), sep = ",")`
 >
-> KEGG pathways : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
+> **KEGG pathways** : `r paste(unique(cl_info$kegg_sens$term_name), sep = ",")`
 >
-> Wikipathways : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
+> **Wikipathways** : `r paste(unique(cl_info$wp_sens$term_name), sep = ",")`
 
 ::: panel-tabset
 ### Curvesplot
