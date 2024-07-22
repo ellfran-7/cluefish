@@ -200,7 +200,14 @@ clustr_enrichres <- clustrenrich(
 )
 
 
+# Selecting appropriate minimum and maximum term sizes is challenging and depends on various factors, such as the organism, the type of transcriptomic data, and the definition of "generalistic terms."
+# To understand the relationship between gene set size and the generality of terms, the following code prints all terms associated with the deregulated genes in decreasing order of size. This allows us to check if the chosen size limits are reasonable based on the data.
 
+clustr_enrichres$dr_g_a_whole |> 
+  dplyr::group_by(term_name) |> 
+  dplyr::summarise(count = dplyr::n()) |> 
+  dplyr::arrange(desc(count)) |> 
+  print(n = 100) # Number of rows to print, adjustable based on the study
 
 
 
@@ -254,7 +261,7 @@ results_to_csv(
 #>> STEP 10 - Generate cluster-level curvesplots to a PDF file
 #>------------------------------------------------------------
 
-# Finally, this last step consists of generating the output PDF file containing a plot of dose-response curves for each cluster of genes, with each plot labeled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labeled with "Dose (µg/L)" and "Signal", and the y-axis is scaled to be the same across all plots.
+# Finally, this last step consists of generating the output PDF file containing a plot of dose-response curves for each cluster of genes, with each plot labelled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labelled with "Dose (µg/L)" and "Signal", and the y-axis is scaled to be the same across all plots.
 
 require(ggplot2)
 
