@@ -197,6 +197,10 @@ lonelyfishing <- function(
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |>
         dplyr::mutate(new_clustr = dplyr::if_else(friendliness > friendly_limit, "Friendly", as.character(new_clustr))) |>
         dplyr::ungroup()
+      
+      # Print the number of genes making the Friendly cluster
+      cat("- Genes in Friendly Cluster:", length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$new_clustr %in% "Friendly",]$gene_id)), "\n")
+      
     } else {
       
       # Group by gene_id, count unique clusters per gene in "friendliness" column. Then ungroup.
@@ -204,6 +208,9 @@ lonelyfishing <- function(
         dplyr::group_by(gene_id) |>
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |>
         dplyr::ungroup()
+      
+      # Print the number of genes making the Friendly cluster
+      cat("- Friendly Cluster is not created ! ", "\n")
     }
     
     
