@@ -593,7 +593,7 @@ sp
 
  
 
-## The top **`r length(unique(b_lonely_fishres_no_redund_selected$new_clustr))`** most sensitive clusters
+## The **`r length(unique(b_lonely_fishres_no_redund_selected$new_clustr))`** clusters from highest to lowest sensitivity
 
 Each cluster is represented by an interactive :
 
