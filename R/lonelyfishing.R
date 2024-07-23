@@ -105,46 +105,7 @@ lonelyfishing <- function(
       
       # As we merged this way, the "old_clustr" column does not correspond to the actual cluster which is here always the "Lonely". Replace all values in this column with "Lonely"
       dr_g_a_lonely_data$old_clustr <- "Lonely"
-      
-      # Get biologicaly annotated genes without clusters for the following messages
-      dr_g_a_no_clustr_annotated <- dr_data |>
-        dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id) &
-                        gene_id %in% clustrenrich_data$dr_g_a_whole$gene_id)
-      
-      # Get genes without clusters for the following messages
-      dr_g_a_no_clustr <- dr_data |>
-        dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id))
-      
-      
-      ## Print info about lonely genes fished
-      
-      # Before fishing summary
-      cat("Before Fishing:", "\n")
-      
-      # Print the number of total genes
-      cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr$gene_id)), "\n")
-      
-      # Print the number of annotated genes
-      cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated$gene_id)), "\n")
-      
-      # Space
-      cat("", "\n")
-      
-      # Print the number of lonely genes fishes
-      cat("Fished", length(unique(dr_g_a_lonely_data$gene_id)), "Lonely Genes !", "\n")
-      
-      # Space
-      cat("", "\n")
-      
-      # Before fishing summary
-      cat("After Fishing:", "\n")
-      
-      # Print the number of lonely genes remaining
-      cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id)), "\n")
-      
-      # Print the number of annotated lonely genes remaining
-      cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id)), "\n")
-      
+    
       # Combine both objects by rows
       dr_g_c_a_lonely_results <- rbind(clustrfusion_data$dr_g_a_fusion, dr_g_a_lonely_data)
       
@@ -191,15 +152,12 @@ lonelyfishing <- function(
     
     if (friendly_limit != 0) {
       
-      # Group by gene_id, create a "friendliness" column counting unique clusters per gene. If the "friendliness" value exceeds the limit for a specific gene, update the value in new_clustr to "Friendly". Then ungroup.
+      # Group by gene_id, create a "friendliness" column counting unique clusters per gene. If the "friendliness" value exceeds the limit for a specific gene, update the value in new_clustr to "Lonely". Then ungroup.
       dr_g_c_a_fishing <- dr_g_c_a_fishing |>
         dplyr::group_by(gene_id) |>
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |>
-        dplyr::mutate(new_clustr = dplyr::if_else(friendliness > friendly_limit, "Friendly", as.character(new_clustr))) |>
+        dplyr::mutate(new_clustr = dplyr::if_else(friendliness > friendly_limit, "Lonely", as.character(new_clustr))) |>
         dplyr::ungroup()
-      
-      # Print the number of genes making the Friendly cluster
-      cat("- Genes in Friendly Cluster:", length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$new_clustr %in% "Friendly",]$gene_id)), "\n")
       
     } else {
       
@@ -209,10 +167,7 @@ lonelyfishing <- function(
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |>
         dplyr::ungroup()
       
-      # Print the number of genes making the Friendly cluster
-      cat("- Friendly Cluster is not created ! ", "\n")
     }
-    
     
     ## Add remaining information columns: other gene IDs/transcript ID and TF status
     
@@ -258,6 +213,61 @@ lonelyfishing <- function(
                     term_size, term_id, source, highlighted) |>
       dplyr::arrange(as.numeric(ifelse(grepl("^\\d+$", new_clustr), new_clustr, NA)),
                      as.numeric(ifelse(grepl("^\\d+$", old_clustr), old_clustr, NA)))
+    
+    ## Prepare data to print a summary of the lonely fishing 
+    
+    # Get genes without clusters for the following messages
+    dr_g_a_no_clustr_beforefish <- dr_data |>
+      dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id))
+    
+    # Get biologicaly annotated genes without clusters for the following messages
+    dr_g_a_no_clustr_annotated_beforefish <- dr_data |>
+      dplyr::filter((!gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id) &
+                      gene_id %in% clustrenrich_data$dr_g_a_whole$gene_id)
+    
+    # Get biologicaly annotated genes without clusters for the following messages
+    dr_g_a_no_clustr_annotated_afterfish <- dr_data |>
+      dplyr::filter((gene_id %in% dr_t_c_a_fishing[dr_t_c_a_fishing$new_clustr == "Lonely",]$gene_id) &
+                      (gene_id %in% clustrenrich_data$dr_g_a_whole$gene_id))
+    
+    ## Print the summmary
+    
+    # Before fishing summary
+    cat("Before Fishing:", "\n")
+    
+    # Print the number of total genes
+    cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr_beforefish$gene_id)), "\n")
+    
+    # Print the number of annotated genes
+    cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated_beforefish$gene_id)), "\n")
+    
+    # Space
+    cat("", "\n")
+    
+    # Print the number of lonely genes fishes
+    cat("Fished", length(unique(dr_g_a_lonely_data$gene_id)), "Lonely Genes into existing clusters !", "\n")
+    
+    # Check if friendly limit set
+    if (friendly_limit != 0) {
+      # Print the number of genes added to the Lonely cluster
+      cat(length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$friendliness > friendly_limit,]$gene_id)), "exceeding the friendliness limit were moved back to the Lonely Cluster !", "\n") 
+    } else {
+      # Print text sating the absence of a friendly limit
+      cat("No friendly limit set.", "\n") 
+    }
+    
+    # Space
+    cat("", "\n")
+    
+    # Before fishing summary
+    cat("After Fishing:", "\n")
+    
+    # Print the number of lonely genes remaining
+    cat("- Total Lonely Genes:", length(unique(dr_t_c_a_fishing[dr_t_c_a_fishing$new_clustr == "Lonely",]$gene_id)), "\n")
+    
+    # Print the number of annotated lonely genes remaining
+    cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated_afterfish$gene_id)), "\n")
+    
     
     # Reset row numbers
     rownames(dr_t_c_a_fishing) <- NULL
