@@ -1,3 +1,5 @@
+^renv$
+^renv\.lock$
 ^make\.R$
 ^.*\.Rproj$
 ^\.Rproj\.user$
