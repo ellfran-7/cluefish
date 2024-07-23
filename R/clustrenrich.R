@@ -189,14 +189,17 @@ clustrenrich <- function(
       
     }
     
+    # Create a filtered version of the multi_gostres data for further analysis
+    multi_gostres_filtr <- multi_gostres
+    
     # Depending on min/max gene set sizes chosen, remove enriched biological function gene sets from further analysis  
-    multi_gostres$result <- multi_gostres$result |> 
+    multi_gostres_filtr$result <- multi_gostres_filtr$result |> 
       dplyr::filter(
         min_term_size <= term_size & term_size <= max_term_size
       )
     
     # Transform the dataframe from c_a to g_a format. The intersection column holds the gene ids that intersect between the query and term. The term_name a,d term_id are the respective names and ids for each term. The source represents the databases from which the term is from.
-    dr_g_a_gostres <- multi_gostres$result |> 
+    dr_g_a_gostres <- multi_gostres_filtr$result |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::select(intersection, query, term_name, term_id, source) |> 
       dplyr::rename(gene_id = intersection, 
@@ -229,6 +232,9 @@ clustrenrich <- function(
       
       # Print the ratio of clusters participating in enrichment
       cat(length(unique(dr_g_a_termkept$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment.", "\n")
+      
+      # Print the ratio of terms removed because of gene set filtering
+      cat(length(unique(dr_g_a_gostres$term_name)), "/",  length(unique(multi_gostres$result$term_name)), "enriched terms kept after gene set size filters.", "\n")
       
       # Print the ratio of terms removed because of filtering
       cat(length(unique(dr_g_a_termkept$term_name)), "/",  length(unique(dr_g_a_gostres$term_name)), "enriched terms kept after term filter.", "\n")
@@ -352,7 +358,7 @@ clustrenrich <- function(
     
     # Create a list containing the enrichment results, annotations, and the trace of biological function filtering
     clustr_enrichres <- list(dr_g_a_enrich = dr_g_all_data,
-                             gostres = multi_gostres,
+                             gostres = multi_gostres_filtr,
                              dr_g_a_whole = as.data.frame(dr_g_a_annots),
                              c_simplifylog = dr_c_a_termcount)
     
