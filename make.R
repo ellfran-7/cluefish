@@ -21,7 +21,7 @@ devtools::load_all(here::here())
 
 ## State the Time Variable for file saving and reading
 
-file_date <- "2024-07-21"
+file_date <- "2024-07-07"
 
 
 
@@ -209,7 +209,19 @@ clustr_enrichres$dr_g_a_whole |>
   dplyr::arrange(desc(count)) |> 
   print(n = 100) # Number of rows to print, adjustable based on the study
 
+# OR #
 
+# View the summarized data in the viewer pane as an interactive datatable. This allows for easier exploration and filtering of terms associated with the deregulated genes to assess the appropriateness of the chosen size limits.
+
+clustr_enrichres$dr_g_a_whole |> 
+  dplyr::group_by(term_name) |> 
+  dplyr::summarise(count = dplyr::n()) |>
+  DT::datatable(
+    options = list(pageLength = 10
+    ),
+    filter = 'top',
+    class = c("compact")
+  )
 
 #>> STEP 7 - Fusion clusters based on shared cluster enrichment
 #>-------------------------------------------------------------
