@@ -31,6 +31,16 @@ file_date <- "2024-07-07"
 #>> STEP 0 - Download TF and CoTF Data 
 #>------------------------------------
 
+# Before performing this step, it is recommended to verify if the organism of interest is available in the AnimalTFDB database. 
+# You can check the list of supported species on their website: https://guolab.wchscu.cn/AnimalTFDB4/#/Species.
+
+# If the organism is found in the database, you need to modify the URL by replacing the organism's Latin name (e.g., "Rattus_norvegicus") with the Latin name of your organism. 
+# For example, the URLs for transcription factors (TF) for zebrafish (Danio rerio) and Sprague Dawley rat (Rattus norvegicus) would be:
+# - Zebrafish: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
+# - Sprague Dawley rat: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Rattus_norvegicus_TF"
+
+# Ensure that the URL structure follows the same pattern as shown below to ensure successful data download.
+
 dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
   url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
@@ -95,7 +105,8 @@ ensembl <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL")
 biomaRt::listDatasets(mart = ensembl)
 
 # Now, run the getids() function with the correct input based on the organism of the study.
-# This retrieves IDs using the specified parameters for the query.bg_t_ids <- getids(
+# This retrieves IDs using the specified parameters for the query.
+bg_t_ids <- getids(
   id_query = f$omicdata$item, 
   biomart_db = "ENSEMBL_MART_ENSEMBL",
   species_dataset = "drerio_gene_ensembl",
@@ -196,7 +207,7 @@ clustr_enrichres <- clustrenrich(
   ngenes_enrich_filtr = 3,
   path = "outputs/cs09-cf4/",
   output_filename = paste0("clustr_enrichres_cs09_cf4_", file_date, ".rds"),
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 
@@ -247,7 +258,7 @@ lonely_fishres <- lonelyfishing(
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
   output_filename = paste0("lonely_fishres_cs09_cf4_", file_date, ".rds"), 
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 
