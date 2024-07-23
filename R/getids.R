@@ -21,7 +21,8 @@
 getids <- function(
     id_query, 
     biomart_db,
-    species_dataset, 
+    species_dataset,
+    version = NULL,
     transcript_id,
     gene_id,
     gene_name = NULL,
@@ -32,7 +33,7 @@ getids <- function(
   if (biomart_db %in% biomaRt::listMarts()$biomart) {
     
     # Connection to a BioMart database and the species dataset
-    ensembl <- biomaRt::useMart(biomart = biomart_db, dataset = species_dataset)
+    ensembl <- biomaRt::useEnsembl(biomart = biomart_db, dataset = species_dataset, version = version)
     
   } else if (biomart_db %in% biomaRt::listEnsemblGenomes()$biomart) {
     
