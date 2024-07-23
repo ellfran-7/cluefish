@@ -6,8 +6,9 @@
 #' @param getclustrs_data A `dataframe` of type *t* that typically corresponds to the output of the `getclustrs()` function. This input holds at least the columns named `gene_id` and `clustr` respectively holding Ensembl gene and cluster identifiers for the deregulated genes.
 #' @param size_filtr The number of genes in a cluster to consider sufficiently large enough to be a biological complex (by default: 3). 
 #' @return A named `list` holding 2 components, where : 
-#'      -`kept` is a dataframe of type *t* similar to the *getclustrs_data* dataframe input with the rows kept after the filter (the Ensembl genes are part of a cluster over the size limit)
+#'      - `kept` is a dataframe of type *t* similar to the *getclustrs_data* dataframe input with the rows kept after the filter (the Ensembl genes are part of a cluster over the size limit)
 #'      -`removed` is a dataframe of type *t* similar to the *getclustrs_data* dataframe input with the rows removed after the filter (the Ensembl genes are par tof clusters under the size limit)
+#'      - `params` is a list of the main parameters used
 #' 
 #' @export
 #'
@@ -49,8 +50,14 @@ clustrfiltr <- function(
   rownames(dr_t_clustrs_filtr$kept) <- NULL
   rownames(dr_t_clustrs_filtr$removed) <- NULL
   
+  clustrfiltr_res <- list(kept = dr_t_clustrs_filtr$kept,
+                          removed = dr_t_clustrs_filtr$removed,
+                          params = list(
+                            size_filtr = size_filtr
+                            )
+                          )
   # Define the result as a structured object with class "clustrfiltres"
-  dr_t_clustrs_filtr <- structure(dr_t_clustrs_filtr, class = "clustrfiltres")
+  clustrfiltr_res <- structure(clustrfiltr_res, class = "clustrfiltres")
                           
-  return(dr_t_clustrs_filtr)
+  return(clustrfiltr_res)
 }

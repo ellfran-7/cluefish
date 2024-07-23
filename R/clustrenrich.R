@@ -27,6 +27,7 @@
 #'      -`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
 #'      -`dr_g_a_whole` is a dataframe of type *g_a* holding all the biological function annotations found in the g:profiler database for all the deregulated genes.
 #'      -`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
+#'      -`params` is a list of the main parameters used
 #'
 #' @export
 #'
@@ -360,7 +361,17 @@ clustrenrich <- function(
     clustr_enrichres <- list(dr_g_a_enrich = dr_g_all_data,
                              gostres = multi_gostres_filtr,
                              dr_g_a_whole = as.data.frame(dr_g_a_annots),
-                             c_simplifylog = dr_c_a_termcount)
+                             c_simplifylog = dr_c_a_termcount,
+                             params = list(
+                               bg_type = "custom_annotated",
+                               sources = c("GO:BP", "KEGG", "WP"), 
+                               user_threshold = user_threshold,
+                               min_term_size = min_term_size,
+                               max_term_size = max_term_size,
+                               only_highlighted_GO = TRUE,
+                               ngenes_enrich_filtr = 5
+                               )
+                             )
     
     # Define the class of the output
     clustr_enrichres <- structure(clustr_enrichres, class = "clustrenrichres")

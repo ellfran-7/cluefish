@@ -10,6 +10,7 @@
 #'      -`dr_g_a_fusion` is a dataframe of type *g_a* holding the cluster fusion results. It shares a similar structure to the *clustrenrich_data$dr_g_a_enrich* dataframe with each row being a combination of gene and biological function annotation.
 #'      -`dr_c_a_fusion` is a dataframe of type *c_a* holding the cluster fusion results with each row being a combination of cluster ID and biological function annotation
 #'      -`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the sources from which they originated (e.g. GO, KEGG).
+#'      -`params` is a list of the main parameters used
 #' 
 #' @examples
 #' 
@@ -219,7 +220,11 @@ clustrfusion <- function(
   # Create a named list of the clustrfusion results and the trace of cluster fusions
   clustr_fusionres <- list(dr_g_a_fusion = dr_g_a_fusion,
                            dr_c_a_fusion = dr_c_a_fusion,
-                           c_fusionlog = c_fusionlog)
+                           c_fusionlog = c_fusionlog,
+                           params = list(
+                             monoterm_fusion = monoterm_fusion
+                             )
+                           )
   
   # Define the class of the output
   clustr_fusionres <- structure(clustr_fusionres, class = "clustrfusion")

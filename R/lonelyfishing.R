@@ -14,6 +14,7 @@
 #' @return A named `list` holding 2 components, where :
 #'      -`dr_t_c_a_fishing` is a dataframe of type *t_c_a* holding the lonely fishing results.
 #'      -`dr_c_a_fishing` is a dataframe of type *c_a* holding the lonely fishing results. It shares a similar structure to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation.
+#'      -`params` is a list of the main parameters used
 #' 
 #' @export
 #'
@@ -275,7 +276,11 @@ lonelyfishing <- function(
     
     # Create a named list of the lonelyfishing results
     lonelyfishingres <- list(dr_t_c_a_fishing = dr_t_c_a_fishing,
-                             dr_c_a_fishing = dr_c_a_fishing)
+                             dr_c_a_fishing = dr_c_a_fishing,
+                             params = list(
+                               friendly_limit = friendly_limit
+                               )
+                             )
     
     # Define the class of the output
     lonelyfishingres <- structure(lonelyfishingres, class = "lonelyfishingres")
