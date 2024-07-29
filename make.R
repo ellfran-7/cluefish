@@ -11,9 +11,9 @@
 ## Install packages listed in DESCRIPTION (and/or R and Rmd files) ----
 renv::install()
 
-# OR
+# OR --
 
-## Restore local environment ----
+## Restore the local environment to ensure reproducibility of the analysis with the same package versions and states ---
 renv::restore()
 
 
