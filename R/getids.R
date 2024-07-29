@@ -1,11 +1,12 @@
-#' Retrieve item identifiers from Ensembl using BioMart
+#' Retrieve gene identifiers from Ensembl/Ensembl Genomes
 #' 
 #' @description
-#' This function connects to the Ensembl database, queries a specified species dataset using the biomaRt package, and returns the results of the query. If the query includes the 'external_gene_name' attribute, representing readable gene symbols, the function examines whether any duplicates of this identifier exist across various Ensembl transcript and gene IDs rows. This situation occurs when a gene symbol corresponds to different Ensembl gene IDs and Ensembl transcript IDs. If duplicates are detected, the function modifies the external gene name to address this discrepancy.
+#' This function connects to the Ensembl or Ensembl Metazoa database, queries a specified species dataset using the biomaRt package, and returns the results of the query. If the query includes the 'external_gene_name' attribute, representing readable gene symbols, the function examines whether any duplicates of this identifier exist across various Ensembl transcript and gene IDs rows. This situation occurs when a gene symbol corresponds to different Ensembl gene IDs and Ensembl transcript IDs. If duplicates are detected, the function modifies the external gene name to address this discrepancy.
 #'
 #' @param id_query A vector of transcript IDs that typically corresponds to the background transcript list
 #' @param biomart_db The name of the BioMart database hosted by Ensembl or Ensembl Metazoa. Use `listMarts()` to view available Ensembl databases, or `listEnsemblGenomes()` to view available Ensembl Metazoa databases.
 #' @param species_dataset The name of the species dataset desired on `ensembl.org`.
+#' @param version The Ensembl version to connect to when wanting to connect to an archived Ensembl version
 #' @param transcript_id The transcript identifier for the deregulated transcripts used in the query (e.g., "ensembl_transcript_id_version")
 #' @param gene_id The gene identifier to be retrieved from the BioMart dataset of the specified species (preferably "ensembl_gene_id"  as it the identifier used in g:profiler)
 #' @param gene_name A human-readable gene name identifier to be retrieved from the BioMart dataset of the specified species.
