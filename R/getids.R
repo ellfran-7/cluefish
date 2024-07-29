@@ -12,7 +12,7 @@
 #' @param other_ids One or more additional identifiers or attributes to retrieve from the BioMart dataset of the specified species (e.g., "external_gene_name", "uniprotsptrembl", "string"). Ensure that the retrieved identifier is supported for the organism in the STRING database for subsequent analysis.
 
 #'
-#' @return A `dataframe` of type *t* containing the biomaRt query results.
+#' @return A `dataframe` of type *t* containing the biomaRt query results with a modified "external_gene_name" column if itself present and duplicates exist.
 #' 
 #' @export
 #'
