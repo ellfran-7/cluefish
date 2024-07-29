@@ -8,10 +8,13 @@
 #' @date 2024/07/07
 
 
-## Install Dependencies (listed in DESCRIPTION) ----
+## Install packages listed in DESCRIPTION (and/or R and Rmd files) ----
+renv::install()
 
-devtools::install_deps(upgrade = "never")
+# OR
 
+## Restore local environment ----
+renv::restore()
 
 
 ## Load Project Addins (R Functions and Packages) ----
