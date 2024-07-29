@@ -1,7 +1,7 @@
 #' Filter clusters based on their gene-set size
 #' 
 #' @description
-#' This function removes genes belonging to clusters that are considered "too small" by the user.
+#' This function filters clusters based on size, selecting genes that belong to clusters meeting the user-defined size criteria. 
 #' 
 #' @param getclustrs_data A `dataframe` of type *t* that typically corresponds to the output of the `getclustrs()` function. This input holds at least the columns named `gene_id` and `clustr` respectively holding Ensembl gene and cluster identifiers for the deregulated genes.
 #' @param size_filtr The minimum number of genes required for a cluster to be retained (by default: 3). 
