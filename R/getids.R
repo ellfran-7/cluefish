@@ -30,12 +30,13 @@ getids <- function(
     other_ids = NULL 
 )
 { 
-  
+  # Check if the BioMart database is hosted by Ensembl
   if (biomart_db %in% biomaRt::listMarts()$biomart) {
     
     # Connection to a BioMart database and the species dataset
     ensembl <- biomaRt::useEnsembl(biomart = biomart_db, dataset = species_dataset, version = version)
     
+    # Check if the BioMart database is hosted by Ensembl Genomes
   } else if (biomart_db %in% biomaRt::listEnsemblGenomes()$biomart) {
     
     # Connection to an Ensembl Genome in the BioMart database and the species dataset
