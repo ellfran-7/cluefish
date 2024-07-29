@@ -1,12 +1,13 @@
-#' Retrieve the regulatory status of genes
+#' Retrieve the regulatory status of deregulated genes
 #' 
 #' @description
-#' This function retrieves information on the regulatory status of a gene using the files downloaded with the `dl_regulation_data()` function.
+#' This function retrieves information on the regulatory status of genes using the files downloaded with the `dl_regulation_data()` function.
 #' 
-#' @param getids_data A dataframe of type *t* that typically corresponds to the output of the `getids()` function. This input holds at least one column named “ensembl_gene_id” holding Ensembl identifiers for the deregulated genes. It should be a subset of the output of the `getids()` function with only the significantly deregulated transcripts as rows and transcript/gene identifiers as columns.
+#' @param getids_data A dataframe of type *t* that typically corresponds to the output of the `getids()` function. This input holds at least one column named "gene_id" holding gene identifiers for the deregulated genes.  It should be a subset of the output of the `getids()` function with only the significantly deregulated transcripts as rows and transcript/gene identifiers as columns.
 #' @param regulator_file The previously downloaded `.txt` Transcription Factor file 
-#' from the AnmalTFDB database (http://bioinfo.life.hust.edu.cn/AnimalTFDB4/#/).
-#' @param coregulator_file The previously downloaded `.txt` Transcription Co-Factor file from the AnmalTFDB database.
+#' from the AnimalTFDB4 database (https://guolab.wchscu.cn/AnimalTFDB4/#/).
+#' @param coregulator_file The previously downloaded `.txt` Transcription Co-Factor file from the AnimalTFDB4 database (https://guolab.wchscu.cn/AnimalTFDB4/#/).
+#' 
 #' @return A `dataframe` of type *t* similar to the *getids_data* input with an added column indicating the (co-)regulator status of each transcript's deregulated gene.
 #' 
 #' @export
