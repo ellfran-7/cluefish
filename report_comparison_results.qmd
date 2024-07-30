@@ -487,7 +487,7 @@ total_considered_in_propos <- unique(c(cluster_transcripts, lonely_transcripts_e
 ```
 
 | Metric                           | Standard                                                                                 | Proposed                                                                             |
-|------------------|------------------------------|------------------------|
+|----------------------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
 | Number of transcripts considered | `r length(unique(dr_t_a_stand_ids$transcript_id))`                                       | `r length(unique(total_considered_in_propos))`                                       |
 | Number of lonely transcripts     | `r length(unique(BMDres_definedCI$id)) - length(unique(dr_t_a_stand_ids$transcript_id))` | `r length(unique(BMDres_definedCI$id)) - length(unique(total_considered_in_propos))` |
 
