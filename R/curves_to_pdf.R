@@ -1,7 +1,7 @@
-#' Generating curvesplots per-cluster to PDF
+#' Generate curvesplots per-cluster to PDF
 #' 
 #' @description
-#' This function generates a PDF file containing a plot of dose-response curves for each cluster of deregulated genes, with each plot labeled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labeled with "Dose (µg/L)" and "Signal", and the Y-axis is scaled to be the same across all plots.
+#' This function generates a PDF file featuring dose-response curves for each cluster of deregulated genes. Each plot is labeled with the cluster ID and the number of transcripts in the cluster. By default, the curves are color-coded to indicate whether the trend is increasing, decreasing, U-shaped, or bell-shaped. Users can also apply any modifications available in the original DRomics::curvesplot() function.
 #' 
 #' @param lonelyfishing_data The named `list` output of the `lonelyfishing()` function.
 #' @param bmdboot_data The DRomics bmdboot dataframe results after DRomics::bmdfilter() 
@@ -95,18 +95,8 @@ curves_to_pdf <- function(
     # Vector of cluster IDs in increasing order 
     cluster_names <- sort(unique(as.numeric(dr_t_data4pdf$new_clustr)))
     
-    # Check if "Friendly" cluster exists in the data, if not, only include "Lonely" and "All" clusters
-    if ("Friendly" %in% lonelyfishing_data$dr_g_a_fishing$new_clustr) {
-      
-      # Adding the "Friendly", "Lonely" and "All" clusters to the end of the cluster ID vector
-      cluster_names <- append(cluster_names, c("Friendly", "Lonely", "All"))
-      
-    } else {
-      
-      # Adding the "Lonely" and "All" clusters to the end of the cluster ID vector
-      cluster_names <- append(cluster_names, c("Lonely", "All"))
-      
-    }
+    # Adding the "Lonely" and "All" clusters to the end of the cluster ID vector
+    cluster_names <- append(cluster_names, c("Lonely", "All"))
     
     # Arrange the data by cluster and by source order : GO:BP, KEGG and then WP. GO:BP terms take precedence and are pasted first in the curvesplot title. If there are no enriched GO:BP terms, a KEGG term is pasted. If neither GO:BP nor KEGG terms are present, a WP term is pasted.
     dr_g_a_fusion_ordered <- clustrfusion_data$dr_g_a_fusion |> 
