@@ -1,16 +1,16 @@
-#' Cluster fusion by enriched biological function
+#' Fusion of clusters based on shared cluster enrichment
 #' 
 #' @description
-#' This function fusions clusters that share a common biological function enrichment.
+#' This function fusions clusters that share the same biological function enrichment in at-least one of the sources used (e.g. GO, KEGG...).
 #'
 #' @param clustrenrich_data The named `list` output from the `clustrenrich()` function.
 #' @param monoterm_fusion Option to merge clusters only if they either enrich the same total terms (monoterm_fusion = FALSE) or the same individual term (monoterm_fusion = TRUE) in at least one source (default set to FALSE).
 #' 
-#' @return A named `list` holding 3 components, where :
+#' @return A named `list` holding 4 components, where :
 #'      -`dr_g_a_fusion` is a dataframe of type *g_a* holding the cluster fusion results. It shares a similar structure to the *clustrenrich_data$dr_g_a_enrich* dataframe with each row being a combination of gene and biological function annotation.
 #'      -`dr_c_a_fusion` is a dataframe of type *c_a* holding the cluster fusion results with each row being a combination of cluster ID and biological function annotation
 #'      -`c_fusionlog` is a dataframe tracing cluster fusion events, indicating the sources from which they originated (e.g. GO, KEGG).
-#'      -`params` is a list of the main parameters used
+#'      -`params` is a list of the main parameters used; in this case monoterm_fusion
 #' 
 #' @examples
 #' 
