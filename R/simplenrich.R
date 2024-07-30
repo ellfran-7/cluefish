@@ -26,6 +26,7 @@
 #'      -`filtered` is named `list` holding two sub-components:
 #'            - `dr_g_a` is a dataframe of type *g_a* holding the filtered enrichment results.
 #'            - `dr_a` is a dataframe of type *a* holding the filtered enrichment results.
+#'      -`params` is a list of the main parameters used
 #' @export
 #'
 #' @examples
