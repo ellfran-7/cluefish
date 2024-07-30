@@ -55,8 +55,6 @@ dl_regulation_data(
 
 
 
-
-
 #>> STEP 1 - Load and filter the DRomics results
 #>----------------------------------------------
 
@@ -89,8 +87,6 @@ b <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.
 # 
 # Choose the appropriate filter based on the level of stringency required for your analysis.
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
-
-
 
 
 
@@ -154,8 +150,6 @@ dr_t_regs <- getregs(
 
 
 
-
-
 #>> STEP 4 - Create and retrieve the clustered PPIN data from the StringApp in Cytoscape
 #>--------------------------------------------------------------------------------------
 
@@ -191,7 +185,6 @@ dr_t_clustrs_filtr <- clustrfiltr(
   getclustrs_data = dr_t_clustrs,
   size_filtr = 4
 )
-
 
 
 
@@ -244,6 +237,10 @@ clustr_enrichres$dr_g_a_whole |>
     class = c("compact")
   )
 
+
+
+
+
 #>> STEP 7 - Fusion clusters based on shared cluster enrichment
 #>-------------------------------------------------------------
 
@@ -251,8 +248,6 @@ clustr_fusionres <- clustrfusion(
   clustrenrich_data = clustr_enrichres,
   monoterm_fusion = FALSE
 )
-
-
 
 
 
@@ -270,6 +265,7 @@ lonely_fishres <- lonelyfishing(
   output_filename = paste0("lonely_fishres_cs09_cf4_", file_date, ".rds"), 
   overwrite = FALSE
 )
+
 
 
 
