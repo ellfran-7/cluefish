@@ -1,7 +1,9 @@
 #' Fishing of lonely genes sharing annotations with existing clusters
 #'
 #' @description
-#' This function identifies and integrates lonely genes (genes not found in any cluster after the `clustrfiltr()` function) into existing clusters. Integration relies on shared gene pathway annotations between lonely genes and cluster pathway enrichments. Lonely genes are pinpointed from the input gene data (`dr_data`) and then linked to clusters based on shared biological annotations from pathways.
+#' This function expands gene clusters by incorporating "lonely" genes—those not initially assigned to any cluster. It identifies these lonely genes and integrates them into existing clusters based on shared biological function annotations and enrichments observed in the clusters. This integration uses annotations from sources like GO, KEGG, and WikiPathways, focusing on terms found in the $dr_g_a_fusion dataframe from the clustrfusion() output.
+#' 
+#' The function introduces the concept of "Friendly" genes, allowing users to set a friendly_limit that determines the maximum number of clusters a gene can be part of. Genes exceeding this limit are reassigned to the "Lonely" cluster, and a "friendliness" column is created to show the number of clusters each gene participates in.
 #' 
 #' @param dr_data A `dataframe` of type *t* that typically corresponds to the output of `getids()`or `getregs()`. This input holds at least gene_id' and 'term_name' columns, respectively containing Ensembl gene identifiers and biological function annotations for the deregulated genes. Recommended to hold also 'transcript_id' for futur functions.
 #' @param clustrenrich_data The named `list` output of the `clustrenrich()` function.
@@ -11,10 +13,10 @@
 #' @param output_filename Output lonelyfishing result filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
 #' 
-#' @return A named `list` holding 2 components, where :
+#' @return A named `list` holding 3 components, where :
 #'      -`dr_t_c_a_fishing` is a dataframe of type *t_c_a* holding the lonely fishing results.
 #'      -`dr_c_a_fishing` is a dataframe of type *c_a* holding the lonely fishing results. It shares a similar structure to the *clustrfusion_data$dr_c_a_fusion* dataframe with each row being a combination of cluster ID and biological function annotation.
-#'      -`params` is a list of the main parameters used
+#'      -`params` is a list of the main parameters used; in this case the friendly_limit
 #' 
 #' @export
 #'
