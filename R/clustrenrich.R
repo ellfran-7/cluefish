@@ -1,8 +1,11 @@
 #' Cluster-specific functional enrichment and whole annotation retrieval
 #' 
 #' @description
-#' Firstly, this function performs Over-Representation Analysis (ORA) on each cluster. 
-#' An option is added to filter pathways that are enriched by "too few" genes. Secondly, it adds the data for genes in a string cluster but not participating in the enrichment. Throughout the pipeline, there is trace of the number of enriched biological functions before and after filters. Lastly, it retrieves all the biological funciton annotations for the entirety of deregulated genes from within the g:profiler database. 
+#' This function performs Over-Representation Analysis (ORA) on clusters to identify enriched biological functions using the clustrenrich() function. It leverages the gprofiler2::gost() function and offers customization options, including the choice of background gene list, background type (e.g., “custom” or “custom_annotated”), database sources (e.g., GO, KEGG, WP), adjusted p-value correction methods, and the option to exclude IEA (Electronically Inferred Annotations) GO terms. The function is adaptable to various organisms and biological annotation sources.
+#' 
+#' Users can filter terms/pathways based on gene set size (min_term_size and max_term_size) and the number of genes enriched (ngenes_enrich_filtr). For example, terms with fewer than the minimum required genes or more than the maximum allowed genes are excluded, and terms enriched by fewer than the specified number of genes are filtered out. 
+#' 
+#' Additionally, users can choose to retain only highlighted/driver GO terms to reduce redundancy and focus on key biological functions. A secondary gprofiler2::gost() run with significant = FALSE retrieves annotations for all deregulated genes, which is utilized later in the lonelyfishing() function. Throughout the process, a dataframe tracks the number of biological functions linked to each cluster after each filtering step, categorized by source. All main parameters used are saved in the output for transparency and reproducibility.
 #'
 #' @param clustrfiltr_data The named `list` output from the `clustrfiltr()` function. 
 #' @param dr_genes The character vector of deregulated genes that can correspond to the `gene_id` column in the output of the `getids()` or  `getregs()`  function. The `gprofiler2::gost()` function handles mixed types of gene IDs and even duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
