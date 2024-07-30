@@ -50,12 +50,18 @@ clustrfiltr <- function(
   rownames(dr_t_clustrs_filtr$kept) <- NULL
   rownames(dr_t_clustrs_filtr$removed) <- NULL
   
-  clustrfiltr_res <- list(kept = dr_t_clustrs_filtr$kept,
-                          removed = dr_t_clustrs_filtr$removed,
-                          params = list(
-                            size_filtr = size_filtr
-                            )
-                          )
+  # Create a list of the results
+  clustrfiltr_res <- list(
+    
+    kept = dr_t_clustrs_filtr$kept,
+    
+    removed = dr_t_clustrs_filtr$removed,
+    
+    params = list(
+      size_filtr = size_filtr
+      )
+    
+    )
   # Define the result as a structured object with class "clustrfiltres"
   clustrfiltr_res <- structure(clustrfiltr_res, class = "clustrfiltres")
                           

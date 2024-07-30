@@ -362,21 +362,28 @@ clustrenrich <- function(
     rownames(dr_g_a_annots) <- NULL
     rownames(dr_c_a_termcount) <- NULL
     
-    # Create a list containing the enrichment results, annotations, and the trace of biological function filtering
-    clustr_enrichres <- list(dr_g_a_enrich = dr_g_all_data,
-                             gostres = multi_gostres_filtr,
-                             dr_g_a_whole = as.data.frame(dr_g_a_annots),
-                             c_simplifylog = dr_c_a_termcount,
-                             params = list(
-                               bg_type = bg_type,
-                               sources = sources, 
-                               user_threshold = user_threshold,
-                               min_term_size = min_term_size,
-                               max_term_size = max_term_size,
-                               only_highlighted_GO = only_highlighted_GO,
-                               ngenes_enrich_filtr = ngenes_enrich_filtr
-                               )
-                             )
+    # Create a list of the results
+    clustr_enrichres <- list(
+      
+      dr_g_a_enrich = dr_g_all_data,
+      
+      gostres = multi_gostres_filtr,
+      
+      dr_g_a_whole = as.data.frame(dr_g_a_annots),
+      
+      c_simplifylog = dr_c_a_termcount,
+      
+      params = list(
+        bg_type = bg_type,
+        sources = sources, 
+        user_threshold = user_threshold,
+        min_term_size = min_term_size,
+        max_term_size = max_term_size,
+        only_highlighted_GO = only_highlighted_GO,
+        ngenes_enrich_filtr = ngenes_enrich_filtr
+        )
+      
+      )
     
     # Define the class of the output
     clustr_enrichres <- structure(clustr_enrichres, class = "clustrenrichres")

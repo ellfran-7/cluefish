@@ -217,14 +217,19 @@ clustrfusion <- function(
   rownames(dr_c_a_fusion) <- NULL
   rownames(c_fusionlog) <- NULL
   
-  # Create a named list of the clustrfusion results and the trace of cluster fusions
-  clustr_fusionres <- list(dr_g_a_fusion = dr_g_a_fusion,
-                           dr_c_a_fusion = dr_c_a_fusion,
-                           c_fusionlog = c_fusionlog,
-                           params = list(
-                             monoterm_fusion = monoterm_fusion
-                             )
-                           )
+  # Create a list of the results
+  clustr_fusionres <- list(
+    
+    dr_g_a_fusion = dr_g_a_fusion,
+    
+    dr_c_a_fusion = dr_c_a_fusion,
+    
+    c_fusionlog = c_fusionlog,
+    
+    params = list(
+      monoterm_fusion = monoterm_fusion
+      )
+    )
   
   # Define the class of the output
   clustr_fusionres <- structure(clustr_fusionres, class = "clustrfusion")

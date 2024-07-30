@@ -278,13 +278,18 @@ lonelyfishing <- function(
     rownames(dr_t_c_a_fishing) <- NULL
     rownames(dr_c_a_fishing) <- NULL
     
-    # Create a named list of the lonelyfishing results
-    lonelyfishingres <- list(dr_t_c_a_fishing = dr_t_c_a_fishing,
-                             dr_c_a_fishing = dr_c_a_fishing,
-                             params = list(
-                               friendly_limit = friendly_limit
-                               )
-                             )
+    # Create a list of the results
+    lonelyfishingres <- list(
+      
+      dr_t_c_a_fishing = dr_t_c_a_fishing,
+      
+      dr_c_a_fishing = dr_c_a_fishing,
+      
+      params = list(
+        friendly_limit = friendly_limit
+        )
+      
+      )
     
     # Define the class of the output
     lonelyfishingres <- structure(lonelyfishingres, class = "lonelyfishingres")
