@@ -18,12 +18,10 @@ renv::restore()
 
 
 ## Load Project Addins (R Functions and Packages) ----
-
 devtools::load_all(here::here())
 
 
 ## State the Time Variable for file saving and reading
-
 file_date <- "2024-07-07"
 
 
@@ -62,25 +60,34 @@ dl_regulation_data(
 #>> STEP 1 - Load and filter the DRomics results
 #>----------------------------------------------
 
-# This workflow necessitates data from the experiment and the DRomics pipeline !
-# This script will load the following data :
-#   - DRomics workflow results : 
-#           *object of class "drcfit" from the dose-response modelling of responsive transcripts (holds the background transcript list from the experiment)
-#           *object of class "bmdboot" from the computation of CI on benchmark doses by bootstrap
+# This workflow requires data from both the experimental results and the DRomics pipeline.
 #
-# The "bmdboot" object is used throughout the workflow.
-# The "drcfit" object is used to obtain the background transcript list and the tested doses for the "curves_to_pdf" function.
+# The following code loads the necessary data:
+#   - **DRomics workflow results:**
+#     - An object of class `"drcfit"` from the dose-response modeling of responsive transcripts. 
+#       °This object contains:
+#       - The background transcript list (accessible via `f$omicdata$item`), which is used by the `getids()` and `clustrenrich()` functions.
+#       - The tested doses (accessible via `f$omicdata$dose`), which are required for the `curves_to_pdf()` function.
+#     - An object of class `"bmdboot"` from the computation of confidence intervals on benchmark doses by bootstrap.
+#       °This object provides deregulated transcript data, which is used throughout the workflow.
 #
-#
-# All two files are to be created beforehand and are stored in `data/raw-data/`.
+# Both files must be created in advance and stored in the `data/raw-data/` directory.
+# If these files are not already available, you can generate them using the `dromics-pipeline.R` script found in the `analyses/` folder.
 
-# Load DRomics drcfit object (which holds the background transcript list) 
+
+# Load DRomics "drcfit" object
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
 
-# Load DRomics bmdboot object
+# Load DRomics "bmdboot" object
 b <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.rds")
 
-# We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
+# We filter the `bmdboot` results to retain only those transcripts with a defined confidence interval around the BMD.
+# The `DRomics::bmdfilter` function provides two other filtering options based on the desired stringency:
+# 
+# - **"finiteCI"**: Retains transcripts where both point and interval estimates of the BMD were successfully calculated and fall within the range of tested or observed doses.
+# - **"definedBMD"**: Retains transcripts where the point estimate of the BMD falls within the range of tested or observed doses.
+# 
+# Choose the appropriate filter based on the level of stringency required for your analysis.
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 
@@ -128,7 +135,7 @@ write.table(bg_t_ids, paste0("outputs/bg_t_ids_", file_date, ".txt"))
 # Load the "time-consuming" data if already created
 bg_t_ids <- read.table(paste0("outputs/bg_t_ids_", file_date, ".txt"))
 
-# The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the bg_t_ids dataframe.
+# The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the deregulated transcript data from the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 
@@ -261,7 +268,7 @@ lonely_fishres <- lonelyfishing(
   friendly_limit = 0,
   path = "outputs/cs09-cf4/",
   output_filename = paste0("lonely_fishres_cs09_cf4_", file_date, ".rds"), 
-  overwrite = TRUE
+  overwrite = FALSE
 )
 
 
@@ -322,8 +329,42 @@ curves_to_pdf(
 
 
 
-#>> STEP 11 - Generate the quarto report 
-#>--------------------------------------
+#>> STEP 11 - Characterize the lonely cluster by simple functional enrichment
+#>---------------------------------------------------------------------------
+
+# Only select the transcripts part of the lonely cluster
+
+lonelycluster_data <- lonely_fishres$dr_t_c_a_fishing |> 
+  dplyr::filter(new_clustr == "Lonely")
+
+# Perform a simple functional enrichment using the simplenrich() homemade function 
+
+lonely_clustr_analysis_res <- simplenrich(
+  input_genes = lonelycluster_data$gene_id,
+  bg_genes = bg_t_ids$gene_id,
+  bg_type = "custom_annotated",
+  sources = c("GO:BP", "KEGG", "WP"), 
+  organism = "drerio",
+  user_threshold = 0.05,
+  correction_method = "fdr",
+  min_term_size = 5,
+  max_term_size = 500,
+  only_highlighted_GO = TRUE,
+  ngenes_enrich_filtr = 3,
+  path = "outputs/cs09-cf4/",
+  output_filename = paste0("lonely_clustr_analysis_res_cs09_cf4_", file_date, ".rds"),
+  overwrite = TRUE
+)
+
+
+
+
+
+#>> ADDITIONAL STEPS: Generation Quarto reports
+#> --------------------------------------------
+
+
+#>> Generate the cluefish quarto report -------
 
 # Note: To ensure that Quarto reports are generated automatically and correctly, follow these guidelines:
 # 
@@ -347,11 +388,8 @@ render_qmd(
   )
 
 
-#>> Additional steps 
-#> -----------------
 
-# Characterisation of the lonely cluster: basic functional enrichment
-source(here::here("analyses", "lonely_cluster_analysis", "lonely_cluster_analysis.R"))
+#>> Generate the lonely cluster analysis quarto report -------
 
 # Render and preview the lonely_results_report html report contextualising the lonely cluster
 render_qmd(
@@ -361,6 +399,10 @@ render_qmd(
   output_path = here::here("analyses", "quarto_outputs"), 
   execute_params = list(`file-date` = file_date)
 )
+
+
+
+#>> Generate the comparison of cluefish and standard workflow quarto report -------
 
 # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the proposed workflow
 source(here::here("analyses", "standard_approach", "standard_pipeline.R"))
