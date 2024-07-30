@@ -1,7 +1,7 @@
 #' Simple functional enrichment with added filtering
 #' 
 #' @description
-#' This function utilizes gprofiler2::gost() to perform standard functional enrichment analysis on a list of genes of interest. It incorporates filters similar to those in the proposed workflow, enabling users to set limits on gene set sizes (lower and upper), specify the minimum number of genes involved in enrichment, and restrict results to driver GO terms if requested. The function provides flexibility by applying the same filters and features as the proposed approach. The output includes both unfiltered and filtered enrichment results, available in two formats: a combination of gene and annotation per row, or annotation per row only.
+#' This function utilizes gprofiler2::gost() to perform standard functional enrichment analysis on a list of genes of interest. It incorporates filters similar to those in the proposed workflow, enabling users to set limits on gene set sizes (lower and upper), specify the minimum number of genes involved in enrichment, and restrict results to driver GO terms if requested. The function provides flexibility by applying the same filters and features as the cluefish workflow. The output includes both unfiltered and filtered enrichment results, available in two formats: a combination of gene and annotation per row, or annotation per row only.
 #'
 #' @param input_genes A character vector of genes of interest. The `gprofiler2::gost()` function handles mixed types of gene IDs and even duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
 #' @param bg_genes The vector of background Ensembl genes (preferably from the experiment).
@@ -136,12 +136,27 @@ simplenrich <- function(
     rownames(dr_g_a_filtered) <- NULL
     rownames(dr_a_filtered) <- NULL
     
-    # Create a list containing the enrichment results, annotations, and the trace of biological function filtering
+    # Create a list containing the unfiltered, filtered enrichment results and the parameters
     results <- list(
-      unfiltered = list(dr_g_a = dr_g_a_unfiltered,
-                        gostres = gostres),
-      filtered = list(dr_g_a = dr_g_a_filtered,
-                      dr_a = dr_a_filtered)
+      
+      unfiltered = list(
+        dr_g_a = dr_g_a_unfiltered,
+        gostres = gostres),
+      
+      filtered = list(
+        dr_g_a = dr_g_a_filtered,
+        dr_a = dr_a_filtered),
+      
+      params = list(
+        bg_type = bg_type,
+        sources = sources, 
+        user_threshold = user_threshold,
+        min_term_size = min_term_size,
+        max_term_size = max_term_size,
+        only_highlighted_GO = only_highlighted_GO,
+        ngenes_enrich_filtr = ngenes_enrich_filtr
+      )
+      
     )
     
     # Define the class of the output
