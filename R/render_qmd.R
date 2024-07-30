@@ -30,6 +30,7 @@ render_qmd <- function(input_file, output_file, output_path, file_ext, ...) {
   # move the file to the output path
   fs::file_move(paste0(output_name), output_path)
   
+  # Message describing the moving of the file: from where to where
   message(paste0(output_name, collapse = " and "))
   message(paste0("--> moved to -->"))
   message(output_path)

@@ -30,12 +30,14 @@ results_to_csv <- function(
     dir.create(path, showWarnings = FALSE, recursive = TRUE)
     # `recursive = TRUE` creates intermediate directories as needed
     
+    # Message stating that the directory is created
     message("Directory '", path, "' created.")
   }
   
   # Check if the output file already exists locally and overwrite is not set to TRUE
   if (file.exists(file.path(path, output_filename)) && !overwrite) {
     
+    # Message stating that the results file already exists and will be read
     message("The summary table csv file already exists. Use 'overwrite = TRUE' to replace it.")
     
   } else {
