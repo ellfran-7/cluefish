@@ -1,4 +1,4 @@
-#' Fishing lonely genes into clusters based mapping of annotation to enrichment
+#' Fishing of lonely genes sharing annotations with existing clusters
 #'
 #' @description
 #' This function identifies and integrates lonely genes (genes not found in any cluster after the `clustrfiltr()` function) into existing clusters. Integration relies on shared gene pathway annotations between lonely genes and cluster pathway enrichments. Lonely genes are pinpointed from the input gene data (`dr_data`) and then linked to clusters based on shared biological annotations from pathways.
@@ -157,7 +157,7 @@ lonelyfishing <- function(
       dr_g_c_a_fishing <- dr_g_c_a_fishing |>
         dplyr::group_by(gene_id) |>
         dplyr::mutate(friendliness = dplyr::n_distinct(new_clustr)) |>
-        dplyr::mutate(new_clustr = dplyr::if_else(friendliness > friendly_limit, "Lonely", as.character(new_clustr))) |>
+        dplyr::mutate(new_clustr = dplyr::if_else(friendliness >= friendly_limit, "Lonely", as.character(new_clustr))) |>
         dplyr::ungroup()
       
     } else {
