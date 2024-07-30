@@ -363,13 +363,13 @@ clustrenrich <- function(
                              dr_g_a_whole = as.data.frame(dr_g_a_annots),
                              c_simplifylog = dr_c_a_termcount,
                              params = list(
-                               bg_type = "custom_annotated",
-                               sources = c("GO:BP", "KEGG", "WP"), 
+                               bg_type = bg_type,
+                               sources = sources, 
                                user_threshold = user_threshold,
                                min_term_size = min_term_size,
                                max_term_size = max_term_size,
-                               only_highlighted_GO = TRUE,
-                               ngenes_enrich_filtr = 5
+                               only_highlighted_GO = only_highlighted_GO,
+                               ngenes_enrich_filtr = ngenes_enrich_filtr
                                )
                              )
     
