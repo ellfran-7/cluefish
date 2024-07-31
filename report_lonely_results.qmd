@@ -52,10 +52,10 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 ## Retrieve the background identifiers
-bg_t_ids <- read.table(here::here("outputs", paste0("bg_t_ids_", params$`file-date`, ".txt")))
+bg_t_ids <- read.table(here::here("outputs", params$`file-date`, paste0("bg_t_ids_", params$`file-date`, ".txt")))
 
 ## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", "cs09-cf4", paste0("clustr_enrichres_cs09_cf4_", params$`file-date`, ".rds")))
+clustr_enrichres <- readRDS(here::here("outputs", params$`file-date`, paste0("clustr_enrichres_cs09_cf4_", params$`file-date`, ".rds")))
 
 ## Retrieve the  clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -63,7 +63,7 @@ clustr_fusionres <- clustrfusion(
 )
 
 ## Load the lonely fishing results 
-lonelyfishing_data <- readRDS(here::here("outputs", "cs09-cf4", paste0("lonely_fishres_cs09_cf4_", params$`file-date`, ".rds")))
+lonelyfishing_data <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_fishres_cs09_cf4_", params$`file-date`, ".rds")))
 
 # Modify the "transcript_id" column to "id" for easier merge and integration to DRomics visualisations
 names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "transcript_id"] <- "id"
@@ -76,7 +76,7 @@ b_only_lonely_fishres <- b_lonely_fishres |>
   dplyr::filter(new_clustr == "Lonely")
 
 # Load the lonely cluster functional enrichment results
-lonely_cluster_analysis_res <- readRDS(here::here("analyses", "lonely_cluster_analysis", "results", paste0("lonely_cluster_analysis_res_", params$`file-date`, ".rds")))
+lonely_cluster_analysis_res <- readRDS(here::here("outputs",  params$`file-date`, paste0("lonely_clustr_analysis_res_cs09_cf4_", params$`file-date`, ".rds")))
 
 ```
 
@@ -142,7 +142,7 @@ names(b_only_lonely_fishres)[names(b_only_lonely_fishres) == "gene_name"] <- "id
 ## Characterizing the Lonely cluster by functional enrichment
 
 | Source | Query size                                                                                                                     | Background size                                                                                                                           |
-|------------------|------------------------|------------------------------|
+|-------------------|------------------------|------------------------------|
 | GO:BP  | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$effective_domain_size)` |
 | KEGG   | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$query_size)`  | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$effective_domain_size)`  |
 | WP     | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$query_size)`    | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$effective_domain_size)`    |

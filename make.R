@@ -127,9 +127,9 @@ bg_t_ids <- getids(
 #       For example, with Danio rerio, the "ensembl_gene_id" identifier is supported in STRING and g:profiler.
 
 # Save the "time-consuming" data if already created
-write.table(bg_t_ids, paste0("outputs/bg_t_ids_", file_date, ".txt"))
+write.table(bg_t_ids, paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table(paste0("outputs/bg_t_ids_", file_date, ".txt"))
+bg_t_ids <- read.table(paste0("outputs/", file_date, "bg_t_ids_", file_date, ".txt"))
 
 # The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the deregulated transcript data from the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -170,7 +170,7 @@ write.table(DR_output4string, file = paste0("outputs/DR_output4string_", file_da
 dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
-  path = "outputs/cytoscape-files/",
+  path = "outputs/", file_date, "/cytoscape-files/",
   nodetable_filename = paste0("Resp_PPIN_clustered_cs09_mcl4_", file_date, ".csv")
 )
 
@@ -208,7 +208,7 @@ clustr_enrichres <- clustrenrich(
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
-  path = "outputs/cs09-cf4/",
+  path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("clustr_enrichres_cs09_cf4_", file_date, ".rds"),
   overwrite = TRUE
 )
@@ -261,7 +261,7 @@ lonely_fishres <- lonelyfishing(
   clustrenrich_data = clustr_enrichres,
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
-  path = "outputs/cs09-cf4/",
+  path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("lonely_fishres_cs09_cf4_", file_date, ".rds"), 
   overwrite = FALSE
 )
@@ -278,7 +278,7 @@ lonely_fishres <- lonelyfishing(
 results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
-  path = "outputs/cs09-cf4/",
+  path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("summary_workflow_cs09_cf4_", file_date, ".csv"),
   overwrite = TRUE
 )
@@ -316,7 +316,7 @@ curves_to_pdf(
   xtitle = "Dose (µg/L)",
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
-  path = "outputs/cs09_cf4/",
+  path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("workflow_curvesplots_cs09_cf4_", file_date, ".pdf"),
   overwrite = TRUE
 )
@@ -347,7 +347,7 @@ lonely_clustr_analysis_res <- simplenrich(
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
-  path = "outputs/cs09-cf4/",
+  path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("lonely_clustr_analysis_res_cs09_cf4_", file_date, ".rds"),
   overwrite = TRUE
 )
@@ -379,7 +379,7 @@ render_qmd(
   input_file = here::here("report_workflow_results.qmd"), 
   output_file = paste0("report_workflow_results_sc09_cf4_", file_date),
   file_ext = "html",
-  output_path = here::here("analyses", "quarto_outputs"), 
+  output_path = here::here("outputs", file_date, "quarto-outputs"), 
   execute_params = list(`file-date` = file_date)
   )
 
@@ -392,7 +392,7 @@ render_qmd(
   input_file = here::here("report_lonely_results.qmd"), 
   output_file = paste0("report_lonely_results_sc09_cf4_", file_date),
   file_ext = "html",
-  output_path = here::here("analyses", "quarto_outputs"), 
+  output_path = here::here("outputs", file_date, "quarto-outputs"), 
   execute_params = list(`file-date` = file_date)
 )
 
@@ -401,14 +401,14 @@ render_qmd(
 #>> Generate the comparison of cluefish and standard workflow quarto report -------
 
 # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the proposed workflow
-source(here::here("analyses", "standard_approach", "standard_pipeline.R"))
+source(here::here("analyses", "standard-pipeline.R"))
 
 # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
 render_qmd(
   input_file = here::here("report_comparison_results.qmd"), 
   output_file = paste0("report_comparison_results_sc09_cf4_", file_date),
   file_ext = "html",
-  output_path = here::here("analyses", "quarto_outputs"), 
+  output_path = here::here("outputs", file_date, "quarto-outputs"), 
   execute_params = list(`file-date` = file_date)
 )
 
