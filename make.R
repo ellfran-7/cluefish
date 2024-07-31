@@ -21,9 +21,16 @@ renv::restore()
 devtools::load_all(here::here())
 
 
-## State the Time Variable for file saving and reading
-file_date <- "2024-07-07"
+## State the Time Variable for file saving and reading ---
+file_date <- "2024-07-31"
 
+
+## Create Directory for Saving Cluefish Output Files ---
+# dir.create(paste0("outputs/", file_date))
+
+
+## Create Directory for Saving Cytoscape Files ---
+# dir.create(paste0("outputs/", file_date, "/cytoscape-files"))
 
 
 ## Run Project Workflow  ----
