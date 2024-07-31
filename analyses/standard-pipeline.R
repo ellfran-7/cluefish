@@ -5,7 +5,7 @@
 ## ----------------------------------------------------------------------------
 
 ## State the Time Variable for file saving and reading
-file_date <- "2024-07-07"
+file_date <- "2024-07-31"
 
 # Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")

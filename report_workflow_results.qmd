@@ -23,7 +23,7 @@ editor: visual
 cap-location: margin
 params:
   file-date: "2024-07-07"
-output-file: "report_workflow_results_sc09_cf4_2024-07-21.html"
+output-file: "report_workflow_results_2024-07-07.html"
 ---
 
 ```{r}
@@ -241,13 +241,13 @@ b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_U
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 ## Retrieve the background identifiers
-bg_t_ids <- read.table(here::here("outputs", params$`file-date`, paste0("bg_t_ids_", params$`file-date`, ".txt")))
+bg_t_ids <- read.table(here::here("outputs", params$`file-date`, paste0("bg_t_ids_",params$`file-date`, ".txt")))
 
 ## Retrieve the deregulated identifiers
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 ## Retrieve the getclustrs() output
-dr_g_string_clustr <- read.csv(here::here("outputs", params$`file-date`, "cytoscape-files", paste0("Resp_PPIN_clustered_cs09_mcl4_", params$`file-date`, ".csv")))
+dr_g_string_clustr <- read.csv(here::here("outputs", params$`file-date`, "cytoscape-files", paste0("string_clusteredppin_cs09_i4_", params$`file-date`, ".csv")))
 
 ## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
 dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
@@ -271,7 +271,7 @@ dr_t_clustrs_filtr <- clustrfiltr(
 )
 
 ## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", params$`file-date`, paste0("clustr_enrichres_cs09_cf4_", params$`file-date`, ".rds")))
+clustr_enrichres <- readRDS(here::here("outputs", params$`file-date`, paste0("clustr_enrichres_", params$`file-date`, ".rds")))
 
 ## Retrieve the  clustr_fusionres
 clustr_fusionres <- clustrfusion(
@@ -279,7 +279,7 @@ clustr_fusionres <- clustrfusion(
 )
 
 ## Load the lonely fishing results 
-lonelyfishing_data <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_fishres_cs09_cf4_", params$`file-date`, ".rds")))
+lonelyfishing_data <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_fishres_", params$`file-date`, ".rds")))
 
 # Filtering all genes not part of clusters : the lonely genes
 dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id),] 
@@ -438,7 +438,7 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 Clusters merge when they share identical enriched terms.
 
 | Metric        | Cluster count                                                 |
-|-----------------|-------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
 | After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
 
@@ -468,7 +468,7 @@ gt::gt(same_value_rows) |>
 Lonely genes are incorporated into clusters if they share a common term with any given cluster.
 
 | Metric                      | All                                                                                                      | Annotated                                                                                                                    |
-|--------------------|------------------------|-----------------------------|
+|--------------------|------------------------|----------------------------|
 | Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$gene_id))`                                                             | `r length(unique(dr_g_a_no_clustr_annotated$gene_id))`                                                                       |
 | Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                           | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                                               |
 | Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` |

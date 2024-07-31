@@ -171,7 +171,7 @@ dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
   path = paste0("outputs/", file_date, "/cytoscape-files/"),
-  nodetable_filename = paste0("Resp_PPIN_clustered_cs09_mcl4_", file_date, ".csv")
+  nodetable_filename = paste0("stringppin_drerio_cs09_i4_", file_date, ".csv")
 )
 
 
@@ -209,7 +209,7 @@ clustr_enrichres <- clustrenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("clustr_enrichres_cs09_cf4_", file_date, ".rds"),
+  output_filename = paste0("clustr_enrichres_", file_date, ".rds"),
   overwrite = TRUE
 )
 
@@ -262,7 +262,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 0,
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("lonely_fishres_cs09_cf4_", file_date, ".rds"), 
+  output_filename = paste0("lonely_fishres_", file_date, ".rds"), 
   overwrite = FALSE
 )
 
@@ -279,7 +279,7 @@ results_to_csv(
   lonelyfishing_data = lonely_fishres,
   bmdboot_data = BMDres_definedCI,
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("summary_workflow_cs09_cf4_", file_date, ".csv"),
+  output_filename = paste0("summary_workflow_", file_date, ".csv"),
   overwrite = TRUE
 )
 
@@ -317,7 +317,7 @@ curves_to_pdf(
   ytitle = "Signal",
   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", "U" = "#7570B3", "bell" = "#E7298A"),
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("workflow_curvesplots_cs09_cf4_", file_date, ".pdf"),
+  output_filename = paste0("workflow_curvesplots_", file_date, ".pdf"),
   overwrite = TRUE
 )
 
@@ -348,7 +348,7 @@ lonely_clustr_analysis_res <- simplenrich(
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("lonely_clustr_analysis_res_cs09_cf4_", file_date, ".rds"),
+  output_filename = paste0("lonely_clustr_analysis_res_", file_date, ".rds"),
   overwrite = TRUE
 )
 
@@ -372,12 +372,12 @@ lonely_clustr_analysis_res <- simplenrich(
 # 
 # For example: `clustr_enrichres_2024-07-07.rds` and `lonely_fishres_2024-07-07.rds`
 # Today's date can be dynamically generated using the "Sys.date()" function.
-file_date <- "2024-07-07" 
+file_date <- "2024-07-31" 
 
 # Render and preview the html report in the Viewer panel. The output is moved to the directory chosen in 'output_path'.
 render_qmd(
   input_file = here::here("report_workflow_results.qmd"), 
-  output_file = paste0("report_workflow_results_sc09_cf4_", file_date),
+  output_file = paste0("report_workflow_results_", file_date),
   file_ext = "html",
   output_path = here::here("outputs", file_date, "quarto-outputs"), 
   execute_params = list(`file-date` = file_date)
@@ -390,7 +390,7 @@ render_qmd(
 # Render and preview the lonely_results_report html report contextualising the lonely cluster
 render_qmd(
   input_file = here::here("report_lonely_results.qmd"), 
-  output_file = paste0("report_lonely_results_sc09_cf4_", file_date),
+  output_file = paste0("report_lonely_results_", file_date),
   file_ext = "html",
   output_path = here::here("outputs", file_date, "quarto-outputs"), 
   execute_params = list(`file-date` = file_date)
@@ -406,7 +406,7 @@ source(here::here("analyses", "standard-pipeline.R"))
 # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
 render_qmd(
   input_file = here::here("report_comparison_results.qmd"), 
-  output_file = paste0("report_comparison_results_sc09_cf4_", file_date),
+  output_file = paste0("report_comparison_results_", file_date),
   file_ext = "html",
   output_path = here::here("outputs", file_date, "quarto-outputs"), 
   execute_params = list(`file-date` = file_date)

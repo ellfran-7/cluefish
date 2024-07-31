@@ -22,7 +22,7 @@ editor: visual
 cap-location: margin
 params:
   file-date: "2024-07-07"
-output-file: "report_comparison_results_sc09_cf4_2024-07-07.html"
+output-file: "report_comparison_results_2024-07-07.html"
 ---
 
 ```{r}
@@ -77,7 +77,7 @@ bg_t_ids <- read.table(here::here("outputs", params$`file-date`, paste0("bg_t_id
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 ## Retrieve the getclustrs() output
-dr_g_string_clustr <- read.csv(here::here("outputs", params$`file-date`, "cytoscape-files", paste0("Resp_PPIN_clustered_cs09_mcl4_", params$`file-date`, ".csv")))
+dr_g_string_clustr <- read.csv(here::here("outputs", params$`file-date`, "cytoscape-files", paste0("string_clusteredppin_cs09_i4_", params$`file-date`, ".csv")))
 
 ## Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
 dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
@@ -101,7 +101,7 @@ dr_t_clustrs_filtr <- clustrfiltr(
 )
 
 ## Retrieve the clustr_enrichres 
-clustr_enrichres <- readRDS(here::here("outputs", params$`file-date`, paste0("clustr_enrichres_cs09_cf4_", params$`file-date`, ".rds")))
+clustr_enrichres <- readRDS(here::here("outputs", params$`file-date`, paste0("clustr_enrichres_", params$`file-date`, ".rds")))
 
 ## Select only the highlighted GO terms
 clustr_enrichres_gostres <- clustr_enrichres$gostres$result |> 
@@ -143,7 +143,7 @@ clustr_fusionres <- clustrfusion(
 )
 
 ## Load the lonely fishing results 
-lonelyfishing_data <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_fishres_cs09_cf4_", params$`file-date`, ".rds")))
+lonelyfishing_data <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_fishres_", params$`file-date`, ".rds")))
 
 # Filtering all genes not part of clusters : the lonely genes
 dr_t_no_clustr <- dr_t_ids[!(dr_t_ids$gene_id %in% clustr_fusionres$dr_g_a_fusion$gene_id),] 
@@ -191,7 +191,7 @@ names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fis
 b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, BMDres_definedCI,  by = "id")
 
 # Load the lonely cluster functional enrichment results
-lonely_cluster_analysis_res <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_clustr_analysis_res_cs09_cf4_", params$`file-date`, ".rds")))
+lonely_cluster_analysis_res <- readRDS(here::here("outputs", params$`file-date`, paste0("lonely_clustr_analysis_res_", params$`file-date`, ".rds")))
 
 ```
 
@@ -488,7 +488,7 @@ total_considered_in_propos <- unique(c(cluster_transcripts, lonely_transcripts_e
 ```
 
 | Metric                           | Standard                                                                                 | Proposed                                                                             |
-|----------------|-----------------------------|---------------------------|
+|------------------|----------------------------|--------------------------|
 | Number of transcripts considered | `r length(unique(dr_t_a_stand_ids$transcript_id))`                                       | `r length(unique(total_considered_in_propos))`                                       |
 | Number of lonely transcripts     | `r length(unique(BMDres_definedCI$id)) - length(unique(dr_t_a_stand_ids$transcript_id))` | `r length(unique(BMDres_definedCI$id)) - length(unique(total_considered_in_propos))` |
 
