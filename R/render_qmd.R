@@ -25,13 +25,12 @@ render_qmd <- function(input_file, output_file, output_path, file_ext, ...) {
   # Ensure the output directory exists
   if (!fs::dir_exists(output_path)) {
     fs::dir_create(output_path)
+    message(paste("Directory", output_path, "did not exist. Creating it now."))
   }
   
   # move the file to the output path
   fs::file_move(paste0(output_name), output_path)
   
-  # Message describing the moving of the file: from where to where
-  message(paste0(output_name, collapse = " and "))
-  message(paste0("--> moved to -->"))
-  message(output_path)
+  # Notify about the successful move
+  message(paste("File", output_name, "successfully moved to", output_path))
 }
