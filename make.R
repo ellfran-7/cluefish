@@ -129,7 +129,7 @@ bg_t_ids <- getids(
 # Save the "time-consuming" data if already created
 write.table(bg_t_ids, paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 # Load the "time-consuming" data if already created
-bg_t_ids <- read.table(paste0("outputs/", file_date, "bg_t_ids_", file_date, ".txt"))
+bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
 # The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the deregulated transcript data from the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -158,7 +158,7 @@ DR_output4string <- merge(BMDres_definedCI, dr_t_regs,
                           by.x = "id", by.y = "transcript_id")
 
 # Save the data 
-write.table(DR_output4string, file = paste0("outputs/DR_output4string_", file_date, ".txt"), row.names = FALSE, sep = "\t")
+write.table(DR_output4string, file = paste0("outputs/", file_date, "/DR_output4string_", file_date, ".txt"), row.names = FALSE, sep = "\t")
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
@@ -170,7 +170,7 @@ write.table(DR_output4string, file = paste0("outputs/DR_output4string_", file_da
 dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
-  path = "outputs/", file_date, "/cytoscape-files/",
+  path = paste0("outputs/", file_date, "/cytoscape-files/"),
   nodetable_filename = paste0("Resp_PPIN_clustered_cs09_mcl4_", file_date, ".csv")
 )
 
