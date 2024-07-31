@@ -16,18 +16,7 @@ b <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.
 # Filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
-## Retrieve deregulated gene identifiers from Ensembl
-bg_t_ids <- getids(
-  id_query = f$omicdata$item, 
-  biomart_db = "ENSEMBL_MART_ENSEMBL",
-  species_dataset = "drerio_gene_ensembl",
-  transcript_id = "ensembl_transcript_id_version",
-  gene_id = "ensembl_gene_id",
-  gene_name = "external_gene_name"
-)
-
-# OR
-
+## Retrieve getids() output holding the identifiers for the deregulated transcripts
 bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
 ## Create a subset of the items of interests (e.g. deregulated transcripts derived from the DRomics workflow)
@@ -49,7 +38,7 @@ standard_pipeline_res <- simplenrich(
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
-  path = paste0("analyses/standard_approach/results/", file_date),
+  path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("standard_pipeline_res_", file_date, ".rds"),
-  overwrite = TRUE
+  overwrite = FALSE
 )
