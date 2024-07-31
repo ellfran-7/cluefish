@@ -28,7 +28,7 @@ bg_t_ids <- getids(
 
 # OR
 
-bg_t_ids <- read.table(paste0("outputs/bg_t_ids_", file_date, ".txt"))
+bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
 ## Create a subset of the items of interests (e.g. deregulated transcripts derived from the DRomics workflow)
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
@@ -49,7 +49,7 @@ standard_pipeline_res <- simplenrich(
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
-  path = "analyses/standard_approach/results",
+  path = paste0("analyses/standard_approach/results/", file_date),
   output_filename = paste0("standard_pipeline_res_", file_date, ".rds"),
   overwrite = TRUE
 )
