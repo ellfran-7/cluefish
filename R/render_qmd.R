@@ -15,22 +15,22 @@
 
 render_qmd <- function(input_file, output_file, output_path, file_ext, ...) {
   
-  # render the input document and output file will be in the
-  # current working directory.
-  quarto::quarto_render(input = input_file, output_format = file_ext, ...)
-  
-  # name of the rendered output file
+  # Define the name of the rendered output file
   output_name <- paste0(output_file, ".", file_ext)
   
-  # Ensure the output directory exists
+  # Render the input document with the specified output format
+  # The rendered file will initially be saved in the current working directory
+  quarto::quarto_render(input = input_file, output_file = output_name, output_format = file_ext, ...)
+  
+  # Check if the output directory exists; create it if it doesn't
   if (!fs::dir_exists(output_path)) {
     fs::dir_create(output_path)
     message(paste("Directory", output_path, "did not exist. Creating it now."))
   }
   
-  # move the file to the output path
-  fs::file_move(paste0(output_name), output_path)
+  # Move the rendered output file to the specified output directory
+  fs::file_move(output_name, file.path(output_path, output_name))
   
-  # Notify about the successful move
-  message(paste("File", output_name, "successfully moved to", output_path))
+  # Notify that the file has been successfully moved
+  message(paste("File", output_name, "has been successfully moved to", output_path))
 }
