@@ -199,9 +199,9 @@ lonely_cluster_analysis_res <- readRDS(here::here("outputs", params$`file-date`,
 
 ## Introduction
 
-The proposed workflow seeks to enhance the biological interpretation of transcriptomic dose-response modeling data, particularly following the DRomics analysis. Its primary goal is to comprehensively characterize the data while ensuring an unbiased and non-targeted approach. By doing so, we aim to not only maximize the depth of the analysis but also maintain objectivity throughout.
+The cluefish workflow seeks to enhance the biological interpretation of transcriptomic dose-response modeling data, particularly following the DRomics analysis. Its primary goal is to comprehensively characterize the data while ensuring an unbiased and non-targeted approach. By doing so, we aim to not only maximize the depth of the analysis but also maintain objectivity throughout.
 
-To evaluate the efficacy of this workflow, we can contrast its outcomes with those of a standard workflow, which typically involves functional enrichment analysis on the single list of deregulated transcript genes. This comparative analysis will provide insights into the strengths and potential advantages of the proposed approach.
+To evaluate the efficacy of this workflow, we can contrast its outcomes with those of a standard workflow, which typically involves functional enrichment analysis on the single list of deregulated transcript genes. This comparative analysis will provide insights into the strengths and potential advantages of cluefish.
 
  
 
