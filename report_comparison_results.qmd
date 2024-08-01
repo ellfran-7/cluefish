@@ -1,5 +1,5 @@
 ---
-title: "Report comparison of standard and proposed workflow"
+title: "Report comparison of standard and cluefish workflow"
 author: "Ellis Franklin"
 date: last-modified
 date-format: iso 
@@ -68,7 +68,7 @@ dr_g_a_stand <- stand_filtered |>
       dplyr::select(intersection, term_name, term_id, source) |> 
       dplyr::rename(gene_id = intersection)
 
-#### THE PROPOSED WORKFLOW DATA
+#### THE cluefish workflow DATA
 
 ## Retrieve the background identifiers
 bg_t_ids <- read.table(here::here("outputs", params$`file-date`, paste0("bg_t_ids_", params$`file-date`, ".txt")))
@@ -207,12 +207,12 @@ To evaluate the efficacy of this workflow, we can contrast its outcomes with tho
 
 ## Comparing initial enriched term content
 
-Here we exclusively compare the enriched terms identified by the two distinct workflows: the standard workflow, which uses the entire gene list as query for the functional enrichment, and the proposed workflow, which uses all clusters as individual queries. This comparison is conducted separately for each data source.
+Here we exclusively compare the enriched terms identified by the two distinct workflows: the standard workflow, which uses the entire gene list as query for the functional enrichment, and the cluefish workflow, which uses all clusters as individual queries. This comparison is conducted separately for each data source.
 
 ::: {.callout-important appearance="simple"}
 ## Important
 
-This comparison solely focuses on the enriched terms and without any filtering performed. Thus, the results for the proposed workflow are derived specifically from the **clustrenrich\$gostres** output of the **clustrenrich()** function.
+This comparison solely focuses on the enriched terms and without any filtering performed. Thus, the results for the cluefish workflow are derived specifically from the **clustrenrich\$gostres** output of the **clustrenrich()** function.
 :::
 
 ### Standard workflow results
@@ -232,12 +232,12 @@ stand_unfiltered |>
 ```
 :::
 
-### Proposed workflow results
+### cluefish workflow results
 
 ::: fullwidth
 ```{r}
 #| label: tbl-propoenrich
-#| tbl-cap: "Proposed workflow functional enrichment results"
+#| tbl-cap: "cluefish workflow functional enrichment results"
 #| tbl-cap-location: margin
 #| echo: false
 
@@ -253,7 +253,7 @@ clustr_enrichres_gostres |>
 
 ```{r}
 #| label: fig-venn1
-#| fig-cap: "Venn diagram of highlighted enriched GO terms between the standard and proposed workflow "
+#| fig-cap: "Venn diagram of highlighted enriched GO terms between the standard and cluefish workflow "
 #| cap-location: margin
 #| echo: false
 #| message: false
@@ -274,7 +274,7 @@ propo_lonely_go <- unique(c(propo_go, lonely_go))
 
 venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
                    cross.area = length(which(stand_go %in% propo_lonely_go)), 
-                   category = c("standard", "proposed"),
+                   category = c("standard", "cluefish"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
@@ -283,7 +283,7 @@ grid.draw(venn.plot)
 
 ```{r}
 #| label: fig-venn2
-#| fig-cap: "Venn diagram of enriched KEGG pathways between the standard and proposed workflow "
+#| fig-cap: "Venn diagram of enriched KEGG pathways between the standard and cluefish workflow "
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
@@ -302,7 +302,7 @@ propo_lonely_go <- unique(c(propo_go, lonely_go))
 
 venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
                    cross.area = length(which(stand_go %in% propo_lonely_go)), 
-                   category = c("standard", "proposed"),
+                   category = c("standard", "cluefish"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
@@ -312,7 +312,7 @@ grid.draw(venn.plot)
 
 ```{r}
 #| label: fig-venn3
-#| fig-cap: "Venn diagram of enriched Wikipathways between the standard and proposed workflow "
+#| fig-cap: "Venn diagram of enriched Wikipathways between the standard and cluefish workflow "
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
@@ -331,16 +331,16 @@ propo_lonely_go <- unique(c(propo_go, lonely_go))
 
 venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
                    cross.area = length(which(stand_go %in% propo_lonely_go)), 
-                   category = c("standard", "proposed"),
+                   category = c("standard", "cluefish"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
 grid.draw(venn.plot)
 ```
 
-## Comparing enriched term content after filters in the proposed workflow
+## Comparing enriched term content after filters in the cluefish workflow
 
-With filters applied to the enriched terms within following steps of the standard and proposed workflow, we can re-examine the discrepancies between enriched terms considered between both workflow.
+With filters applied to the enriched terms within following steps of the standard and cluefish workflow, we can re-examine the discrepancies between enriched terms considered between both workflow.
 
 ### Standard workflow results
 
@@ -359,12 +359,12 @@ stand_filtered |>
 ```
 :::
 
-### Proposed workflow results
+### cluefish workflow results
 
 ::: fullwidth
 ```{r}
 #| label: tbl-propoenrichfilter
-#| tbl-cap: "Proposed workflow functional enrichment results"
+#| tbl-cap: "cluefish workflow functional enrichment results"
 #| tbl-cap-location: margin
 #| echo: false
 
@@ -376,11 +376,11 @@ clustr_enrichres_gostres_filtered_more |>
 ```
 :::
 
-### Venn diagrams between both workflows per source after filters in the proposed workflow
+### Venn diagrams between both workflows per source after filters in the cluefish workflow
 
 ```{r}
 #| label: fig-venn4
-#| fig-cap: "Venn diagram of highlighted enriched GO temrs in the standard and filtered highlighted enriched GO terms in the proposed workflow"
+#| fig-cap: "Venn diagram of highlighted enriched GO temrs in the standard and filtered highlighted enriched GO terms in the cluefish workflow"
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
@@ -399,7 +399,7 @@ propo_lonely_go <- unique(c(propo_go, lonely_go))
 
 venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
                    cross.area = length(which(stand_go %in% propo_lonely_go)), 
-                   category = c("standard", "proposed"),
+                   category = c("standard", "cluefish"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
@@ -409,7 +409,7 @@ grid.draw(venn.plot)
 
 ```{r}
 #| label: fig-venn5
-#| fig-cap: "Venn diagram of enriched KEGG pathways in the standard and filtered enriched KEGG pathways in the proposed workflow"
+#| fig-cap: "Venn diagram of enriched KEGG pathways in the standard and filtered enriched KEGG pathways in the cluefish workflow"
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
@@ -428,7 +428,7 @@ propo_lonely_go <- unique(c(propo_go, lonely_go))
 
 venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
                    cross.area = length(which(stand_go %in% propo_lonely_go)), 
-                   category = c("standard", "proposed"),
+                   category = c("standard", "cluefish"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
@@ -437,7 +437,7 @@ grid.draw(venn.plot)
 
 ```{r}
 #| label: fig-venn6
-#| fig-cap: "Venn diagram of enriched Wikipathways in the standard and filtered enriched Wikipathways in the proposed workflow"
+#| fig-cap: "Venn diagram of enriched Wikipathways in the standard and filtered enriched Wikipathways in the cluefish workflow"
 #| cap-location: margin
 #| echo: false
 #| fig-align: "center"
@@ -456,7 +456,7 @@ propo_lonely_go <- unique(c(propo_go, lonely_go))
 
 venn.plot <- draw.pairwise.venn(area1 = length(stand_go), area2 = length(propo_lonely_go), 
                    cross.area = length(which(stand_go %in% propo_lonely_go)), 
-                   category = c("standard", "proposed"),
+                   category = c("standard", "cluefish"),
                    cat.col=c("black", "black"), col=c("black", "black"), 
                    fill = c("#8de4d3", "#daa4f9"), lty = "blank", cat.pos = c(1,11))
 
@@ -487,11 +487,11 @@ total_considered_in_propos <- unique(c(cluster_transcripts, lonely_transcripts_e
 
 ```
 
-| Metric                           | Standard                                                                                 | Proposed                                                                             |
+| Metric                           | Standard                                                                                 | cluefish                                                                             |
 |------------------|----------------------------|--------------------------|
 | Number of transcripts considered | `r length(unique(dr_t_a_stand_ids$transcript_id))`                                       | `r length(unique(total_considered_in_propos))`                                       |
 | Number of lonely transcripts     | `r length(unique(BMDres_definedCI$id)) - length(unique(dr_t_a_stand_ids$transcript_id))` | `r length(unique(BMDres_definedCI$id)) - length(unique(total_considered_in_propos))` |
 
 : Summary of the comparison between both workflow {#tbl-dromics .bordered .light}
 
-However, within the proposed workflow, the lonely cluster consisting of all the lonely content (transcripts/genes) remains open for exploration. Within the **"lonely_results_report.qmd"**, an additional functional enrichment analysis is conducted using the lonely gene list as the query. This approach enables us to delve into what might be overlooked and whether there is any biological significance within this group.
+However, within the cluefish workflow, the lonely cluster consisting of all the lonely content (transcripts/genes) remains open for exploration. Within the **"lonely_results_report.qmd"**, an additional functional enrichment analysis is conducted using the lonely gene list as the query. This approach enables us to delve into what might be overlooked and whether there is any biological significance within this group.

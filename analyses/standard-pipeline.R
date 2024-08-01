@@ -1,7 +1,7 @@
 ## Performing the standard pipeline in order to derive biological interpretations of dose-response modelling results
 ## ============================================================================
 
-## First and foremost, as the proposed workflow, the standard one begins as such : 
+## First and foremost, as the cluefish workflow, the standard one begins as such : 
 ## ----------------------------------------------------------------------------
 
 ## State the Time Variable for file saving and reading
