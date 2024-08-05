@@ -379,7 +379,7 @@ The [external_gene_name](https://zfin.org/) identifiers, which depict human-read
 
 ### Cluster Gene Set Size Filtering
 
-Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
+Clusters containing at least **`r sizelimit`** Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
 
 | Step                 | Ensembl Gene Count                                  | Cluster Count                                      |
 |------------------|---------------------------|---------------------------|
