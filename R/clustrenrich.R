@@ -377,6 +377,7 @@ clustrenrich <- function(
         bg_type = bg_type,
         sources = sources, 
         user_threshold = user_threshold,
+        correction_method = correction_method,
         min_term_size = min_term_size,
         max_term_size = max_term_size,
         only_highlighted_GO = only_highlighted_GO,
