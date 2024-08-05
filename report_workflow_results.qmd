@@ -382,7 +382,7 @@ The [external_gene_name](https://zfin.org/) identifiers, which depict human-read
 Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
 
 | Step                 | Ensembl Gene Count                                  | Cluster Count                                      |
-|-------------------|---------------------------|---------------------------|
+|------------------|---------------------------|---------------------------|
 | Before clustrfiltr() | `r length(unique(dr_t_clustr_data$gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
 | After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
 
@@ -390,7 +390,23 @@ Clusters containing at least `r sizelimit` Ensembl genes are kept for subsequent
 
 ### Cluster Functional Enrichment
 
-Functional enrichment analysis is conducted individually for each cluster and data source. The assessed sources include GO:BP, KEGG, and Wikipathways (WP). The background gene list is specified as "custom_annotated", restricting the enrichment Fisher test to annotated Ensembl genes only. A significance threshold of 0.05 is applied for adjusted p-value correction using the 'fdr' method. IEA (Electronically Inferred Annotations) GO terms are taken into account during the analysis.
+Functional enrichment analysis is conducted individually for each cluster and data source. The parameters used in the `clustrenrich()` function to generate this output are as follows:
+
+-   background type (`bg_type`) = **`r clustr_enrichres$params$bg_type`**
+
+-   data sources (`sources`) = **`r clustr_enrichres$params$sources`**
+
+-   p-value (`user_theshold`) = **`r clustr_enrichres$params$user_threshold`**
+
+-   multiple testing correction method (`correction_method`) = **`r clustr_enrichres$params$correction_method`**
+
+-   minimum term size (`min_term_size`) = **`r clustr_enrichres$params$min_term_size`**
+
+-   maximum term size (`max_term_size`) = **`r clustr_enrichres$params$max_term_size`**
+
+-   choice of keeping only highlighted GO terms (`only_highlighted_GO`) = **`r clustr_enrichres$params$only_highlighted_GO`**
+
+-   Number of genes required to keep enrichment (`ngenes_enrich_filtr`) = **`r clustr_enrichres$params$ngenes_enrich_filtr`**
 
 ```{r}
 #| echo: false
@@ -413,7 +429,7 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 ```
 
 | Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
-|------------------|-------------------|------------------|------------------|
+|-----------------|-------------------|------------------|------------------|
 | Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
 
 : Summary of background gene lists involved in functional enrichment for each source {#tbl-backenrich .bordered .light}
@@ -465,10 +481,10 @@ gt::gt(same_value_rows) |>
 
 ### Lonely fishing
 
-Lonely genes are incorporated into clusters if they share a common term with any given cluster.
+Lonely genes are incorporated into clusters if they share a common term with any given cluster. The friendly limit (friendly_limit) was set to **`r lonelyfishing_data$params$friendly_limit`** .
 
 | Metric                      | All                                                                                                      | Annotated                                                                                                                    |
-|--------------------|------------------------|----------------------------|
+|-----------------|-------------------------|------------------------------|
 | Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$gene_id))`                                                             | `r length(unique(dr_g_a_no_clustr_annotated$gene_id))`                                                                       |
 | Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                           | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                                               |
 | Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` |
@@ -593,7 +609,7 @@ sp
 
  
 
-## The **`r length(unique(b_lonely_fishres_no_redund_selected$new_clustr))`** clusters from highest to lowest sensitivity
+## The final **`r length(unique(b_lonely_fishres_no_redund_selected$new_clustr))`** clusters from highest to lowest sensitivity
 
 Each cluster is represented by an interactive :
 
