@@ -1,6 +1,6 @@
-Package: bio_int_workflow
+Package: cluefish
 Type: Package
-Title: The Title of the Project
+Title: Fishing for Clues in the Depths of Transcriptomic Bulk Data
 Version: 0.0.0.9000
 Authors@R: c(
     person(given   = "Ellis",
@@ -8,8 +8,7 @@ Authors@R: c(
            role    = c("aut", "cre", "cph"),
            email   = "ellis.franklin@univ-lorraine.fr",
            comment = c(ORCID = "{{orcid}}")))
-Description: A paragraph providing a full description of the project (on 
-    several lines...)
+Description: A specialized bioinformatics workflow designed for improving biological interpretation of dose-response transcriptomic data.
 URL: https://gitlab.in2p3.fr/ellis.franklin1/bio_int_workflow
 BugReports: https://gitlab.in2p3.fr/ellis.franklin1/bio_int_workflow
 License: {{license}}
