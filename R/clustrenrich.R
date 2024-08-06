@@ -301,7 +301,6 @@ clustrenrich <- function(
       cat("--- \n")
     }
     
-    
     ## Print out a summary of the enrichment results with or without filtering :
     # Print the ratio of clusters participating in enrichment
     cat(length(unique(dr_g_a_termkept$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment", "\n")
