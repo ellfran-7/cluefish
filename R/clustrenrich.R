@@ -46,9 +46,9 @@ clustrenrich <- function(
     correction_method = "fdr",
     exclude_iea = FALSE, 
     enrich_size_filtr = TRUE, 
+    only_highlighted_GO = TRUE,
     min_term_size = NULL,
     max_term_size = NULL, 
-    only_highlighted_GO = TRUE,
     ngenes_enrich_filtr = NULL, 
     path, 
     output_filename, 
@@ -281,11 +281,11 @@ clustrenrich <- function(
       dr_g_a_termkept$clustr <- as.numeric(dr_g_a_termkept$clustr)
       dr_g_a_termkept <- dr_g_a_termkept[order(dr_g_a_termkept$clustr), ]
       
-      # Create a copy of the dr_g_gostres df which will be used as the updated dataframe
-      dr_g_a_gostres_filtered <- dr_g_a_gostres
+      # Create a copy of the dr_g_gostres df in order to avoid squashing
+      dr_g_a_gostres_og <- dr_g_a_gostres
       
-      # Update the dr_g_a_gostres_filtered df with the filtered and sorted data
-      dr_g_a_gostres_filtered <- dr_g_a_termkept
+      # Update the dr_g_a_gostres df with the filtered and sorted data
+      dr_g_a_gostres <- dr_g_a_termkept
       
       cat(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes \n"))
       cat("--- \n")
@@ -293,23 +293,24 @@ clustrenrich <- function(
     } else { 
       
       # Transform the clustr column to numeric to order the data by clustr
-      dr_g_a_gostres_filtered$clustr <- as.numeric(dr_g_a_gostres_filtered$clustr)
-      dr_g_a_gostres_filtered <- dr_g_a_gostres_filtered[order(dr_g_a_gostres_filtered$clustr), ]
+      dr_g_a_gostres$clustr <- as.numeric(dr_g_a_gostres$clustr)
+      dr_g_a_gostres <- dr_g_a_gostres[order(dr_g_a_gostres$clustr), ]
       
       # The parameter is NULL, so no filtering is applied
       cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
       cat("--- \n")
     }
     
+    
     ## Print out a summary of the enrichment results with or without filtering :
     # Print the ratio of clusters participating in enrichment
-    cat(length(unique(dr_g_a_termkept$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment", "\n")
+    cat(length(unique(dr_g_a_gostres_og$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment", "\n")
     
     # Print the ratio of terms removed because of gene set filtering
-    cat(length(unique(dr_g_a_gostres$term_name)), "/",  length(unique(multi_gostres$result$term_name)), "enriched terms kept after gene set size filters", "\n")
+    cat(length(unique(dr_g_a_gostres_og$term_name)), "/",  length(unique(multi_gostres$result$term_name)), "enriched terms kept after gene set size filters", "\n")
     
     # Print the ratio of terms removed because of filtering
-    cat(length(unique(dr_g_a_termkept$term_name)), "/",  length(unique(dr_g_a_gostres$term_name)), "enriched terms kept after enrichment size filter", "\n")
+    cat(length(unique(dr_g_a_gostres$term_name)), "/",  length(unique(dr_g_a_gostres_og$term_name)), "enriched terms kept after enrichment size filter", "\n")
     
     
     # --------------
@@ -327,7 +328,7 @@ clustrenrich <- function(
     }
     
     # Group and count the number of distinct term names per combination of clustr and source
-    dr_g_a_terms_afterfiltr <- dr_g_a_gostres_filtered |> 
+    dr_g_a_terms_afterfiltr <- dr_g_a_gostres |> 
       dplyr::select(clustr, term_name, source)
     
     # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster
@@ -359,7 +360,7 @@ clustrenrich <- function(
     # After conducting enrichment analysis, the dataset now exclusively contains genes and data involved in the enrichment of terms. Consequently, genes within a string cluster but not engaged in any enrichment are absent from the direct results. These genes must be reintegrated into the results.
     
     # Retrieve data for Ensembl gene IDs not involved in any enrichment
-    dr_g_no_enrich <- clustrfiltr_data$kept[!(clustrfiltr_data$kept$gene_id %in% dr_g_a_gostres_filtered$gene_id),]
+    dr_g_no_enrich <- clustrfiltr_data$kept[!(clustrfiltr_data$kept$gene_id %in% dr_g_a_gostres$gene_id),]
     
     # Construct a dataframe for the rbind operation with the GO enrichment output
     dr_g_no_enrich_4_rbind <- data.frame(gene_id = dr_g_no_enrich$gene_id,
@@ -369,7 +370,7 @@ clustrenrich <- function(
                                          source = NA)
     
     # Combine both results: enriching and non-enriching genes
-    dr_g_all_data <- rbind(dr_g_a_gostres_filtered, dr_g_no_enrich_4_rbind)
+    dr_g_all_data <- rbind(dr_g_a_gostres, dr_g_no_enrich_4_rbind)
     
     # Remove duplicate rows
     dr_g_all_data <- unique(dr_g_all_data)
