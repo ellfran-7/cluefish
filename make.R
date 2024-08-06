@@ -371,12 +371,19 @@ lonely_clustr_analysis_res <- simplenrich(
 
 # Note: To ensure that Quarto reports are generated automatically and correctly, follow these guidelines:
 # 
-# 1. Consistent Filenames: The output files must have the same filenames as those specified in the Quarto .qmd files.
-# 
-# 2. Matching Dates: Output files should:
-#    - Be produced on the same date, meaning they will have a shared "file_date" in their filenames, or
-#    - Be renamed to match filenames as if they were created simultaneously.
-# 
+# 1. Consistent Filenames:
+#    Ensure that output files use the exact filenames specified in your Quarto (.qmd) files.
+#    This ensures that Quarto can correctly locate and reference your generated outputs.
+
+# 2. Matching Dates:
+#    Output files should:
+#    - Share the same date in their filenames, reflecting that they were produced simultaneously.
+#    - If necessary, rename files to align with the expected filename format and date consistency.
+
+# 3. Verify and Update the `load-fun-data` Chunk:
+#    The `load-fun-data` chunk is the initial code block that loads functions and data required for the report.
+#    - Review and update this chunk to ensure it is correctly configured for your specific datasets.
+#
 # For example: `clustr_enrichres_2024-07-07.rds` and `lonely_fishres_2024-07-07.rds`
 # Today's date can be dynamically generated using the "Sys.date()" function.
 file_date <- "2024-07-31" 
