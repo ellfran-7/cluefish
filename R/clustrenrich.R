@@ -16,11 +16,10 @@
 #' @param user_threshold Adjusted p-value cutoff for Over-Representation analysis (default at 0.05 in `gost()` function)
 #' @param correction_method P-value adjustment method: one of “gSCS” ,“fdr” and “bonferroni (default set at "fdr")
 #' @param exclude_iea Option to exclude GO electronic annotations (IEA)
-#' @param enrich_size_filtr Option to filter out enriched terms that have too little (`min_term_size`) and/or too large (`max_term_size`) gene sets. Recommended for well-annotated organisms (default = TRUE).
-#' @param min_term_size Minimum gene set size to consider a biological pathway as relevant to the analysis (default set at 5)
-#' @param max_term_size Maximum gene set size to consider a biological pathway as relevant to the analysis (default set at 500)
-#' @param only_highlighted_GO Option to only keep highlighted driver GO terms in the analysis results (default set at TRUE)
-#' @param ngenes_enrich_filtr Minimum number of cluster genes participating in enrichment to consider sufficient for an enriched pathway to be kept in the output (default set)
+#' @param only_highlighted_GO Whether to retain only highlighted driver GO terms in the results. Default is set to TRUE.
+#' @param min_term_size Minimum size of gene sets to be included in the analysis. If NULL (default), no filtering by size is applied.
+#' @param max_term_size Maximum size of gene sets to be included in the analysis. If NULL (default), no filtering by size is applied.
+#' @param ngenes_enrich_filtr Minimum number of genes in a cluster needed for a gene set to be considered enriched. If NULL (default), no filtering by gene count is applied.
 #' @param path Destination folder for the output data results.
 #' @param output_filename Output enrichment result filename.
 #' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
@@ -47,10 +46,10 @@ clustrenrich <- function(
     correction_method = "fdr",
     exclude_iea = FALSE, 
     enrich_size_filtr = TRUE, 
-    min_term_size = 5,
-    max_term_size = 500, 
+    min_term_size = NULL,
+    max_term_size = NULL, 
     only_highlighted_GO = TRUE,
-    ngenes_enrich_filtr = 3, 
+    ngenes_enrich_filtr = NULL, 
     path, 
     output_filename, 
     overwrite = FALSE 
@@ -193,16 +192,58 @@ clustrenrich <- function(
         dplyr::mutate_all(~replace(., is.na(.), 0))
       # ----------------
       
+      cat(paste0("Only highlighted GO terms are kept \n"))
+      
+    } else {
+      
+      cat(paste0("All GO terms are kept \n"))
+      
     }
     
-    # Create a filtered version of the multi_gostres data for further analysis
+    # Create a filtered version of the `multi_gostres` data for further analysis
     multi_gostres_filtr <- multi_gostres
     
-    # Depending on min/max gene set sizes chosen, remove enriched biological function gene sets from further analysis  
-    multi_gostres_filtr$result <- multi_gostres_filtr$result |> 
-      dplyr::filter(
-        min_term_size <= term_size & term_size <= max_term_size
-      )
+    # Check if both 'min_term_size' and 'max_term_size' are NULL
+    if (is.null(min_term_size) && is.null(max_term_size)) {
+      
+      # Both parameters are NULL, so no filtering is applied
+      cat("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering \n")
+      
+    } else {
+      
+      # If 'min_term_size' is provided (not NULL) and 'max_term_size' is NULL
+      if (!is.null(min_term_size) && is.null(max_term_size)) {
+        
+        # Filter the data to include only gene sets with size greater than or equal to `min_term_size`
+        multi_gostres_filtr$result <- multi_gostres_filtr$result |>
+          dplyr::filter(term_size >= min_term_size)
+        
+        cat(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes \n"))
+        
+      }
+      
+      # If 'max_term_size' is provided (not NULL) and 'min_term_size' is NULL
+      if (is.null(min_term_size) && !is.null(max_term_size)) {
+        
+        # Filter the data to include only gene sets with size less than or equal to `max_term_size`
+        multi_gostres_filtr$result <- multi_gostres_filtr$result |>
+          dplyr::filter(term_size <= max_term_size)
+        
+        cat(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes \n"))
+        
+      }
+      
+      # If both 'min_term_size' and 'max_term_size' are provided (not NULL)
+      if (!is.null(min_term_size) && !is.null(max_term_size)) {
+        
+        # Filter the data to include only gene sets with size between `min_term_size` and `max_term_size`
+        multi_gostres_filtr$result <- multi_gostres_filtr$result |>
+          dplyr::filter(term_size >= min_term_size & term_size <= max_term_size)
+        
+        cat(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes \n"))
+        
+      }
+    }
     
     # Transform the dataframe from c_a to g_a format. The intersection column holds the gene ids that intersect between the query and term. The term_name a,d term_id are the respective names and ids for each term. The source represents the databases from which the term is from.
     dr_g_a_gostres <- multi_gostres_filtr$result |> 
@@ -212,7 +253,7 @@ clustrenrich <- function(
                     clustr = query)
     
     # Conditionally remove biological functions that are not sufficiently enriched by a cluster
-    if (enrich_size_filtr == TRUE) {
+    if (!is.null(ngenes_enrich_filtr)) {
       
       # Group the data by cluster and term name, count the number of unique Ensembl gene IDs per combination of cluster and term name, then ungroup the data to remove groupings      
       dr_g_a_termcount <- dr_g_a_gostres  |> 
@@ -236,29 +277,41 @@ clustrenrich <- function(
       dr_g_a_termkept <- dr_g_a_termkept |> 
         dplyr::select(gene_id, clustr, term_name, term_id, source)
       
-      # Print the ratio of clusters participating in enrichment
-      cat(length(unique(dr_g_a_termkept$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment.", "\n")
-      
-      # Print the ratio of terms removed because of gene set filtering
-      cat(length(unique(dr_g_a_gostres$term_name)), "/",  length(unique(multi_gostres$result$term_name)), "enriched terms kept after gene set size filters.", "\n")
-      
-      # Print the ratio of terms removed because of filtering
-      cat(length(unique(dr_g_a_termkept$term_name)), "/",  length(unique(dr_g_a_gostres$term_name)), "enriched terms kept after term filter.", "\n")
-      
       # Transform the cluster column to numeric to order the data by cluster
       dr_g_a_termkept$clustr <- as.numeric(dr_g_a_termkept$clustr)
       dr_g_a_termkept <- dr_g_a_termkept[order(dr_g_a_termkept$clustr), ]
       
-      # Update the dr_g_a_gostres df with the filtered and sorted data
-      dr_g_a_gostres <- dr_g_a_termkept
+      # Create a copy of the dr_g_gostres df which will be used as the updated dataframe
+      dr_g_a_gostres_filtered <- dr_g_a_gostres
+      
+      # Update the dr_g_a_gostres_filtered df with the filtered and sorted data
+      dr_g_a_gostres_filtered <- dr_g_a_termkept
+      
+      cat(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes \n"))
+      cat("--- \n")
       
     } else { 
       
       # Transform the clustr column to numeric to order the data by clustr
-      dr_g_a_gostres$clustr <- as.numeric(dr_g_a_gostres$clustr)
-      dr_g_a_gostres <- dr_g_a_gostres[order(dr_g_a_gostres$clustr), ]
+      dr_g_a_gostres_filtered$clustr <- as.numeric(dr_g_a_gostres_filtered$clustr)
+      dr_g_a_gostres_filtered <- dr_g_a_gostres_filtered[order(dr_g_a_gostres_filtered$clustr), ]
       
+      # The parameter is NULL, so no filtering is applied
+      cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
+      cat("--- \n")
     }
+    
+    
+    ## Print out a summary of the enrichment results with or without filtering :
+    # Print the ratio of clusters participating in enrichment
+    cat(length(unique(dr_g_a_termkept$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment", "\n")
+    
+    # Print the ratio of terms removed because of gene set filtering
+    cat(length(unique(dr_g_a_gostres$term_name)), "/",  length(unique(multi_gostres$result$term_name)), "enriched terms kept after gene set size filters", "\n")
+    
+    # Print the ratio of terms removed because of filtering
+    cat(length(unique(dr_g_a_termkept$term_name)), "/",  length(unique(dr_g_a_gostres$term_name)), "enriched terms kept after enrichment size filter", "\n")
+    
     
     # --------------
     # After filtering the gene set sizes and the enrichment sizes of biological functions, we also want to get the number of occurences for each cluster and source combination.
@@ -275,7 +328,7 @@ clustrenrich <- function(
     }
     
     # Group and count the number of distinct term names per combination of clustr and source
-    dr_g_a_terms_afterfiltr <- dr_g_a_gostres |> 
+    dr_g_a_terms_afterfiltr <- dr_g_a_gostres_filtered |> 
       dplyr::select(clustr, term_name, source)
     
     # Group the data by clustr ('query') and biological function database ('source'), count the number of distinct term names per combination of query and source, turn the source column categories into columns associated to their proper count by cluster
@@ -303,10 +356,11 @@ clustrenrich <- function(
     # --------------
     
     
+    
     # After conducting enrichment analysis, the dataset now exclusively contains genes and data involved in the enrichment of terms. Consequently, genes within a string cluster but not engaged in any enrichment are absent from the direct results. These genes must be reintegrated into the results.
     
     # Retrieve data for Ensembl gene IDs not involved in any enrichment
-    dr_g_no_enrich <- clustrfiltr_data$kept[!(clustrfiltr_data$kept$gene_id %in% dr_g_a_gostres$gene_id),]
+    dr_g_no_enrich <- clustrfiltr_data$kept[!(clustrfiltr_data$kept$gene_id %in% dr_g_a_gostres_filtered$gene_id),]
     
     # Construct a dataframe for the rbind operation with the GO enrichment output
     dr_g_no_enrich_4_rbind <- data.frame(gene_id = dr_g_no_enrich$gene_id,
@@ -316,7 +370,7 @@ clustrenrich <- function(
                                          source = NA)
     
     # Combine both results: enriching and non-enriching genes
-    dr_g_all_data <- rbind(dr_g_a_gostres, dr_g_no_enrich_4_rbind)
+    dr_g_all_data <- rbind(dr_g_a_gostres_filtered, dr_g_no_enrich_4_rbind)
     
     # Remove duplicate rows
     dr_g_all_data <- unique(dr_g_all_data)
@@ -382,9 +436,9 @@ clustrenrich <- function(
         max_term_size = max_term_size,
         only_highlighted_GO = only_highlighted_GO,
         ngenes_enrich_filtr = ngenes_enrich_filtr
-        )
-      
       )
+      
+    )
     
     # Define the class of the output
     clustr_enrichres <- structure(clustr_enrichres, class = "clustrenrichres")
