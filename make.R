@@ -389,6 +389,16 @@ lonely_clustr_analysis_res <- simplenrich(
 file_date <- "2024-07-31" 
 
 # Render and preview the html report in the Viewer panel. The output is moved to the directory chosen in 'output_path'.
+#
+# Note: The automation of visualizations for each cluster is currently not implemented. 
+#   The challenge lies in dynamically adjusting the visualization code chunks based on the number of clusters 
+#   retained after running Cluefish. Each cluster should have associated interactive visualizations, including:
+#   - an interactive curveplot
+#   - an interactive BMDplot
+#   - an interactive table
+#   Currently, there is no automated solution for this; manual adjustments to the report are needed to 
+#   include or exclude visualization code chunks according to the final number of clusters.
+
 render_qmd(
   input_file = here::here("report_workflow_results.qmd"), 
   output_file = paste0("report_workflow_results_", file_date),
