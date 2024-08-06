@@ -382,7 +382,7 @@ The [external_gene_name](https://zfin.org/) identifiers, which depict human-read
 Clusters containing at least **`r sizelimit`** Ensembl genes are kept for subsequent steps. Genes in the remaining clusters are designated as "lonely genes", signifying their absence from any cluster.
 
 | Step                 | Ensembl Gene Count                                  | Cluster Count                                      |
-|------------------|---------------------------|---------------------------|
+|-------------------|---------------------------|---------------------------|
 | Before clustrfiltr() | `r length(unique(dr_t_clustr_data$gene_id))`        | `r length(unique(dr_t_clustr_data$clustr))`        |
 | After clustrfiltr()  | `r length(unique(dr_t_clustrs_filtr$kept$gene_id))` | `r length(unique(dr_t_clustrs_filtr$kept$clustr))` |
 
@@ -429,7 +429,7 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 ```
 
 | Metric          | GO:BP                                                                                                            | KEGG                                                                                                            | Wikipathways                                                                                                  |
-|-----------------|-------------------|------------------|------------------|
+|------------------|-------------------|------------------|------------------|
 | Background size | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$effective_domain_size[1]` | `r clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$effective_domain_size[1]` |
 
 : Summary of background gene lists involved in functional enrichment for each source {#tbl-backenrich .bordered .light}
@@ -441,20 +441,22 @@ dr_g_a_enrich_before <- unique(dr_g_a_enrich_before)
 
 : Summary table of gene, cluster and total term count during the cluster enrichment step {#tbl-enrichfiltr .bordered .light}
 
+
 | Metric                                      | GO:BP                                                                                                             | KEGG                                                                                                             | Wikipathways                                                                                                   |
 |------------------|------------------|------------------|------------------|
-| All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
-| Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
-| Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
+| All terms associated with deregulated genes | `r length(unique(clustr_enrichres$dr_g_a_whole[!is.na(clustr_enrichres$dr_g_a_whole$term_name) & clustr_enrichres$dr_g_a_whole$source == "GO:BP",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[!is.na(clustr_enrichres$dr_g_a_whole$term_name) & clustr_enrichres$dr_g_a_whole$source == "KEGG",]$term_name))`     | `r length(unique(clustr_enrichres$dr_g_a_whole[!is.na(clustr_enrichres$dr_g_a_whole$term_name) & clustr_enrichres$dr_g_a_whole$source == "WP",]$term_name))`     |
+| Enriched terms                              | `r length(unique(clustr_enrichres$gostres$result[!is.na(clustr_enrichres$gostres$result$term_name) & clustr_enrichres$gostres$result$source == "GO:BP",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[!is.na(clustr_enrichres$gostres$result$term_name) & clustr_enrichres$gostres$result$source == "KEGG",]$term_name))` | `r length(unique(clustr_enrichres$gostres$result[!is.na(clustr_enrichres$gostres$result$term_name) & clustr_enrichres$gostres$result$source == "WP",]$term_name))` |
+| Filtered enriched terms                     | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name) & dr_g_a_enrich_after$source == "GO:BP",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name) & dr_g_a_enrich_after$source == "KEGG",]$term_name))`                         | `r length(unique(dr_g_a_enrich_after[!is.na(dr_g_a_enrich_after$term_name) & dr_g_a_enrich_after$source == "WP",]$term_name))`                         |
 
 : Summary table of term count per source and per characteristic {#tbl-enrichpersource .bordered .light}
+
 
 ### Cluster Fusion
 
 Clusters merge when they share identical enriched terms.
 
 | Metric        | Cluster count                                                 |
-|------------------|------------------------------------------------------|
+|--------------------|----------------------------------------------------|
 | Before fusion | `r length(unique(clustr_enrichres$dr_g_a_enrich$clustr))`     |
 | After fusion  | `r length(unique(clustr_fusionres$dr_g_a_fusion$new_clustr))` |
 
@@ -466,17 +468,23 @@ Clusters merge when they share identical enriched terms.
 #| tbl-colwidths: auto
 #| echo: false
 
+# Identify rows in 'c_fusionlog' where not all values are the same
 same_value_rows <- clustr_fusionres$c_fusionlog[apply(clustr_fusionres$c_fusionlog, 1, function(x) length(unique(x)) != 1), ]
 
-# kableExtra::kbl(same_value_rows, row.names = FALSE, booktabs = FALSE) |> 
-#   kableExtra::kable_styling(bootstrap_options = c("basic", "bordered"))
-
-gt::gt(same_value_rows) |> 
-  gt::tab_style(style = list(cell_borders(),
-                             cell_fill("#Ffffff")), 
-                locations = cells_body(columns = everything(), 
-                                       rows = everything()))
-
+# Check if there are any rows with differing values
+if (nrow(same_value_rows) > 0){
+  
+  # Create a styled table using the gt package
+  gt::gt(same_value_rows) |> 
+  
+  # Apply custom styling to the table
+  gt::tab_style(
+    style = list(cell_borders(),
+                 cell_fill("#Ffffff")), 
+    locations = cells_body(columns = everything(), 
+                           rows = everything()))
+  
+}
 ```
 
 ### Lonely fishing
@@ -484,7 +492,7 @@ gt::gt(same_value_rows) |>
 Lonely genes are incorporated into clusters if they share a common term with any given cluster. The friendly limit (friendly_limit) was set to **`r lonelyfishing_data$params$friendly_limit`** .
 
 | Metric                      | All                                                                                                      | Annotated                                                                                                                    |
-|-----------------|-------------------------|------------------------------|
+|-------------------|-------------------------|-----------------------------|
 | Lonely genes before fishing | `r length(unique(dr_g_a_no_clustr$gene_id))`                                                             | `r length(unique(dr_g_a_no_clustr_annotated$gene_id))`                                                                       |
 | Lonely genes fished         | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                           | `r length(unique(dr_g_a_lonely_data$gene_id))`                                                                               |
 | Lonely genes after fishing  | `r length(unique(dr_g_a_no_clustr[!dr_g_a_no_clustr$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` | `r length(unique(dr_g_a_no_clustr_annotated[!dr_g_a_no_clustr_annotated$gene_id %in% dr_g_a_lonely_data$gene_id,]$gene_id))` |
