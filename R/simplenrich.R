@@ -41,9 +41,9 @@ simplenrich <- function(
     correction_method = "fdr",
     exclude_iea = FALSE, 
     only_highlighted_GO = TRUE,
-    min_term_size = 5,
-    max_term_size = 500, 
-    ngenes_enrich_filtr = 3, 
+    min_term_size = NULL,
+    max_term_size = NULL, 
+    ngenes_enrich_filtr = NULL, 
     path, 
     output_filename, 
     overwrite = FALSE)
@@ -108,7 +108,7 @@ simplenrich <- function(
       dr_a_filtered <- gostres$result |> 
         dplyr::filter(
           ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
-          )
+        )
       
       cat(paste0("Only highlighted GO terms are kept \n"))
       
@@ -180,7 +180,7 @@ simplenrich <- function(
       
     } else {
       
-      dr_g_a_enrich_size_filtered <- dr_g_a_size_filtered
+      dr_a_enrich_size_filtered <- dr_a_size_filtered
       
       # The parameter is NULL, so no filtering is applied
       cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
@@ -198,10 +198,10 @@ simplenrich <- function(
     
     
     # Print the ratio of terms removed because of gene set filtering
-    cat(length(unique(dr_g_a_size_filtered$term_name)), "/",  length(unique(dr_a_filtered$term_name)), "enriched terms kept after gene set size filters", "\n")
+    cat(length(unique(dr_a_size_filtered$term_name)), "/",  length(unique(dr_a_filtered$term_name)), "enriched terms kept after gene set size filters", "\n")
     
     # Print the ratio of terms removed because of filtering
-    cat(length(unique(dr_g_a_enrich_size_filtered$term_name)), "/",  length(unique(dr_g_a_size_filtered$term_name)), "enriched terms kept after enrichment size filter", "\n")
+    cat(length(unique(dr_g_a_enrich_size_filtered$term_name)), "/",  length(unique(dr_a_size_filtered$term_name)), "enriched terms kept after enrichment size filter", "\n")
     
     # Turn the tibble to a dataframe
     dr_g_a_enrich_size_filtered <- as.data.frame(dr_g_a_enrich_size_filtered)
