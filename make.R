@@ -178,7 +178,7 @@ dr_t_clustrs <- getclustrs(
   gene_data = dr_t_regs,
   colname_for_merge = "gene_id",
   path = paste0("outputs/", file_date, "/cytoscape-files/"),
-  nodetable_filename = paste0("stringppin_drerio_cs09_i4_", file_date, ".csv")
+  nodetable_filename = paste0("string_clusteredppin_cs09_i4_", file_date, ".csv")
 )
 
 
@@ -210,14 +210,13 @@ clustr_enrichres <- clustrenrich(
   user_threshold = 0.05,
   correction_method = "fdr",
   exclude_iea = FALSE, 
-  enrich_size_filtr = TRUE,
   min_term_size = 5,
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
   path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("clustr_enrichres_", file_date, ".rds"),
-  overwrite = TRUE
+  overwrite = FALSE
 )
 
 
