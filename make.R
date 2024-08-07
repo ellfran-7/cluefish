@@ -162,7 +162,7 @@ dr_t_regs <- getregs(
 
 # Create the data to be exported into Cytoscape
 DR_output4string <- merge(dr_t_regs, BMDres_definedCI,
-                          by.x = "id", by.y = "transcript_id")
+                          by.x = "transcript_id", by.y = "id")
 
 # Save the data 
 write.table(DR_output4string, file = paste0("outputs/", file_date, "/DR_output4string_", file_date, ".txt"), row.names = FALSE, sep = "\t")
