@@ -26,6 +26,7 @@ render_qmd <- function(input_file, output_file, output_path, file_ext, ...) {
   if (!fs::dir_exists(output_path)) {
     fs::dir_create(output_path)
     message(paste("Directory", output_path, "did not exist. Creating it now."))
+    message(paste("---"))
   }
   
   # Move the rendered output file to the specified output directory
