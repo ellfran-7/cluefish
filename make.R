@@ -387,7 +387,7 @@ lonely_clustr_analysis_res <- simplenrich(
 # Today's date can be dynamically generated using the "Sys.date()" function.
 file_date <- "2024-07-31" 
 
-# Render and preview the html report in the Viewer panel. The output is moved to the directory chosen in 'output_path'.
+# Now, render and preview the html report. The output is moved to the directory chosen in 'output_path'.
 #
 # Note: The automation of visualizations for each cluster is currently not implemented. 
 #   The challenge lies in dynamically adjusting the visualization code chunks based on the number of clusters 
