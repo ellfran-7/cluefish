@@ -161,7 +161,7 @@ dr_t_regs <- getregs(
 #>--------------------------------------------------------------------------------------
 
 # Create the data to be exported into Cytoscape
-DR_output4string <- merge(BMDres_definedCI, dr_t_regs, 
+DR_output4string <- merge(dr_t_regs, BMDres_definedCI,
                           by.x = "id", by.y = "transcript_id")
 
 # Save the data 
