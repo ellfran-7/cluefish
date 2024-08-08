@@ -24,6 +24,20 @@ getclustrs <- function(
   # Read the 'node table' CSV file of the created network from StringApp in Cytoscape
   dr_g_string_clustr <- read.csv(file.path(path, nodetable_filename))
   
+  # Check if the following columns are present in the table exported from cytoscape, if not stop the function
+  if (!any(c("query.term", "X__mclCluster") %in% colnames(dr_g_string_clustr))) {
+    
+    stop(
+      paste(
+      "The exported file from Cytoscape is not the expected node table.",
+      "Missing columns:", paste(c("query.term", "X__mclCluster"), collapse = ", "),
+      "Check that you exported the node table and not the Network or Edge table.",
+      sep = "\n"
+      )
+    )
+    
+  }
+  
   # Reformat the query term column by removing STRING identifiers from gene names (e.g., "\"ENSDARG00000042520\"" -> "ENSDARG00000042520")
   dr_g_string_clustr$query.term <- stringr::str_replace_all(dr_g_string_clustr$query.term, "\"", "")
   
