@@ -25,12 +25,24 @@ devtools::load_all(here::here())
 file_date <- "2024-07-31"
 
 
-## Create Directory for Saving Cluefish Output Files ---
-# dir.create(paste0("outputs/", file_date))
+## Create directory for saving Cluefish output files (if it doesn't already exist) ---
+dir_path <- paste0("outputs/", file_date)
+
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+  
+  dir.create(dir_path) # Create it if not
+  
+}
 
 
-## Create Directory for Saving Cytoscape Files ---
-# dir.create(paste0("outputs/", file_date, "/cytoscape-files"))
+## Create directory for saving Cytoscape files (if it doesn't already exist) ---
+dir_path <- paste0("outputs/", file_date, "/cytoscape-files")
+
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+  
+  dir.create(dir_path) # Create it if not
+  
+}
 
 
 ## Run Project Workflow  ----
@@ -135,6 +147,7 @@ bg_t_ids <- getids(
 
 # Save the "time-consuming" data if already created
 write.table(bg_t_ids, paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
+
 # Load the "time-consuming" data if already created
 bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
