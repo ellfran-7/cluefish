@@ -74,7 +74,7 @@ dl_regulation_data(
 
 
 
-#>> STEP 1 - Load and filter the DRomics results
+#>> STEP 1 - Load the DRomics results
 #>----------------------------------------------
 
 # This workflow requires data from both the experimental results and the DRomics pipeline.
@@ -85,8 +85,8 @@ dl_regulation_data(
 #       °This object contains:
 #       - The background transcript list (accessible via `f$omicdata$item`), which is used by the `getids()` and `clustrenrich()` functions.
 #       - The tested doses (accessible via `f$omicdata$dose`), which are required for the `curves_to_pdf()` function.
-#     - An object of class `"bmdboot"` from the computation of confidence intervals on benchmark doses by bootstrap.
-#       °This object provides deregulated transcript data, which is used throughout the workflow.
+#     - The dataframe of results provided by "bmdboot" (res). TThis dataframe may have been filtered based on the quality of BMD estimates using DRomics::bmdfilter(b$res, BMDfilter = "definedCI") for example.
+#       °This dataframe provides the deregulated transcript data, which is used throughout the workflow.
 #
 # Both files must be created in advance and stored in the `data/raw-data/` directory.
 # If these files are not already available, you can generate them using the `dromics-pipeline.R` script found in the `analyses/` folder.
@@ -95,17 +95,9 @@ dl_regulation_data(
 # Load DRomics "drcfit" object
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
 
-# Load DRomics "bmdboot" object
-b <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.rds")
+# Load DRomics "bmdboot" results filtered whit only transcripts with a defined confidence interval around the BMD
+b_definedCI <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds")
 
-# We filter the `bmdboot` results to retain only those transcripts with a defined confidence interval around the BMD.
-# The `DRomics::bmdfilter` function provides two other filtering options based on the desired stringency:
-# 
-# - **"finiteCI"**: Retains transcripts where both point and interval estimates of the BMD were successfully calculated and fall within the range of tested or observed doses.
-# - **"definedBMD"**: Retains transcripts where the point estimate of the BMD falls within the range of tested or observed doses.
-# 
-# Choose the appropriate filter based on the level of stringency required for your analysis.
-BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
 
 
 
@@ -152,7 +144,7 @@ write.table(bg_t_ids, paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".t
 bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
 # The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the deregulated transcript data from the bg_t_ids dataframe.
-dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
+dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% b_definedCI$id,]
 
 
 
@@ -174,7 +166,7 @@ dr_t_regs <- getregs(
 #>--------------------------------------------------------------------------------------
 
 # Create the data to be exported into Cytoscape
-DR_output4string <- merge(dr_t_regs, BMDres_definedCI,
+DR_output4string <- merge(dr_t_regs, b_definedCI,
                           by.x = "transcript_id", by.y = "id")
 
 # Save the data 
@@ -296,7 +288,7 @@ lonely_fishres <- lonelyfishing(
 
 results_to_csv(
   lonelyfishing_data = lonely_fishres,
-  bmdboot_data = BMDres_definedCI,
+  bmdboot_data = b_definedCI,
   path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("summary_workflow_", file_date, ".csv"),
   overwrite = TRUE
@@ -315,7 +307,7 @@ require(ggplot2)
 
 curves_to_pdf(
   lonelyfishing_data = lonely_fishres,
-  bmdboot_data = BMDres_definedCI, 
+  bmdboot_data = b_definedCI, 
   clustrfusion_data = clustr_fusionres,
   tested_doses = unique(f$omicdata$dose), 
   annot_order = c("GO:BP", "KEGG", "WP"),

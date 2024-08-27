@@ -171,19 +171,18 @@ saveRDS(b, file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_
 
 #> Let's see which items have a calculated BMD, confidence interval etc.
 b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
+
 BMDres <- b$res
 nrow(BMDres)
-BMDres_definedBMD <- bmdfilter(BMDres, BMDfilter = "definedBMD")
-nrow(BMDres_definedBMD)
-BMDres_definedCI <- bmdfilter(BMDres, BMDfilter = "definedCI")
-nrow(BMDres_definedCI)
-BMDres_finiteCI <- bmdfilter(BMDres, BMDfilter = "finiteCI")
-nrow(BMDres_finiteCI)
 
-# saveRDS(b, file = "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds") # 2433 CI defined 2162 CI finite
-# saveRDS(b, file = "bootres_zebrafish_phtalate_UF_seed2_5000iter.rds") # 2432 CI defined 2158 CI finite
-# saveRDS(b, file = "bootres_zebrafish_phtalate_UF_seed1_5000iter.rds") # 2432 CI defined 2155 CI finite
-# saveRDS(b, file = "bootres_zebrafish_phtalate_UF_seed3_1000iter.rds") # 2431 CI defined 2149 CI finite
-# saveRDS(b, file = "bootres_zebrafish_phtalate_UF_seed2_1000iter.rds") # 2432 CI defined 2146 CI finite
-# saveRDS(b, file = "bootres_zebrafish_phtalate_UF_seed1_1000iter.rds") # 2433 CI defined 2151 CI finite
+# We can filter the `bmdboot` results to retain only those transcripts with a defined confidence interval around the BMD.
+# The `DRomics::bmdfilter` function provides two other filtering options based on the desired stringency:
+# 
+# - **"finiteCI"**: Retains transcripts where both point and interval estimates of the BMD were successfully calculated and fall within the range of tested or observed doses.
+# - **"definedBMD"**: Retains transcripts where the point estimate of the BMD falls within the range of tested or observed doses.
+# 
+# Choose the appropriate filter based on the level of stringency required for your analysis.
+BMDres_definedCI <- DRomics::bmdfilter(BMDres, BMDfilter = "definedCI")
+nrow(BMDres_definedCI) 
 
+saveRDS(BMDres_definedCI, file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds"))
