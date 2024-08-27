@@ -95,7 +95,7 @@ dl_regulation_data(
 # Load DRomics "drcfit" object
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
 
-# Load DRomics "bmdboot" results filtered with only transcripts with a defined confidence interval around the BMD
+# Load DRomics "bmdboot" results, filtered to include only transcripts with a defined confidence interval around the BMD.
 b_definedCI <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds")
 
 
