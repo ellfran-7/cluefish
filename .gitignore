@@ -19,7 +19,6 @@
 # User-specific files ----
 README.html
 inst/doc
-man/
 NAMESPACE
 
 # Unwanted files (e.g. in derived-data/ the files are too large)
