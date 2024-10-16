@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<!-- Improved compatibility of back to top link: See: https://github.com/ellfran-7/cluefish/pull/73 -->
 
 <a id="readme-top"></a> <!--
 *** Thanks for checking out the Best-README-Template. If you have a suggestion
@@ -7,6 +7,12 @@
 *** Don't forget to give the project a star!
 *** Thanks again! Now go create something AMAZING! :D
 -->
+
+<!-- PROJECT LOGO -->
+
+# cluefish <img src='man/figures/cluefish-logo.png' alt="Logo" align="right" height="131.5" /></a>
+
+
 
 <!-- PROJECT SHIELDS -->
 
@@ -25,32 +31,6 @@
 [![MIT-License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
-<!-- PROJECT LOGO -->
-
-<br />
-
-<div align="center">
-  <a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish">
-  <img src="man/figures/cluefish-logo.png" alt="Logo" width="70" height="95"/>
-  </a>
-
-  <h3 align="center">cluefish</h3>
-
-<p align="center">
-
-A specialized bioinformatics workflow designed for improving biological
-interpretation of dose-response transcriptomic data. <br />
-<a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish"><strong>Explore
-the docs »</strong></a> <br /> <br />
-<a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish">View Demo</a>
-·
-<a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish/issues/new?labels=bug&template=bug-report---.md">Report
-Bug</a> ·
-<a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish/issues/new?labels=enhancement&template=feature-request---.md">Request
-Feature</a>
-
-</p>
-</div>
 
 <!-- TABLE OF CONTENTS -->
 
@@ -60,7 +40,7 @@ Feature</a>
 
 <ol>
 
-<li><a href="#about-the-project">About The Project</a></li>
+<li><a href="#overview">Overview</a></li>
 
 <li><a href="#installation">Installation</a></li>
 
@@ -89,7 +69,7 @@ Method</a></li>
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
+## Overview
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
@@ -130,7 +110,7 @@ You can use Cluefish locally in one of two ways:
 1.  Clone the repository via a terminal:
 
     ``` sh
-    git clone https://gitlab.in2p3.fr/ellis.franklin1/cluefish.git
+    git clone https://github.com/ellfran-7/cluefish.git
     ```
 
 2.  Install the developmental version of cluefish from GitHub in R
@@ -140,7 +120,7 @@ You can use Cluefish locally in one of two ways:
     if (!requireNamespace("remotes", quietly = TRUE))
       install.packages("remotes")
 
-    remotes::install_github("ellis.franklin1/cluefish")
+    remotes::install_github("ellfran-7/cluefish")
     ```
 
 <p align="right">
@@ -179,17 +159,10 @@ Cluefish requires two key inputs:
 
 ### Recommended Selection Method
 
-While the inputs can be derived from any selection method, Cluefish was
-designed with `DRomics`, a tool specialized for dose-response modeling
-of omics data. Using DRomics enhances data visualization and
-interpretation, as it aligns closely with Cluefish's intended workflow.
+While the inputs can be derived from any selection method, Cluefish was optimised to work seamlessly with the results from `DRomics`, a tool tailored for dose-response modelling of omics data.
 
-The second list can be derived from any selection method. To construct
-Cluefish, the `DRomics` was utilized, a tool tailored for the
-dose-response modelling of omic data.
+Although using `DRomics` is optional, Cluefish leverages some of its visualization functions and modelling metrics to provide deeper insights into the biological interpretation of the data.
 
-Data vizualisation and interpretation of the results of Cluefish is
-therefor improved when `DRomics` is used as the method of selection.
 
 *For more examples, please refer to the
 [Documentation](https://example.com)*
@@ -199,6 +172,7 @@ therefor improved when `DRomics` is used as the method of selection.
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 
 <!-- CONTRIBUTING -->
 
@@ -211,7 +185,7 @@ place to learn, inspire, and create. Any contributions you make are
 If you have a suggestion that would make this better, please fork the
 repo and create a pull request. You can also simply open an issue with
 the tag "enhancement". Don't forget to give the project a star! Thanks
-again!
+again! 
 
 1.  Fork the Project
 2.  Create your Feature Branch (`git checkout -b feature/AmazingIdea`)
@@ -225,11 +199,6 @@ again!
 
 </p>
 
-### Top contributors:
-
-<a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=ellis.franklin1/cluefish" alt="contrib.rocks image"/>
-</a>
 
 <!-- LICENSE -->
 
@@ -254,7 +223,7 @@ or anything other question, feel free to contact me !
 Ellis Franklin - [\@elffran7](https://twitter.com/elffran7) -
 [ellis.franklin\@univ-lorraine.fr](mailto:ellis.franklin@univ-lorraine.fr){.email}
 
-Project Link: <https://gitlab.in2p3.fr/ellis.franklin1/cluefish>
+Project Link: <https://github.com/ellfran-7/cluefish>
 
 <p align="right">
 
@@ -266,10 +235,11 @@ Project Link: <https://gitlab.in2p3.fr/ellis.franklin1/cluefish>
 
 ## Acknowledgments
 
--   [Othneil Drew's README template](https://github.com/othneildrew/Best-README-Template)
+-   [Othneil Drew's README template](https://github.com/ellfran-7/cluefish)
 -   [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
 -   [Malven's Grid Cheatsheet](https://grid.malven.co/)
--   
+-   [Img Shields](https://shields.io/)
+-   []
 
 <p align="right">
 
@@ -277,17 +247,18 @@ Project Link: <https://gitlab.in2p3.fr/ellis.franklin1/cluefish>
 
 </p>
 
+
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/gitlab.in2p3.fr/ellis.franklin1/cluefish.svg?style=for-the-badge
-[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
+[contributors-shield]: https://img.shields.io/github/contributors/ellfran-7/cluefish.svg?style=flat-square
+[contributors-url]: https://github.com/ellfran-7/cluefish/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ellfran-7/cluefish.svg?style=flat-square
+[forks-url]: https://github.com/ellfran-7/cluefish/network/members
+[stars-shield]: https://img.shields.io/github/stars/ellfran-7/cluefish.svg?style=flat-square
+[stars-url]: https://github.com/ellfran-7/cluefish/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ellfran-7/cluefish.svg?style=flat-square
+[issues-url]: https://github.com/ellfran-7/cluefish/issues
+[license-shield]: https://img.shields.io/github/license/ellfran-7/cluefish.svg?style=flat-square
+[license-url]: https://github.com/ellfran-7/cluefish/blob/main/LICENSE.txt
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
+[linkedin-url]: https://linkedin.com/in/ellis-franklin-6188831ba
