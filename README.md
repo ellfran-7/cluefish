@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 
 <a id="readme-top"></a> <!--
@@ -28,23 +22,19 @@ editor_options:
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-u
+[![MIT-License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- PROJECT LOGO -->
 
 <br />
 
-::: {align="center"}
-<a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish">
-<img src="man/figures/cluefish-logo.png" alt="Logo" width="70" height="95"/>
-</a>
+<div align="center">
+  <a href="https://gitlab.in2p3.fr/ellis.franklin1/cluefish">
+  <img src="man/figures/cluefish-logo.png" alt="Logo" width="70" height="95"/>
+  </a>
 
-<h3 align="center">
-
-cluefish
-
-</h3>
+  <h3 align="center">cluefish</h3>
 
 <p align="center">
 
@@ -60,7 +50,7 @@ Bug</a> ·
 Feature</a>
 
 </p>
-:::
+</div>
 
 <!-- TABLE OF CONTENTS -->
 
