@@ -95,6 +95,8 @@ Cluefish is designed to be adaptable to a wide range of organisms, both
 model and non-model, ensuring broad applicability across various
 biological contexts.
 
+
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
@@ -147,6 +149,7 @@ packages in two ways:
     specified in the `renv.lock` file by running `renv::restore()`. Note
     that this process may take longer.
 
+
 ### Required inputs
 
 Cluefish requires two key inputs:
@@ -163,6 +166,23 @@ While the inputs can be derived from any selection method, Cluefish was optimise
 
 Although using `DRomics` is optional, Cluefish leverages some of its visualization functions and modelling metrics to provide deeper insights into the biological interpretation of the data.
 
+*For more examples, please refer to the
+[Documentation](https://example.com)*
+
+<p align="right">
+
+(<a href="#readme-top">back to top</a>)
+
+</p>
+
+
+<!-- WORKFLOW -->
+
+## Workflow
+
+<p align="center">
+  <img src="man/figures/cluefish-schematic-2024-09-27.png" alt="Cluefish schematic" width="600"/>
+</p>
 
 *For more examples, please refer to the
 [Documentation](https://example.com)*
