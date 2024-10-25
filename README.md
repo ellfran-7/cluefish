@@ -10,7 +10,7 @@
 
 <!-- PROJECT LOGO -->
 
-# cluefish <img src='man/figures/cluefish-logo-with-text.png' alt="Logo" align="right" height="131.5" /></a>
+# cluefish <img src='man/figures/cluefish-logo-with-text.png' alt="Logo" align="right" height="150" /></a>
 
 
 
