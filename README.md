@@ -73,16 +73,14 @@ Method</a></li>
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-Cluefish is a semi-automated workflow designed for the comprehensive and
+Cluefish is a free semi-automated R workflow designed for the comprehensive and
 untargeted exploration of dose-response transcriptomic data. Its name
 reflects the three key concepts driving the workflow: **Clustering**,
 **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing
-for clues*"🎣 in complex biological data. The workflow is particularly
-useful in deciphering transcriptomic patterns in a dose-response
-context.
+for clues*"🎣 in complex biological data. 
 
 When used in combination with
-[DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for
+[`DRomics`](https://lbbe-software.github.io/DRomics/) (Dose-Response for
 Omics), Cluefish provides a more comprehensive analysis of dose-response
 transcriptomic data. This workflow addresses the limitations of standard
 Over-Representation Analysis (ORA) by applying ORA to pre-clustered
@@ -115,7 +113,7 @@ You can use Cluefish locally in one of two ways:
     git clone https://github.com/ellfran-7/cluefish.git
     ```
 
-2.  Install the developmental version of cluefish from GitHub in R
+2.  Install the developmental version of Cluefish from GitHub in R
     (`remotes` needed):
 
     ``` r
@@ -135,7 +133,7 @@ You can use Cluefish locally in one of two ways:
 
 ## Usage
 
-To run the Cluefish workflow, use the `make.R` script, which serves as
+To run the Cluefish workflow, you can use the `make.R` script, which serves as
 the 'master' script for the entire process. We recommend using this
 script as a template to ensure smooth and sequential execution of the
 workflow steps.
@@ -154,9 +152,9 @@ packages in two ways:
 
 Cluefish requires two key inputs:
 
-1.  **Background transcript list**: Typically, this includes the
+1.  **A background transcript list**: Typically, this includes the
     identifiers for all detected transcripts in the experiment.
-2.  **Deregulated transcript list**: A subset of the background list,
+2.  **A deregulated transcript list**: A subset of the background list,
     containing the identifiers of significantly deregulated transcripts.
     This list can be derived using any selection method.
 
@@ -181,7 +179,7 @@ Although using `DRomics` is optional, Cluefish leverages some of its visualizati
 ## Workflow
 
 <p align="center">
-  <img src="man/figures/cluefish-schematic-2024-09-27.png" alt="Cluefish schematic" width="600"/>
+  <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
 </p>
 
 *For more examples, please refer to the
