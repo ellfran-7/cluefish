@@ -82,7 +82,7 @@ for clues*"🎣 in complex biological data.
 When used in combination with
 [`DRomics`](https://lbbe-software.github.io/DRomics/) (Dose-Response for
 Omics), Cluefish provides a more comprehensive analysis of dose-response
-transcriptomic data. This workflow addresses the limitations of standard
+transcriptomic data. This workflow addresses the limitations of the standard
 Over-Representation Analysis (ORA) by applying ORA to pre-clustered
 networks. These clusters serve as anchors for ORA, enhancing enrichment
 detection sensitivity and thus enabling the identification of smaller,
