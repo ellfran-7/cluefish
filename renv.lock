@@ -1788,7 +1788,7 @@
     },
     "pkgdown": {
       "Package": "pkgdown",
-      "Version": "2.1.0",
+      "Version": "2.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1814,7 +1814,7 @@
         "xml2",
         "yaml"
       ],
-      "Hash": "0d3d789055c873f48521ce7e23c23f48"
+      "Hash": "df2912d5873422b55a13002510f02c9f"
     },
     "pkgload": {
       "Package": "pkgload",
