@@ -59,7 +59,7 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 # - Zebrafish: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
 # - Sprague Dawley rat: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Rattus_norvegicus_TF"
 
-# Ensure that the URL structure follows the same pattern as shown below to ensure successful data download.
+# Ensure that the URL structure follows the same pattern as shown above to ensure successful data download.
 
 dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
