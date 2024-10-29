@@ -48,7 +48,7 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 ## Run Project Workflow  ----
 
 
-#>> STEP 0 - Download TF and CoTF Data 
+#>> STEP 1 - Download TF and CoTF Data 
 #>------------------------------------
 
 # Before performing this step, it is recommended to verify if the organism of interest is available in the AnimalTFDB database. 
@@ -59,7 +59,7 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 # - Zebrafish: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
 # - Sprague Dawley rat: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Rattus_norvegicus_TF"
 
-# Ensure that the URL structure follows the same pattern as shown above to ensure successful data download.
+# Ensure that the URL structure follows the same pattern as shown above to ensure successful data download of both TF and CoTF files.
 
 dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
@@ -74,7 +74,7 @@ dl_regulation_data(
 
 
 
-#>> STEP 1 - Load the DRomics results
+#>> STEP 2 - Load the DRomics results
 #>----------------------------------------------
 
 # This workflow requires data from both the experimental results and the DRomics pipeline.
@@ -103,7 +103,7 @@ b_definedCI <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3
 
 
 
-#>> STEP 2 - Retrieve deregulated gene identifiers from Ensembl
+#>> STEP 3 - Retrieve deregulated gene identifiers from Ensembl
 #>-------------------------------------------------------------
 
 # First, find the names of the BioMart services that Ensembl is currently providing.
@@ -150,7 +150,7 @@ dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% b_definedCI$id,]
 
 
 
-#>> STEP 3 - Retrieve regulatory status of deregulated genes
+#>> STEP 4 - Retrieve regulatory status of deregulated genes
 #>----------------------------------------------------------
 
 dr_t_regs <- getregs(
@@ -162,7 +162,7 @@ dr_t_regs <- getregs(
 
 
 
-#>> STEP 4 - Create and retrieve the clustered PPIN data from the StringApp in Cytoscape
+#>> STEP 5 - Create and retrieve the clustered PPIN data from the StringApp in Cytoscape
 #>--------------------------------------------------------------------------------------
 
 # Create the data to be exported into Cytoscape
@@ -190,7 +190,7 @@ dr_t_clustrs <- getclustrs(
 
 
 
-#>> STEP 5 - Filter clusters based on their gene set size
+#>> STEP 6 - Filter clusters based on their gene set size
 #>-------------------------------------------------------
 
 dr_t_clustrs_filtr <- clustrfiltr(
@@ -202,7 +202,7 @@ dr_t_clustrs_filtr <- clustrfiltr(
 
 
 
-#>> STEP 6 - Functional enrichment by clusters and annotation retrieval
+#>> STEP 7 - Functional enrichment by clusters and annotation retrieval
 #>---------------------------------------------------------------------
 
 clustr_enrichres <- clustrenrich(
@@ -252,7 +252,7 @@ clustr_enrichres$dr_g_a_whole |>
 
 
 
-#>> STEP 7 - Fusion clusters based on shared cluster enrichment
+#>> STEP 8 - Fusion clusters based on shared cluster enrichment
 #>-------------------------------------------------------------
 
 clustr_fusionres <- clustrfusion(
@@ -264,7 +264,7 @@ clustr_fusionres <- clustrfusion(
 
 
 
-#>> STEP 8 - Fishing lonely genes sharing annotations with clusters enrichment
+#>> STEP 9 - Fishing lonely genes sharing annotations with clusters enrichment
 #>----------------------------------------------------------------------------
 
 lonely_fishres <- lonelyfishing(
@@ -280,9 +280,38 @@ lonely_fishres <- lonelyfishing(
 
 
 
+#>> STEP 10 - Characterize the lonely cluster by simple functional enrichment
+#>---------------------------------------------------------------------------
 
-#>> STEP 9 - Generate a summary dataframe of the workflow
-#>---------------------------------------------------
+# Only select the transcripts part of the lonely cluster
+
+lonelycluster_data <- lonely_fishres$dr_t_c_a_fishing |> 
+  dplyr::filter(new_clustr == "Lonely")
+
+# Perform a simple functional enrichment using the simplenrich() homemade function 
+
+lonely_clustr_analysis_res <- simplenrich(
+  input_genes = lonelycluster_data$gene_id,
+  bg_genes = bg_t_ids$gene_id,
+  bg_type = "custom_annotated",
+  sources = c("GO:BP", "KEGG", "WP"), 
+  organism = "drerio",
+  user_threshold = 0.05,
+  correction_method = "fdr",
+  only_highlighted_GO = TRUE,
+  min_term_size = 5,
+  max_term_size = 500,
+  ngenes_enrich_filtr = 3,
+  path = paste0("outputs/", file_date, "/"),
+  output_filename = paste0("lonely_clustr_analysis_res_", file_date, ".rds"),
+  overwrite = TRUE
+)
+
+
+#>> BASIC OUTPUTS FOR EXPLORATION
+#>-------------------------------
+
+#>> Generate a summary dataframe of the workflow -------
 
 # With the workflow fulfilled, we can create a concise summary dataframe capturing the key details from the final results post the lonely gene fishing step. It encompasses all essential information for result exploration, striking a balance by avoiding an overwhelming amount of data that might hinder ease of exploration. 
 
@@ -295,11 +324,7 @@ results_to_csv(
 )
 
 
-
-
-
-#>> STEP 10 - Generate cluster-level curvesplots to a PDF file
-#>------------------------------------------------------------
+#>> Generate cluster-level curvesplots to a PDF file -------
 
 # Finally, this last step consists of generating the output PDF file containing a plot of dose-response curves for each cluster of genes, with each plot labelled with the cluster ID and the number of transcripts in that cluster. The curves are color-coded according to whether the trend is increasing, decreasing, U-shaped, or bell-shaped. The plot axes are labelled with "Dose (µg/L)" and "Signal", and the y-axis is scaled to be the same across all plots.
 
@@ -333,43 +358,8 @@ curves_to_pdf(
 )
 
 
-
-
-
-#>> STEP 11 - Characterize the lonely cluster by simple functional enrichment
-#>---------------------------------------------------------------------------
-
-# Only select the transcripts part of the lonely cluster
-
-lonelycluster_data <- lonely_fishres$dr_t_c_a_fishing |> 
-  dplyr::filter(new_clustr == "Lonely")
-
-# Perform a simple functional enrichment using the simplenrich() homemade function 
-
-lonely_clustr_analysis_res <- simplenrich(
-  input_genes = lonelycluster_data$gene_id,
-  bg_genes = bg_t_ids$gene_id,
-  bg_type = "custom_annotated",
-  sources = c("GO:BP", "KEGG", "WP"), 
-  organism = "drerio",
-  user_threshold = 0.05,
-  correction_method = "fdr",
-  only_highlighted_GO = TRUE,
-  min_term_size = 5,
-  max_term_size = 500,
-  ngenes_enrich_filtr = 3,
-  path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("lonely_clustr_analysis_res_", file_date, ".rds"),
-  overwrite = TRUE
-)
-
-
-
-
-
 #>> ADDITIONAL STEPS: Generation Quarto reports
 #> --------------------------------------------
-
 
 #>> Generate the cluefish quarto report -------
 
