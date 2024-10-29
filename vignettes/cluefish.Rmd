@@ -1,0 +1,224 @@
+---
+title: "Introduction to Cluefish"
+author: 
+  - name: Ellis Franklin
+date: '`r Sys.Date()`'
+bibliography: references.bib
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Introduction to Cluefish}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+```
+
+<style>
+  :root {
+    --teal: #356e6f;
+  }  
+         
+  h1, h2, h3 {
+    color: var(--teal);
+  }
+  
+  .list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+      background-color: var(--teal);
+  }
+  .active {
+    background-color: var(--teal);
+  }
+  
+  .caption{
+    color: #777;
+    text-align: left;
+  }
+</style>
+
+<!-- Introduction  -->
+
+## Preface
+
+This vignette is intended to help users who wish to use Cluefish. The first part of this vignette is dediczted to an introduction of the context in which Cluefish was developped, and therefor an overview of the workflow. The second part is dedicated to a step-by-step guide of the main Cluefish workflow using an example dataset.
+
+## Introduction
+
+### A bit of context
+
+In transcriptomics, analyses yield extensive transcript lists that require impractical manual literature reviews. To address this, **functional enrichment (FE) analysis**, also known as **pathway enrichment analysis**, has become the standard approach. This method condenses large gene lists into more manageable and interpretable sets of biological functions or pathways [@das2020]. FE relies on predefined gene sets representing molecular functions, biological processes or pathways, as outlined by resources like the Gene Ontology (GO) [@ashburner2000], pathway databases such as KEGG [@kanehisa2000] and Wikipathways [@martens2021; @agrawal2024], or experimentally derived gene sets available in the MSigDB [@liberzon2011; @geistlinger2021].
+
+FE approaches have evolved in four generations: Over-Representation Analysis (ORA), Functional Class Scoring (FCS), Pathway Topology (PT), and Network Topology (NT)-based methods[^1].
+
+[^1]: Multiple literature reviews provide healthy descriptions and comparisons of these approaches: @khatri2012; @ihnatova2018; @ma2019; @liu2017; @bayerlová2015; @huang2009.
+
+Each generation introduced improvements by accounting for gene co-expression, pathway topology, and network crosstalk. However, PT and NT-based approaches face limitations due to incomplete pathway and network information for lesser studied organisms, making ORA and FCS the most widely used methods [@liu2017].
+
+In dose-response (DR) studies, which explore the relationship between exposure and biological effect, DR omics analyses play a critical role [@lovell2016]. Unlike standard differential expression analyses, DR methods, such as the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package [@larras2018], model the full DR relationship of each transcript rather than just fold-change between conditions. From these models, a benchmark dose (BMD) is calculated for each transcript : a dose that represents a specific change in response, indicating a gene’s sensitivity to a stressor [@committee2017].
+
+While differential gene expression analysis provides fold-change values and their associated p-values, modeling approaches, such as DRomics, characterize the entire DR relationship. PT-based enrichment and FCS, which rely on fold-change values, are therefore not adapted for functional enrichment in a DR context [@khatri2012]. ORA is currently the only suitable method available to complement DR modeling, as it exclusively uses deregulaged gene lists. However, ORA comes with several other limitations. The enrichment results,, often based on Fisher’s Exact Tests, can be biased towards broad biological functions, since using all deregulated genes makes it harder to reach statistical significance for smaller or specialized functions. This tendency is intrinsically tied to the granularity of gene sets in certain databases (e.g., GO). Gene sets may be overly specific, while others are too general, potentially compromising the relevance of the analysis [@karp2021; @mubeen2022]. Additionally, gene sets may vary in specificity, and results often reflect only part of the deregulated gene list. Therefore, ORA alone (hereafter referred to as the "**standard approach**") is insufficient for interpreting complex DR data, and combining additional methods is essential to capture a fuller and more precise view of the biological context.
+
+### Overview of Cluefish
+
+To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) (Franklin et al. 2025), a free semi-automated workflow designed for comprehensive and untargeted exploration of DR transcriptomic data. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
+
+Cluefish is composed of 10 main steps:
+
+1.  The workflow begins by downloading transcription factor (TF) and co-factor (CoTF) gene annotations from the AnimalTFDB database ([Step 1](#step1)).
+2.  Background and deregulated transcript lists are then loaded ([Step 2](#step2)).
+3.  Gene identifiers for these transcripts are retrieved using the biomaRt R package ([Step 3](#step3)).
+4.  If TF and CoTF information is available, regulatory statuses are assigned to deregulated genes ([Step 4](#step4)).
+5.  Moving to Cytoscape, the workflow uses the StringApp to construct and cluster the PPI network, after which the clustered data is retrieved ([Step 5](#step5)).
+6.  Back in R, gene clusters are filtered based on their set sizes ([Step 6](#step6)).
+7.  Cluster-wise functional enrichment, specifically ORA, is performed to characterize each cluster independently ([Step 7](#step7)).
+8.  Clusters sharing similar enriched biological functions are merged to reduce redundancy ([Step 8](#step8)).
+9.  Unassigned genes, termed “lonely genes,” are then integrated into existing clusters based on shared functional annotations ([Step 9](#step9))}.
+10. Finally, any remaining lonely genes form a separate “lonely cluster,” which undergoes ORA for functional characterization ([Step 10](#step10)).
+
+Cluefish integrates valuable information from various biological functional/pathway databases (e.g., GO, KEGG, WP), the AnimalTFDB4 database of transcription factors and co-factors for \>180 animal genomes, and the STRING database of known an predicted PPIs for \>12,000. Despite drawing from multiple complementary resources, these databases collectively provide a broad coverage of organisms, ensuring that Cluefish is applicable to a wide range of both model and non-model organisms. --\>
+
+## Installation
+
+You can use Cluefish locally in one of two ways:
+
+1.  Clone the repository via a terminal:
+
+    ``` sh
+    git clone https://github.com/ellfran-7/cluefish.git
+    ```
+
+2.  Install the developmental version of Cluefish from GitHub in R (`remotes` needed):
+
+    ```{r, eval = FALSE}
+    if (!requireNamespace("remotes", quietly = TRUE))
+      install.packages("remotes")
+
+    remotes::install_github("ellfran-7/cluefish")
+    ```
+
+<!-- Before diving in... -->
+
+<!--------------- Assumptions -->
+
+<!--------------- Naming logic -->
+
+<!-- Getting started -->
+
+## Usage
+
+To run the Cluefish workflow, you can use the `make.R` script, which serves as the 'master' script for the entire process. We recommend using this script as a template to ensure smooth and sequential execution of the workflow steps.
+
+Here we will go through the main steps one by one !
+
+### The case study
+
+To showcase we will use a dose-response transcriptomic dtaaset, where zebrafish embryos were exposed to a five dose-gradient of di-n-butyl phthalate. This dataset is further described in our paper (Franklin et al. 2025) and ou may access this data et ...........
+
+### First steps
+
+A key feature of Cluefish is the integration of `renv` to create reproducible environments. This enables you to install the required R packages in two ways:
+
+1.  Install the latest package versions with `renv::install()`. 
+    ```{r, eval = FALSE}
+    renv::install()
+    ```
+
+
+2.  For full reproducibility, install the exact package versions specified in the `renv.lock` file by running `renv::restore()`. Note that this process may take longer.
+    ```{r, eval = FALSE}
+    renv::install()
+    ```
+
+Once the packages installed or restored, you can then load the R functions with:
+
+```{r, eval = FALSE}
+devtools::load_all(here::here())
+```
+
+Additionally, you can set a time variable and create directories for saving some output files, making the rest of the workflow less tedious:
+
+```{r, eval = FALSE}
+## State the Time Variable for file saving and reading ---
+file_date <- "2024-07-31"
+
+
+## Create directory for saving Cluefish output files (if it doesn't already exist) ---
+dir_path <- paste0("outputs/", file_date)
+
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+
+  dir.create(dir_path) # Create it if not
+  
+}
+
+
+## Create directory for saving Cytoscape files (if it doesn't already exist) ---
+dir_path <- paste0("outputs/", file_date, "/cytoscape-files")
+
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+  
+  dir.create(dir_path) # Create it if not
+  
+}
+```
+
+If no errors have appeared, you are all set to go !
+
+
+
+### Step 1: Download transcription (co-)factor annotations{#step1}
+
+Before performing this step, it is recommended to verify if the organism of interest is available in the AnimalTFDB database. You can check the list of supported species on their website: [Go to AnimalTFDB](https://guolab.wchscu.cn/AnimalTFDB4/#/Species).
+
+If the organism is not found in the database, this step can be skipped ! 
+
+If the organism is found in the database, you need to modify the URL by replacing the organism's Latin name (e.g., "Danio_Rerio") with the Latin name of your organism. For example, the URLs for transcription factors (TF) for zebrafish (Danio rerio) would be: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
+
+Ensure that the URL structure follows the same pattern as shown above to ensure successful data download of both TF and CoTF files.
+
+```{r, eval = FALSE}
+dl_regulation_data(
+  url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
+  url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
+  path = "data/derived-data/",
+  filename_tf = paste0("Danio_rerio_TF_", file_date, ".txt"),
+  filename_cof = paste0("Danio_rerio_Cof_", file_date, ".txt"),
+  overwrite = TRUE
+)
+``` 
+
+### Step 2: Load background and deregulated transcripts lists{#step2}
+
+The background transcript list includes all transcript IDs detected in the experiment, whereas the deregulated transcript list contains only the IDs of significantly deregulated transcripts.
+
+> While the inputs can be derived from any selection method, `Cluefish` was optimised to work seamlessly with the results from `DRomics`. 
+Although using `DRomics` is **optional**, Cluefish leverages some of its visualization functions and modelling metrics to provide deeper insights into the biological interpretation of the data.
+
+With the DRomics analysis performed beforehand, we can retrieve the outputs of:
+*the `drcfit()` function: holding the background transcript list
+*the `bmdboot()` function: holding the deregulated transcript list
+
+```{r, eval=FALSE}
+# Load DRomics "drcfit" object
+f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
+
+# Load DRomics "bmdboot" results, filtered to include only transcripts with a defined confidence interval around the BMD.
+b_definedCI <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds")
+```
+
+
+### Step 3: Retrieve gene identifiers{#step3}
+
+<!--------------- Add Cluefish graphical abstract from paper -->
+
+<!-- Workflow overview -->
+
+<!--------------- Add Cluefish full schema -->
+
+<!-- Applying Cluefish: zebrafish DBP dataset -->
+
+<!-- Another application example : rat PFOA(?) dataset -->

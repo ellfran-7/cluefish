@@ -257,7 +257,6 @@ Project Link: <https://github.com/ellfran-7/cluefish>
 -   [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
 -   [Malven's Grid Cheatsheet](https://grid.malven.co/)
 -   [Img Shields](https://shields.io/)
--   []
 
 <p align="right">
 
