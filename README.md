@@ -110,7 +110,7 @@ Cluefish relies on external open source software for an intermediate step within
     Within Cytoscape, install the **StringApp** and **clusterMaker2** apps. To do this:
     -  Open Cytoscape
     -  Navigate to `Apps` > `App Store` > `Show App Store`
-    -  Search for and install StringApp (for retrieving STRING protein interactions) and clusterMaker2 (for clustering network data).
+    -  Search for and install "StringApp" (for retrieving STRING protein interactions) and "clusterMaker2"" (for clustering network data).
 
 You can also view more about these apps on the [Cytoscape App Store](https://apps.cytoscape.org/).
 
