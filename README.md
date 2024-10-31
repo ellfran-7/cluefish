@@ -129,6 +129,12 @@ Additionally, Cluefish relies on external open source software for an intermedia
 
 To run the Cluefish workflow, you can use the `make.R` script, which serves as the 'master' script for the entire process. We recommend using this script as a template to ensure smooth and sequential execution of the workflow steps.
 
+<!-- !!!!!!!!!!!!!!!!! -->
+A step-by-step workflow guide is also available in the vignette, Introduction to Cluefish (add link), which includes the *ZebrafishDBP* example dataset.
+<!-- !!!!!!!!!!!!!!!!! -->
+
+### Required R packages
+
 A key feature of Cluefish is the integration of `renv` to create reproducible environments. This enables you to install the required R packages in two ways:
 
 -   Install the latest package versions with `renv::install()`.
@@ -159,17 +165,26 @@ Although using `DRomics` is optional, Cluefish leverages some of its visualizati
 
 ## Workflow
 
-<p align="center">
+A schematic overview of the Cluefish workflow is shown below. For a full, step-by-step guide, refer to the vignette, Introduction to Cluefish (add link), which provides instructions using the *ZebrafishDBP* example dataset.
+
+
+<center>
 
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
 
-</p>
+</center>
 
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
+<!-- CITATION --> 
+
+Please use the following citation:
+
+> {{ADD CITATION}}
 
 <!-- CONTRIBUTING -->
 
