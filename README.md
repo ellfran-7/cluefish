@@ -54,11 +54,9 @@
 
 ## Overview
 
-<!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
-
 Cluefish is a free semi-automated R workflow designed for the comprehensive and untargeted exploration of dose-response transcriptomic data. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
-When used in combination with [`DRomics`](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics), Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. This workflow addresses the limitations of the standard Over-Representation Analysis (ORA) by applying ORA to pre-clustered networks. These clusters serve as anchors for ORA, enhancing enrichment detection sensitivity and thus enabling the identification of smaller, more specific biological processes while simultaneously forming exploratory gene groups.
+When used alongside the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package, Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. This workflow addresses the limitations of the standard Over-Representation Analysis (ORA) by applying ORA to pre-clustered networks. These clusters serve as anchors for ORA, enhancing enrichment detection sensitivity and thus enabling the identification of smaller, more specific biological processes while simultaneously forming exploratory gene groups.
 
 Cluefish is designed to be adaptable to a wide range of organisms, both model and non-model, ensuring broad applicability across various biological contexts.
 
@@ -99,21 +97,31 @@ You can use Cluefish locally in one of two ways:
 
 ## Additional Requirements
 
-Cluefish relies on external open source software for an intermediate step within its workflow. Please ensure the following tools are installed:
+The Cluefish tool is developed in **R**, so having **R** installed is a prerequisite. You can download it [here](https://posit.co/download/rstudio-desktop/).
+
+For an enhanced experience, we recommend using the **RStudio** integrated development environment (IDE), which is available for download at the same link, [here](https://posit.co/download/rstudio-desktop/)
+
+Additionally, Cluefish relies on external open source software for an intermediate step within its workflow. Please ensure the following tools are installed:
 
 1.  **Cytoscape**:
-    
-    Cluefish uses Cytoscape in order to visualize PPI networks. Install Cytoscape from their [official download page](https://cytoscape.org/download.html).
+
+    Cluefish uses Cytoscape in order to visualize PPI networks. Install Cytoscape from their [download page](https://cytoscape.org/download.html).
 
 2.  **Required Cytoscape Apps**:
-    
+
     Within Cytoscape, install the **StringApp** and **clusterMaker2** apps. To do this:
-    -  Open Cytoscape
-    -  Navigate to `Apps` > `App Store` > `Show App Store`
-    -  Search for and install "StringApp" (for retrieving STRING protein interactions) and "clusterMaker2"" (for clustering network data).
 
-You can also view more about these apps on the [Cytoscape App Store](https://apps.cytoscape.org/).
+    -   Open Cytoscape
+    -   Navigate to `Apps` \> `App Store` \> `Show App Store`
+    -   Search for and install "StringApp" (for retrieving STRING protein interactions) and "clusterMaker2"" (for clustering network data).
 
+*You can also view more about these apps on the [Cytoscape App Store](https://apps.cytoscape.org/).*
+
+<p align="right">
+
+(<a href="#readme-top">back to top</a>)
+
+</p>
 
 <!-- USAGE EXAMPLES -->
 
@@ -139,7 +147,7 @@ While the inputs can be derived from any selection method, Cluefish was optimise
 
 Although using `DRomics` is optional, Cluefish leverages some of its visualization functions and modelling metrics to provide deeper insights into the biological interpretation of the data.
 
-*For more examples, please refer to the [Documentation](https://example.com)*
+*For more information on DRomics, please refer to their [documentation](https://lbbe-software.github.io/DRomics/)*
 
 <p align="right">
 
@@ -156,8 +164,6 @@ Although using `DRomics` is optional, Cluefish leverages some of its visualizati
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
 
 </p>
-
-*For more examples, please refer to the [Documentation](https://example.com)*
 
 <p align="right">
 
@@ -217,7 +223,7 @@ Project Link: <https://github.com/ellfran-7/cluefish>
 
 ## Acknowledgments
 
--   [Othneil Drew's README template](https://github.com/ellfran-7/cluefish)
+-   [Othneil Drew's README template](https://github.com/othneildrew/Best-README-Template)
 -   [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
 -   [Malven's Grid Cheatsheet](https://grid.malven.co/)
 -   [Img Shields](https://shields.io/)
