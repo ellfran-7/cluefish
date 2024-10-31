@@ -70,6 +70,10 @@ Cluefish is designed to be adaptable to a wide range of organisms, both model an
 
 ## Installation
 
+The Cluefish tool is developed in **R**, so having **R** installed is a prerequisite. You can download it [here](https://posit.co/download/rstudio-desktop/).
+
+For an enhanced experience, we recommend using the **RStudio** integrated development environment (IDE), which is available for download at the same link, [here](https://posit.co/download/rstudio-desktop/).
+
 You can use Cluefish locally in one of two ways:
 
 1.  Clone the repository via a terminal:
@@ -97,11 +101,7 @@ You can use Cluefish locally in one of two ways:
 
 ## Additional Requirements
 
-The Cluefish tool is developed in **R**, so having **R** installed is a prerequisite. You can download it [here](https://posit.co/download/rstudio-desktop/).
-
-For an enhanced experience, we recommend using the **RStudio** integrated development environment (IDE), which is available for download at the same link, [here](https://posit.co/download/rstudio-desktop/).
-
-Additionally, Cluefish relies on external open source software for an intermediate step within its workflow. Please ensure the following tools are installed:
+Cluefish relies on external open source software for an intermediate step within its workflow. Please ensure the following tools are installed:
 
 1.  **Cytoscape**:
 
