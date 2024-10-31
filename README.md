@@ -99,7 +99,7 @@ You can use Cluefish locally in one of two ways:
 
 The Cluefish tool is developed in **R**, so having **R** installed is a prerequisite. You can download it [here](https://posit.co/download/rstudio-desktop/).
 
-For an enhanced experience, we recommend using the **RStudio** integrated development environment (IDE), which is available for download at the same link, [here](https://posit.co/download/rstudio-desktop/)
+For an enhanced experience, we recommend using the **RStudio** integrated development environment (IDE), which is available for download at the same link, [here](https://posit.co/download/rstudio-desktop/).
 
 Additionally, Cluefish relies on external open source software for an intermediate step within its workflow. Please ensure the following tools are installed:
 
