@@ -153,7 +153,7 @@ While the inputs can be derived from any selection method, Cluefish was optimise
 
 Although using `DRomics` is optional, Cluefish leverages some of its visualization functions and modelling metrics to provide deeper insights into the biological interpretation of the data.
 
-*For more information on DRomics, please refer to their [documentation](https://lbbe-software.github.io/DRomics/)*
+*For more information on DRomics, please refer to their [documentation](https://lbbe-software.github.io/DRomics/)*.
 
 <p align="right">
 
