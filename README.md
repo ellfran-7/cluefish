@@ -54,9 +54,11 @@
 
 ## Overview
 
-Cluefish is a free semi-automated R workflow designed for the comprehensive and untargeted exploration of dose-response transcriptomic data. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
+Cluefish is a free semi-automated R workflow designed for the comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
-When used alongside the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package, Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. This workflow addresses the limitations of the standard Over-Representation Analysis (ORA) by applying ORA to pre-clustered networks. These clusters serve as anchors for ORA, enhancing enrichment detection sensitivity and thus enabling the identification of smaller, more specific biological processes while simultaneously forming exploratory gene groups.
+When used alongside the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package, Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. In toxicology/ecotoxicology, this will support the understanding/highlighting of contaminant’s mode of action. 
+
+This workflow addresses the limitations of the standard Over-Representation Analysis (ORA) by applying ORA to pre-clustered networks. These clusters serve as anchors for ORA, enhancing enrichment detection sensitivity and thus enabling the identification of smaller, more specific biological processes while simultaneously forming exploratory gene groups.
 
 Cluefish is designed to be adaptable to a wide range of organisms, both model and non-model, ensuring broad applicability across various biological contexts.
 
@@ -135,10 +137,10 @@ A step-by-step workflow guide is also available in the vignette, Introduction to
 
 ### Required R packages
 
-A key feature of Cluefish is the integration of `renv` to create reproducible environments. This enables you to install the required R packages in two ways:
+A key feature of Cluefish is the integration of `renv` to create reproducible environments. This allows you to install the required R packages in two ways:
 
--   Install the latest package versions with `renv::install()`.
--   For full reproducibility, install the exact package versions specified in the `renv.lock` file by running `renv::restore()`. Note that this process may take longer.
+-   Run `renv::install()` to install the most recent version of the packages listed in the `renv.lock` file.
+-   For full reproducibility, run `renv::restore()` to install the exact package versions specified in the `renv.lock` file. Note that this process may take longer.
 
 ### Required inputs
 
@@ -167,7 +169,6 @@ Although using `DRomics` is optional, Cluefish leverages some of its visualizati
 
 A schematic overview of the Cluefish workflow is shown below. For a full, step-by-step guide, refer to the vignette, Introduction to Cluefish (add link), which provides instructions using the *ZebrafishDBP* example dataset.
 
-
 <center>
 
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
@@ -182,7 +183,9 @@ A schematic overview of the Cluefish workflow is shown below. For a full, step-b
 
 <!-- CITATION --> 
 
-Please use the following citation:
+## Citation
+
+If you use Cluefish, please cite it as follows:
 
 > {{ADD CITATION}}
 
