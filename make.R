@@ -205,6 +205,24 @@ dr_t_clustrs_filtr <- clustrfiltr(
 #>> STEP 7 - Functional enrichment by clusters and annotation retrieval
 #>---------------------------------------------------------------------
 
+# You can access different versions of g:Profiler !
+
+# Check the current g:Profiler version
+gprofiler2::get_base_url()
+
+# You can set the beta version of g:Profiler  
+gprofiler2::set_base_url("http://biit.cs.ut.ee/gprofiler_beta")
+
+# You can use an archived version for reproducibility (e.g., release e94_eg41_p11).
+gprofiler2::set_base_url("http://biit.cs.ut.ee/gprofiler_archive3/e94_eg41_p11")
+
+# You can simply use the stable version of g:Profiler 
+gprofiler2::set_base_url("http://biit.cs.ut.ee/gprofiler")
+# This corresponds to the latest stable release version 'e111_eg58_p18_f463989d' at the time of this run ["2024-08-07T13:01:09.277618+00:00"]
+
+# Make sure that you are using the appropriate version of the g:Profiler database !!!
+
+# Now, we can run the clustrenrich() to perform cluster-wise functional enrichment. 
 clustr_enrichres <- clustrenrich(
   clustrfiltr_data = dr_t_clustrs_filtr,
   dr_genes = dr_t_regs$gene_id,
@@ -223,7 +241,6 @@ clustr_enrichres <- clustrenrich(
   output_filename = paste0("clustr_enrichres_", file_date, ".rds"),
   overwrite = FALSE
 )
-
 
 # Selecting appropriate minimum and maximum term sizes is challenging and depends on various factors, such as the organism, the type of transcriptomic data, and the definition of "generalistic terms."
 # To understand the relationship between gene set size and the generality of terms, the following code prints all terms associated with the deregulated genes in decreasing order of size. This allows us to check if the chosen size limits are reasonable based on the data.
