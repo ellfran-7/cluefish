@@ -1,4 +1,4 @@
-#' cluefish: A workflow to alleviate biological interpretation of the dose-response (DR) modeling results of DR transcriptomic data
+#' cluefish: A workflow to alleviate biological interpretation of the dose-response (DR) modeling results of transcriptomic data series
 #' 
 #' @description 
 #' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modeling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data. Each step in the workflow builds on the results of the previous steps, although some steps can be performed independently. Additionally, in some cases, certain steps are not specifically required to proceed to the next phase.
