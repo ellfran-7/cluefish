@@ -1,17 +1,87 @@
-# Prior to commencing the workflows, it is imperative to  characterize 
-# the dose-response transcriptomic data. In order to accomplish this, we use the 
-# DRomics turn-key tool, which offers responsive item selection and modeling. 
+#> Prior to commencing the workflows, it is imperative to  characterize 
+#> the dose-response transcriptomic data. In order to accomplish this, we use the 
+#> DRomics turn-key tool, which offers responsive item (e.g transcript) selection and modelling. 
+#> ============================================================================
 
-#>> Load and list the packages needed
+#> Load and list the packages needed
+#> ---------------------------------
 require(DRomics)
 require(ggplot2)
 
+#> ----------------------------------------------------------------------
+#> DRomics Workflow: Reproducing Results from Franklin et al. (submitted)
+#> ----------------------------------------------------------------------
 
-# ---------------- SELECTION OF RESPONSIVE ITEMS AND MODELING --------------
+# If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
+# follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
+# understanding of each step (and if you want to simply use the tool): https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
 
 
-#>> Importation, checking and normalization of RNAseq count data 
-# ---------------------------------------------------
+#> 1. Download the Processed Dataset from GEO
+#> ------------------------------------------
+
+# Download the "GSEXXXXXX_raw_counts_All_Samples.csv" dataset from the GEO repository.
+
+
+
+#> 2. Load the Dataset into R
+#> ---------------------------
+
+# Load the downloaded CSV file into an R dataframe. This will be referred to as `zebra_dbp_df`.
+
+zebra_dbp_df <- read.csv2(file = "data/raw-data/raw_counts_All_Samples.csv",
+                          header = FALSE)
+
+# Check the structure of the dataframe to ensure it is loaded correctly.
+str(zebra_dbp_df)
+
+
+# The dataframe should look like this for the first six columns and four rows:
+
+#   V1  V2  V3  V4  V5  V6
+#   Item  0B  0D  0E  5A  5B
+#   ENSDART00000000004.5  119  117  134  107  81
+#   ENSDART00000000005.7  385  553  572  548  619
+#   ENSDART00000000042.11 0 0 2.644 0 6
+
+
+
+#> 3. Uniformize the Dose Names (Remove Non-Numeric Characters) 
+#> ------------------------------------------------------------
+
+# Each dose has a replicate distinction, which GEO requires to be identifiable.
+# However, for the DRomics pipeline, we are only interested in the dose levels themselves (e.g., 0, 5, 10, etc.), and we don't need the replicate-specific information (e.g., "0B", "5A", "5B", etc.).
+# We need to remove these replicate-specific characters (like 'A', 'B', 'C') from the dose labels.
+
+# Remove non-numeric characters from the first row (except the first column).
+zebra_dbp_df[1, -1] <- gsub("[^0-9]", "", zebra_dbp_df[1, -1])
+
+# Convert all data (except the first column) to numeric using `dplyr::mutate()` and `across()`
+zebra_dbp_df <- zebra_dbp_df |>
+  dplyr::mutate(across(V2:V16, ~ as.numeric(.x)))
+
+# Check the structure of the dataframe after the transformation.
+str(zebra_dbp_df)
+
+
+
+#> 4. Save the dataframe
+#> ---------------------
+
+write.table(zebra_dbp_df, 
+            file = "data/raw-data/zebra_dbp_df.txt")
+
+# Reload the saved file to ensure it was saved correctly.
+zebra_dbp_df <- read.table("data/raw-data/zebra_dbp_df.txt")
+
+
+
+# ============ SELECTION OF RESPONSIVE TRANSCRIPTS AND MODELLING ===============
+
+
+#> -------------------------------------------------------------
+#> Importation, checking and normalization of RNAseq count data 
+#> -------------------------------------------------------------
 
 #> input : raw count data matrix with :
 #   -> first row = dose 
@@ -28,34 +98,73 @@ require(ggplot2)
 #                           to improve stability and interpretability of estimates
 # - round.counts = TRUE : counts come from Salmon, so round counts
 
-set.seed(1234) # Fixing the seed to reproduce te results
+set.seed(1234) # Fixing the seed to reproduce the results
 
-(o <- RNAseqdata(here::here("data", "raw-data", "Sal_RawCounts.txt"), 
-                 transfo.method = 'rlog', 
-                 round.counts = TRUE)) 
+(o <- DRomics::RNAseqdata(zebra_dbp_df, # or use the file directory
+                          transfo.method = 'rlog', 
+                          round.counts = TRUE)) 
 
 #> output : object of class "RNAseqdata", a list with 7 components
-head(o) # check the first 5 rows of the output
-str(o) # check the structure of the output
+head(o) 
+str(o) 
 
-# One can plot of the output shows the distribution of the signal on all the 
-# transcripts, for each sample, before and after the normalization and transformation 
-# of data.
+# Plot the distribution of signal across all transcripts for each sample before and after normalization.
 plot(o, cex.main = 0.8, col = "green")
 
-# Just getting a global overview of the data : determine intra- and intergroup Sample variability   
-# + allows us to see if there is a batch effect, shown by the position of control points (if grouped = good)
-
-data4PCA <- list(dose = c(0, 0, 5, 5, 5, 10, 10, 10, 50, 50, 50, 100, 100, 100),
-                 batch = as.factor(c("A", "B", rep(c("A", "B", "C"), times = 4))))
-
-DRomics::PCAdataplot(o, batch = l$batch) + ggplot2::theme_bw()
-# There doesn't seem to be any irregularities when viewing the positions of the control points for the two batches
 
 
+#> Perform a Principal Component Analysis (PCA) 
+#> --------------------------------------------
 
-#>> Selection of significantly responsive items
-# ---------------------------------------------------
+# Prepare metadata for PCA plot.
+data4PCA <- list(dose = c(0, 0, 0, 5, 5, 5, 10, 10, 10, 50, 50, 50, 100, 100, 100),
+                 replicate = as.factor(rep(c("rep1", "rep2", "rep3"), times = 5)))
+
+# Generate the PCA plot
+DRomics::PCAdataplot(o, batch = data4PCA$replicate) + ggplot2::theme_bw()
+
+# After examining the PCA plot, we observe that the control dose (0B) appears to be an outlier, which may affect the analysis. 
+# To address this, we can remove the 0B samples from the dataset and re-run the DRomics steps.
+
+
+
+
+#> Removing outliers and re-performing DRomics step 1
+#> --------------------------------------------------
+
+# Remove the 0B replicate (the second column) from the dataframe.
+zebra_dbp_df_rm0 <- zebra_dbp_df[, -2]
+
+# Reset column names to V1, V2, V3, etc. after removing the column.
+colnames(zebra_dbp_df_rm0) <- paste0("V", seq_along(colnames(zebra_dbp_df_rm0)))
+
+(o <- DRomics::RNAseqdata(zebra_dbp_df_rm0,  
+                          transfo.method = 'rlog', 
+                          round.counts = TRUE)
+)
+
+head(o)
+str(o)
+
+plot(o, cex.main = 0.8, col = "green")
+
+# Perform PCA again with the updated dataset to check the impact of removing the outlier.
+data4PCA <- list(
+  dose = c(0, 0, 5, 5, 5, 10, 10, 10, 50, 50, 50, 100, 100, 100),  # Updated dose information
+  replicate = as.factor(c("rep1", "rep2", rep(c("rep1", "rep2", "rep3"), times = 4)))  # Updated replicate information
+)
+
+# Generate the PCA plot after outlier removal.
+DRomics::PCAdataplot(o, batch = data4PCA$replicate) + ggplot2::theme_bw()
+
+# Now that the outlier is removed, there doesn't seem to be any irregularities when viewing the positions of the control points for the two replicates.
+
+
+
+
+#> --------------------------------------------
+#> Selection of significantly responsive items
+#> --------------------------------------------
 
 #> input : object of class "RNAseqdata" (or "microarraydata", "metabolomicdata",
 #                                       "continuousanchoringdata")
@@ -77,8 +186,11 @@ head(s)
 str(s)
 
 
-#>> Dose response modelling for responsive items
-# ---------------------------------------------------
+
+
+#> ---------------------------------------------
+#> Dose response modelling for responsive items
+#> ---------------------------------------------
 
 #> input : object of class "intemselect" returned by function 'itemselect'
 
@@ -111,8 +223,11 @@ str(f)
 saveRDS(f, file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
 
 
-#>> Computation of benchmark doses for responsive items
-# ---------------------------------------------------
+
+
+#> ----------------------------------------------------
+#> Computation of benchmark doses for responsive items
+#> ----------------------------------------------------
 
 #> input : object of class "drcfit" returned by the function 'drcfit'
 
@@ -141,8 +256,10 @@ bmdplot(r$res, colorby = "trend")
 
 
 
-#>> Computation of confidence interval benchmark doses by bootstrap
-# ------------------------------------------------------
+
+#> ----------------------------------------------------------------
+#> Computation of confidence interval benchmark doses by bootstrap
+#> ----------------------------------------------------------------
 
 #> input : object of class "bmdcalc" returned by 'bmdcalc'
 
