@@ -22,7 +22,7 @@ devtools::load_all(here::here())
 
 
 ## State the Time Variable for file saving and reading ---
-file_date <- "2024-07-31"
+file_date <- "2024-12-04"
 
 
 ## Create directory for saving Cluefish output files (if it doesn't already exist) ---
@@ -116,7 +116,7 @@ biomaRt::listEnsemblGenomes()
 
 # Next, connect to the desired BioMart database using the useMart(), useEnsembl(), or useEnsemblGenomes() function.
 # The biomart argument should be a valid name from the output of one of the previous functions.
-ensembl <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL")
+ensembl <- biomaRt::useEnsembl(biomart = "genes")
 
 # BioMart databases can contain several datasets. For instance, within the Ensembl genes mart, each species is a different dataset.
 biomaRt::listDatasets(mart = ensembl)
@@ -125,8 +125,9 @@ biomaRt::listDatasets(mart = ensembl)
 # This retrieves IDs using the specified parameters for the query.
 bg_t_ids <- getids(
   id_query = f$omicdata$item, 
-  biomart_db = "ENSEMBL_MART_ENSEMBL",
+  biomart_db = "genes",
   species_dataset = "drerio_gene_ensembl",
+  version = "111",
   transcript_id = "ensembl_transcript_id_version",
   gene_id = "ensembl_gene_id",
   gene_name = "external_gene_name"
