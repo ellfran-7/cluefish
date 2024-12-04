@@ -1,11 +1,11 @@
-## Performing the standard pipeline in order to derive biological interpretations of dose-response modelling results
-## ============================================================================
+#> Performing the standard pipeline in order to derive biological interpretations of dose-response modelling results
+#> ============================================================================
 
-## First and foremost, as the cluefish workflow, the standard one begins as such : 
-## ----------------------------------------------------------------------------
+#> First and foremost, as the cluefish workflow, the standard one begins as such : 
+#> ----------------------------------------------------------------------------
 
 ## State the Time Variable for file saving and reading
-file_date <- "2024-07-31"
+file_date <- "2024-12-04"
 
 # Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
@@ -23,8 +23,8 @@ bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% BMDres_definedCI$id,]
 
 
-## In a second part, perform a simple functional enrichment using the simplenrich() homemade function 
-## ----------------------------------------------------------------------------
+#> In a second part, perform a simple functional enrichment using the simplenrich() homemade function
+#> ----------------------------------------------------------------------------
 
 standard_pipeline_res <- simplenrich(
   input_genes = dr_t_ids$gene_id,
