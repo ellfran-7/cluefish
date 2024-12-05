@@ -1,20 +1,19 @@
-#> Prior to commencing the workflows, it is imperative to  characterize 
-#> the dose-response transcriptomic data. In order to accomplish this, we use the 
-#> DRomics turn-key tool, which offers responsive item (e.g transcript) selection and modelling. 
-#> ============================================================================
-
-#> Load and list the packages needed
-#> ---------------------------------
-require(DRomics)
-require(ggplot2)
-
-#> ----------------------------------------------------------------------
-#> DRomics Workflow: Reproducing Results from Franklin et al. (submitted)
-#> ----------------------------------------------------------------------
+#> ======================================================================
+#> DRomics pipeline: Reproducing results from Franklin et al. (submitted)
+#> ======================================================================
+#> 
+#> Case : dose-response transcriptomic data !!!!!
 
 # If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
 # follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
 # understanding of each step (and if you want to simply use the tool): https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
+
+
+#> 0. Load and list the packages needed
+#> ---------------------------------
+require(DRomics)
+require(ggplot2)
+
 
 
 #> 1. Download the Processed Dataset from GEO
@@ -56,9 +55,7 @@ str(zebra_dbp_df)
 # Remove non-numeric characters from the first row (except the first column).
 zebra_dbp_df[1, -1] <- gsub("[^0-9]", "", zebra_dbp_df[1, -1])
 
-# Convert all data (except the first column) to numeric using `dplyr::mutate()` and `across()`
-zebra_dbp_df <- zebra_dbp_df |>
-  dplyr::mutate(across(V2:V16, ~ as.numeric(.x)))
+
 
 # Check the structure of the dataframe after the transformation.
 str(zebra_dbp_df)
@@ -192,7 +189,7 @@ str(s)
 #> Dose response modelling for responsive items
 #> ---------------------------------------------
 
-#> input : object of class "intemselect" returned by function 'itemselect'
+#> input : object of class "itemselect" returned by function 'itemselect'
 
 #> parameter details :
 # - information.criterion : the info criterion used to select the best fit model,
