@@ -120,8 +120,8 @@ data4PCA <- list(dose = c(0, 0, 0, 5, 5, 5, 10, 10, 10, 50, 50, 50, 100, 100, 10
 # Generate the PCA plot
 DRomics::PCAdataplot(o, batch = data4PCA$replicate) + ggplot2::theme_bw()
 
-# After examining the PCA plot, we observe that the control dose (0B) appears to be an outlier, which may affect the analysis. 
-# To address this, we can remove the 0B samples from the dataset and re-run the DRomics steps.
+# After examining the PCA plot, we observe that the control dose (0D) appears to be an outlier, which may affect the analysis. 
+# To address this, we can remove the 0D sample from the dataset and re-run the DRomics steps.
 
 
 
