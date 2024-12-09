@@ -1,6 +1,6 @@
 # 📄Content
 
-This directory is intented for storing data outputs generated during the workflow. These outputs are produced at various stages and are often used as inputs for subsequent steps in the process. 
+This directory is intended for storing data outputs generated during the workflow. These outputs are produced at various stages and are mostly used as inputs for subsequent steps in the process. 
 
 ## 📍Note
 
