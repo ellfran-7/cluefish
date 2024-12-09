@@ -1,7 +1,7 @@
 #' cluefish: A workflow to alleviate biological interpretation of transcriptomic data series
 #' 
 #' @description 
-#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modeling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data. Each step in the workflow builds on the results of the previous steps, although some steps can be performed independently. Additionally, in some cases, certain steps are not specifically required to proceed to the next phase.
+#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modelling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data. Each step in the workflow builds on the results of the previous steps, although some steps can be performed independently. Additionally, in some cases, certain steps are not specifically required to proceed to the next phase.
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
@@ -88,8 +88,8 @@ dl_regulation_data(
 #     - The dataframe of results provided by "bmdboot" (res). TThis dataframe may have been filtered based on the quality of BMD estimates using DRomics::bmdfilter(b$res, BMDfilter = "definedCI") for example.
 #       °This dataframe provides the deregulated transcript data, which is used throughout the workflow.
 #
-# Both files must be created in advance and stored in the `data/raw-data/` directory.
-# If these files are not already available, you can generate them using the `dromics-pipeline.R` script found in the `analyses/` folder.
+# Both files must be created in advance and can be stored in the `data/raw-data/` directory.
+# If these files are not already available, you can generate them using the `dromics-transcriptomic-pipeline.R` script found in the `analyses/` folder.
 
 
 # Load DRomics "drcfit" object
@@ -144,7 +144,7 @@ write.table(bg_t_ids, paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".t
 # Load the "time-consuming" data if already created
 bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
-# The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the deregulated transcript data from the bg_t_ids dataframe.
+# The "gene_id" from the background gene list (bg_t_ids) is only needed for function enrichment. However, the "gene_id" from the deregulated transcripts (DRomics transcriptomics pipeline) is needed for the whole workflow, including creating a STRING PPI network and function enrichment. Therefore, we need to subset the deregulated transcript data from the bg_t_ids dataframe.
 dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% b_definedCI$id,]
 
 
@@ -322,14 +322,13 @@ lonely_clustr_analysis_res <- simplenrich(
   ngenes_enrich_filtr = 3,
   path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("lonely_clustr_analysis_res_", file_date, ".rds"),
-  overwrite = TRUE
+  overwrite = FALSE
 )
 
 
-#>> BASIC OUTPUTS FOR EXPLORATION
-#>-------------------------------
 
-#>> Generate a summary dataframe of the workflow -------
+
+#>> Step 11 - Generate a summary dataframe of the workflow -------
 
 # With the workflow fulfilled, we can create a concise summary dataframe capturing the key details from the final results post the lonely gene fishing step. It encompasses all essential information for result exploration, striking a balance by avoiding an overwhelming amount of data that might hinder ease of exploration. 
 
@@ -398,7 +397,7 @@ curves_to_pdf(
 #
 # For example: `clustr_enrichres_2024-07-07.rds` and `lonely_fishres_2024-07-07.rds`
 # Today's date can be dynamically generated using the "Sys.date()" function.
-file_date <- "2024-07-31" 
+file_date <- "2024-12-04" 
 
 # Now, render and preview the html report. The output is moved to the directory chosen in 'output_path'.
 #
@@ -437,7 +436,7 @@ render_qmd(
 #>> Generate the comparison of cluefish and standard workflow quarto report -------
 
 # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the cluefish workflow
-source(here::here("analyses", "standard-pipeline.R"))
+source(here::here("analyses", "standard-approach-pipeline.R"))
 
 # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
 render_qmd(
