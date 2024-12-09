@@ -5,7 +5,7 @@
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
-#' @date 2024/07/07
+#' @date 2024/12/04
 
 
 ## Install packages listed in DESCRIPTION (and/or R and Rmd files) ----
