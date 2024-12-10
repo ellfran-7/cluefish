@@ -67,7 +67,7 @@ dl_regulation_data(
   path = "data/derived-data/",
   filename_tf = paste0("Danio_rerio_TF_", file_date, ".txt"),
   filename_cof = paste0("Danio_rerio_Cof_", file_date, ".txt"),
-  overwrite = TRUE
+  overwrite = FALSE
 )
 
 
@@ -88,15 +88,15 @@ dl_regulation_data(
 #     - The dataframe of results provided by "bmdboot" (res). TThis dataframe may have been filtered based on the quality of BMD estimates using DRomics::bmdfilter(b$res, BMDfilter = "definedCI") for example.
 #       °This dataframe provides the deregulated transcript data, which is used throughout the workflow.
 #
-# Both files must be created in advance and can be stored in the `data/raw-data/` directory.
+# Both files must be created in advance and can be stored in the `data/derived-data/` directory.
 # If these files are not already available, you can generate them using the `dromics-transcriptomic-pipeline.R` script found in the `analyses/` folder.
 
 
 # Load DRomics "drcfit" object
-f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
+f <- readRDS(file = "data/derived-data/fitres_zebrafish_phtalate.rds")
 
 # Load DRomics "bmdboot" results, filtered to include only transcripts with a defined confidence interval around the BMD.
-b_definedCI <- readRDS(file = "data/raw-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds")
+b_definedCI <- readRDS(file = "data/derived-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds")
 
 
 
