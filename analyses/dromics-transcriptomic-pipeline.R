@@ -66,10 +66,10 @@ str(zebra_dbp_df)
 #> ---------------------
 
 write.table(zebra_dbp_df, 
-            file = "data/raw-data/zebra_dbp_df.txt")
+            file = "data/derived-data/zebra_dbp_df.txt")
 
 # Reload the saved file to ensure it was saved correctly.
-zebra_dbp_df <- read.table("data/raw-data/zebra_dbp_df.txt")
+zebra_dbp_df <- read.table("data/derived-data/zebra_dbp_df.txt")
 
 
 
@@ -217,7 +217,7 @@ str(f)
 #> We can now save the resulting drcfit object to a file using the 'saveRDS'
 #> (for futur representations of the raw data of target items with fitted curves
 #> if available)
-saveRDS(f, file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
+saveRDS(f, file = "data/derived-data/fitres_zebrafish_phtalate.rds"))
 
 
 
@@ -241,7 +241,7 @@ saveRDS(f, file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"
 # - x = 10 : défault (detailed by EFSA in 2017))
 
 # Load the saved fitres
-f <- readRDS(file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
+f <- readRDS(file = "data/derived-data/fitres_zebrafish_phtalate.rds"))
 
 (r <- bmdcalc(f, z = 1, x = 10)) 
 
@@ -281,10 +281,10 @@ str(b)
 
 #> We can now save the resulting bmdboot object to a file using the 'saveRDS'
 #> (this is the data used for the workflow and for many representations at the end)
-saveRDS(b, file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
+saveRDS(b, file = "data/derived-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
 
 #> Let's see which items have a calculated BMD, confidence interval etc.
-b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
+b <- readRDS(file = "data/derived-data/bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
 
 BMDres <- b$res
 nrow(BMDres)
@@ -299,4 +299,4 @@ nrow(BMDres)
 BMDres_definedCI <- DRomics::bmdfilter(BMDres, BMDfilter = "definedCI")
 nrow(BMDres_definedCI) 
 
-saveRDS(BMDres_definedCI, file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds"))
+saveRDS(BMDres_definedCI, file = "data/derived-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds"))
