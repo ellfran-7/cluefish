@@ -213,9 +213,9 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 ## License
 
-Distributed under the CeCILL Free Software License. See `LICENSE.txt` for more information.
+Distributed under the CeCILL Free Software License Agreement v2.1. See `LICENSE.txt` for more information.
 
-CeCILL (version 2.1) is compatible with GNU GPL. See the [official CeCILL site](http://www.cecill.eu/index.en.html) for more information.
+CECILL-2.1 is compatible with GNU GPL. See the [official CeCILL site](http://www.cecill.eu/index.en.html) for more information.
 
 <p align="right">
 
