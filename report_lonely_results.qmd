@@ -44,9 +44,9 @@ require(DT)
 devtools::load_all(here::here())
 
 ## Load DRomics drcfit object (which holds the background transcript list) 
-f <- readRDS(file = here::here("data", "raw-data", "fitres_zebrafish_phtalate.rds"))
+f <- readRDS(file = here::here("data", "derived-data", "fitres_zebrafish_phtalate.rds"))
 ## Load DRomics bmdboot object
-b <- readRDS(file = here::here("data", "raw-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
+b <- readRDS(file = here::here("data", "derived-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter.rds"))
 
 ## We filter the bmdboot result by selecting only transcripts with a defined confidence interval around the BMD
 BMDres_definedCI <- DRomics::bmdfilter(b$res, BMDfilter = "definedCI")
@@ -141,11 +141,11 @@ names(b_only_lonely_fishres)[names(b_only_lonely_fishres) == "gene_name"] <- "id
 
 ## Characterizing the Lonely cluster by functional enrichment
 
-| Source | Query size                                                                                                                     | Background size                                                                                                                           |
-|-------------------|------------------------|-----------------------------|
-| GO:BP  | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$effective_domain_size)` |
-| KEGG   | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$query_size)`  | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$effective_domain_size)`  |
-| WP     | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$query_size)`    | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$effective_domain_size)`    |
+| Source | Query size | Background size |
+|-------------|----------------------------|-------------------------------|
+| GO:BP | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$effective_domain_size)` |
+| KEGG | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$effective_domain_size)` |
+| WP | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$effective_domain_size)` |
 
 : Number of genes involved in the query and background of the ORA {#tbl-loenrich .bordered .light}
 
