@@ -1,7 +1,7 @@
-#' cluefish: A workflow to alleviate biological interpretation of transcriptomic data series
+#' Cluefish: A tool to optimise biological interpretation of transcriptomic data series
 #' 
 #' @description 
-#' This project harbors the construction of a biological interpretation workflow for dose-response transcriptomic data. It incorporates various steps to enhance the understanding of dose-response modelling results. The main concept revolves around combining biological function annotations, gene regulation status, Protein-Protein Interaction Network (PPIN) analysis, cluster enrichment, cluster fusion, and lonely gene fishing to create a holistic view of the functional implications of omic data. Each step in the workflow builds on the results of the previous steps, although some steps can be performed independently. Additionally, in some cases, certain steps are not specifically required to proceed to the next phase.
+#' In the broader context, the Cluefish workflow performs over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to uncover smaller, more specific biological functions. It incorporates innovative features such as cluster merging and the recovery of isolated genes through shared biological contexts, enabling a more comprehensive exploration of the data. This script serves as the main entry point for executing each step of the Cluefish workflow, providing guidance to the user before and after each phase.
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
