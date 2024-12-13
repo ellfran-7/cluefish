@@ -54,7 +54,7 @@
 
 ## Overview
 
-Cluefish is a free semi-automated R workflow designed for the comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
+Cluefish is a free and open-source, semi-automated R workflow designed for comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
 When used alongside the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package, Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. In toxicology/ecotoxicology, this will support the understanding/highlighting of contaminant’s mode of action. 
 

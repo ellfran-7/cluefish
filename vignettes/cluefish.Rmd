@@ -68,7 +68,7 @@ While differential gene expression analysis provides fold-change values and thei
 
 ### Overview of Cluefish
 
-To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) (Franklin et al., submitted), a free semi-automated workflow designed for comprehensive and untargeted exploration of DR transcriptomic data. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
+To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) (Franklin et al., submitted), a free and open-source, semi-automated workflow designed for comprehensive and untargeted exploration of DR transcriptomic data. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
 Cluefish is composed of 10 main steps:
 
