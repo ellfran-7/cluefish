@@ -215,6 +215,8 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 Distributed under the CeCILL Free Software License. See `LICENSE.txt` for more information.
 
+CeCILL (version 2.1) is compatible with GNU GPL. See the [official CeCILL site](http://www.cecill.eu/index.en.html) for more information.
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
