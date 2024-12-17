@@ -215,7 +215,7 @@ str(f)
 #> We can now save the resulting drcfit object to a file using the 'saveRDS'
 #> (for futur representations of the raw data of target items with fitted curves
 #> if available)
-saveRDS(f, file = "data/derived-data/apical/fitres_apical_zebra_dbp.rds"))
+saveRDS(f, file = "data/derived-data/apical/fitres_apical_zebra_dbp.rds")
 
 
 
@@ -272,4 +272,4 @@ str(b)
 
 #> We can now save the resulting bmdboot object to a file using the 'saveRDS'
 #> (this is the data used for the workflow and for many representations at the end)
-saveRDS(b, file = "data/derived-data/apical/bootres_apical_zebra_dbp_UF_seed3_5000iter.rds"))
+saveRDS(b, file = "data/derived-data/apical/bootres_apical_zebra_dbp_UF_seed3_5000iter.rds")
