@@ -1,15 +1,35 @@
 Package: cluefish
 Type: Workflow
 Title: Fishing for Clues in the Depths of Transcriptomic Data Series
-Version: 0.0.0
+Version: 1.0.0
 Authors@R: c(
     person(given   = "Ellis",
            family  = "Franklin",
            role    = c("aut", "cre", "cph"),
            email   = "ellisfranklin5@gmail.com",
-           comment = c(ORCID = "0000-0002-6614-4109")))
+           comment = c(ORCID = "0000-0002-6614-4109")),
+    person(given   = "Elise",
+           family  = "Billoir",
+           role    = c("aut", "rev"),
+           email   = "elise.billoir@univ-lorraine.fr",
+           comment = c(ORCID = "0000-0001-9012-3298")),
+    person(given   = "Marie Laure",
+           family  = "Delignette-Muller",
+           role    = c("aut", "rev"),
+           email   = "marielaure.delignettemuller@vetagro-sup.fr",
+           comment = c(ORCID = "0000-0001-5453-3994")),
+    person(given   = "Sophie",
+           family  = "Prud'homme",
+           role    = c("aut", "rev"),
+           email   = "sophie.prud-homme@univ-lorraine.fr",
+           comment = c(ORCID = "0000-0002-7199-1839")),
+    person(given   = "Jérémie",
+           family  = "Ohanessian",
+           role    = c("ctb"),
+           email   = "jeremie.ohanessian@univ-lorraine.fr",
+           comment = c(ORCID = "0009-0007-3909-3477")))
 Description: A specialised bioinformatics workflow designed for improving biological interpretation of transcriptomic data series. Using 'Cluefish', you may consider a larger portion of the dataset of interest for biological interest and improve functional enrichment sensitivity towards smaller and more specific biological functions.
-URL: https://github.com/ellfran-7/cluefish
+URL: https://ellfran-7.github.io/cluefish/
 BugReports: https://github.com/ellfran-7/cluefish
 License: CECILL-2.1
 Encoding: UTF-8
