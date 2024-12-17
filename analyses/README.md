@@ -10,6 +10,8 @@ These pipelines are formatted to enable the direct reproduction of the results r
 
 For help with the `DRomics` R package, visit the [DRomics documentation](https://lbbe-software.github.io/DRomics/).
 
+A sub-directory named `scripts-for-paper-assets` holds additional files, specifically to generate most of the figures and tables in the paper associated to Cluefish (Franklin et al. submitted). 
+
 ## 📍Note
 
 The suggested content and structure here follow best practices for research compendiums. However, feel free to organize and store your project files in a way that best suits your needs and workflow.
