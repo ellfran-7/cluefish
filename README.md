@@ -14,7 +14,8 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![Contributors](https://img.shields.io/github/contributors/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/graphs/contributors) [![Forks](https://img.shields.io/github/forks/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/network/members) [![Stargazers](https://img.shields.io/github/stars/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/stargazers) [![Issues](https://img.shields.io/github/issues/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/issues) [![MIT-License](https://img.shields.io/github/license/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/blob/main/LICENSE.txt) [![LinkedIn](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/ellis-franklin-6188831ba)
+[![Contributors](https://img.shields.io/github/contributors/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/graphs/contributors) [![Forks](https://img.shields.io/github/forks/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/network/members) [![Stargazers](https://img.shields.io/github/stars/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/stargazers) [![Issues](https://img.shields.io/github/issues/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/issues) 
+[![License](https://img.shields.io/badge/licence-CECILL_2.1-blue)](https://github.com/ellfran-7/cluefish/blob/main/LICENSE) [![LinkedIn](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/ellis-franklin-6188831ba)
 
 <!-- TABLE OF CONTENTS -->
 
