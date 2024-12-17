@@ -5,7 +5,7 @@
 
 <!-- PROJECT LOGO -->
 
-# cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150"/></a>
+# cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150" style="float:right; height:150px;" /></a>
 
 <!-- PROJECT SHIELDS -->
 <!--
