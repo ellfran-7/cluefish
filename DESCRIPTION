@@ -1,17 +1,17 @@
 Package: cluefish
-Type: Package
-Title: Fishing for Clues in the Depths of Transcriptomic Bulk Data
-Version: 0.0.0.9000
+Type: Workflow
+Title: Fishing for Clues in the Depths of Transcriptomic Data Series
+Version: 0.0.0
 Authors@R: c(
     person(given   = "Ellis",
            family  = "Franklin",
            role    = c("aut", "cre", "cph"),
-           email   = "ellis.franklin@univ-lorraine.fr",
-           comment = c(ORCID = "{{orcid}}")))
-Description: A specialized bioinformatics workflow designed for improving biological interpretation of dose-response transcriptomic data.
-URL: https://gitlab.in2p3.fr/ellis.franklin1/bio_int_workflow
-BugReports: https://gitlab.in2p3.fr/ellis.franklin1/bio_int_workflow
-License: CeCILL
+           email   = "ellisfranklin5@gmail.com",
+           comment = c(ORCID = "0000-0002-6614-4109")))
+Description: A specialised bioinformatics workflow designed for improving biological interpretation of transcriptomic data series. Using 'Cluefish', you may consider a larger portion of the dataset of interest for biological interest and improve functional enrichment sensitivity towards smaller and more specific biological functions.
+URL: https://github.com/ellfran-7/cluefish
+BugReports: https://github.com/ellfran-7/cluefish
+License: CECILL-2.1
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
