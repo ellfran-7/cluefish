@@ -171,11 +171,11 @@ Here we will go through the main steps one by one !
 
 ### The case study
 
-In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of di-n-butyl phthalate. The experiment and resulting dataset is further described in our paper (Franklin et al., submitted) (add link)!!!!!!!!!!!!!!!) and you may access the count data at ............ (add link)!!!!!!!!!!!!!!!).
+In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of dibutyl phthalate. The experiment and resulting dataset is further described in our paper (Franklin et al., submitted) (add link/DOI)!!!!!!!!!!!!!!!) and you may access the count data at GEO, under the accession number [GSE283957](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957).
 
 
 
-### First steps
+### Before walking
 
 A key feature of Cluefish is the integration of `renv` [@ushey2024] to create reproducible environments. This enables you to install the required R packages in two ways:
 
@@ -197,28 +197,6 @@ Once the packages installed or restored, you can then load the project R functio
 devtools::load_all(here::here())
 ```
 
-<!-- Additionally, you can set a time variable and create directories for saving some output files, making the rest of the workflow less tedious: -->
-
-<!-- ```{r, eval = FALSE} -->
-<!-- ## State the Time Variable for file saving and reading --- -->
-<!-- file_date <- "2024-07-31" -->
-
-
-<!-- ## Create directory for saving Cluefish output files (if it doesn't already exist) --- -->
-<!-- dir_path <- paste0("outputs/", file_date) -->
-
-<!-- if (!dir.exists(dir_path)) { # Check if the directory path exists -->
-<!--   dir.create(dir_path) # Create it if not -->
-<!-- } -->
-
-
-<!-- ## Create directory for saving Cytoscape files (if it doesn't already exist) --- -->
-<!-- dir_path <- paste0("outputs/", file_date, "/cytoscape-files") -->
-
-<!-- if (!dir.exists(dir_path)) { # Check if the directory path exists -->
-<!--   dir.create(dir_path) # Create it if not -->
-<!-- } -->
-<!-- ``` -->
 
 If no errors have appeared, you are all set to go !
 
@@ -1049,9 +1027,9 @@ The available templates include:
 3.  **`report_comparison_results`**
     This report compares Cluefish with a standard workflow (`simplenrich()`). A script is available to perform the standard approach script can be found in the `analyses` folder, under the name: `standard-pipeline`.
 
-To generate these reports, use the custom `render_qmd()` function, which builds on `quarto::quarto_render()` and allows output to a designated directory. It supports all `quarto::quarto_render()` parameters.
+To generate these reports, use the custom `render_qmd()` function, which builds on `quarto::quarto_render()` and allows output to a designated directory. It supports all `quarto::quarto_render()` arguments.
 
-Some adaptations may be needed for directory paths, file naming, or other settings.
 
+<span class="italic-red"><u>Important</u>: Some adaptations may be needed for directory paths, file naming, or other settings.
 
 ## References
