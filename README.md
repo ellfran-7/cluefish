@@ -38,14 +38,6 @@ Table of Contents
 <li>
 <a href="#usage">Usage</a>
 </li>
-<ul>
-<li>
-<a href="#required-inputs">Required inputs</a>
-</li>
-<li>
-<a href="#recommended-selection-method">Recommended Selection Method</a>
-</li>
-</ul>
 <li>
 <a href="#contributing">Contributing</a>
 </li>
