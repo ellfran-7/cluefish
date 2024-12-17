@@ -1032,4 +1032,13 @@ To generate these reports, use the custom `render_qmd()` function, which builds 
 
 <span class="italic-red"><u>Important</u>: Some adaptations may be needed for directory paths, file naming, or other settings.
 
+## License
+
+The **Cluefish** project is distributed under the [CECILL v2.1 license](https://github.com/ellfran-7/cluefish/blob/main/LICENSE). 
+
+## Session info
+```{r echo = FALSE}
+sessionInfo()
+```
+
 ## References
