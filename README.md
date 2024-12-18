@@ -80,6 +80,19 @@ Cluefish is designed to be adaptable to a wide range of organisms, both
 model and non-model, ensuring broad applicability across various
 biological contexts.
 
+------------------------------------------------------------------------
+
+<p style="text-align: center;">
+<strong>If you’re ready to dive straight into using Cluefish, check out
+the</strong>
+</p>
+<p style="text-align: center;">
+<strong><a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction
+to Cluefish vignette</a></strong>
+</p>
+
+------------------------------------------------------------------------
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
@@ -264,11 +277,15 @@ again!
 
 ## License
 
-Distributed under the CeCILL Free Software License Agreement v2.1. See
-`LICENSE.txt` for more information.
+This project is distributed under the CeCILL Free Software License
+Agreement v2.1. See `LICENSE.txt` for more information.
 
 CECILL-2.1 is compatible with GNU GPL. See the [official CeCILL
 site](http://www.cecill.eu/index.en.html) for more information.
+
+Please note that the creative assets, such as the logos and schematics
+associated with Cluefish, are distributed under the [CC-BY-SA-4.0
+license](https://choosealicense.com/licenses/cc-by-sa-4.0/).
 
 <p align="right">
 
