@@ -162,12 +162,6 @@ serves as the ‘master’ script for the entire process. We recommend using
 this script as a template to ensure smooth and sequential execution of
 the workflow steps.
 
-<!-- !!!!!!!!!!!!!!!!! -->
-
-A step-by-step workflow guide is also available in the vignette,
-Introduction to Cluefish (add link), which includes the *ZebrafishDBP*
-example dataset. <!-- !!!!!!!!!!!!!!!!! -->
-
 ### Required R packages
 
 A key feature of Cluefish is the integration of `renv` to create
@@ -213,9 +207,11 @@ into the biological interpretation of the data.
 ## Workflow
 
 A schematic overview of the Cluefish workflow is shown below. For a
-full, step-by-step guide, refer to the vignette, Introduction to
-Cluefish (add link), which provides instructions using the
-*ZebrafishDBP* example dataset.
+full, step-by-step guide, refer to the vignette, [Introduction to
+Cluefish](https://ellfran-7.github.io/cluefish/articles/cluefish.html),
+which provides instructions using the *ZebrafishDBP* example dataset.
+The raw count data is publicly available on NCBI GEO and can be accessed
+with **GSE283957**.
 
 <center>
 
@@ -231,9 +227,14 @@ Cluefish (add link), which provides instructions using the
 
 ## Citation
 
-If you use Cluefish, please cite it as follows:
+If you use Cluefish, for the time being please cite it as follows:
 
-> {{ADD CITATION}}
+> Franklin E, Billoir E, Delignette-Muller M, Prud’homme S (2024).
+> cluefish: Fishing for Clues in the Depths of Transcriptomic Data
+> Series. R package version 1.0.0,
+> <https://ellfran-7.github.io/cluefish/>.
+
+A paper will shortly be associated with the tool.
 
 <!-- CONTRIBUTING -->
 
