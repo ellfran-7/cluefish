@@ -84,10 +84,8 @@ biological contexts.
 
 <p style="text-align: center;">
 <strong>If you’re ready to dive straight into using Cluefish, check out
-the</strong>
-</p>
-<p style="text-align: center;">
-<strong><a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction
+the
+<a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction
 to Cluefish vignette</a></strong>
 </p>
 
