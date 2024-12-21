@@ -1,0 +1,19 @@
+citHeader("To cite Cluefish in publications, use:")
+
+bibentry(bibtype = "Article",
+  title        = "Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge",
+  author       = c(person("Ellis Franklin"),
+                   person("Elise Billoir"),
+                   person("Philippe Veber"),
+                   person("Jérémie Ohanessian"),
+                   person("Marie Laure Delignette-Muller"),
+                   person("Sophie M. Prud'homme")
+                   ),
+  journal      = "bioRxiv",
+  year        = "2024",
+  doi         = "10.1101/2024.12.18.627334",
+  url          = "https://www.biorxiv.org/content/early/2024/12/20/2024.12.18.627334",
+
+  textVersion  =
+  paste("Franklin,E., Billoir,E., Veber,P., Ohanessian,J., Delignette-Muller,M.L. and Prud’homme,S.M. (2024) Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge. bioRxiv, 10.1101/2024.12.18.627334. https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1")
+)
