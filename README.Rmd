@@ -198,11 +198,11 @@ A schematic overview of the Cluefish workflow is shown below. For a full, step-b
 
 ## Citation
 
-If you use Cluefish, for the time being please cite it as follows:
+If you use Cluefish, please cite the associated preprint as follows:
 
-> Franklin E, Billoir E, Delignette-Muller M, Prud'homme S (2024). cluefish: Fishing for Clues in the Depths of Transcriptomic Data Series. R package version 1.0.0, https://ellfran-7.github.io/cluefish/.
+> Franklin,E., Billoir,E., Veber,P., Ohanessian,J., Delignette-Muller,M.L. and Prud’homme,S.M. (2024) Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge. *bioRxiv*, 10.1101/2024.12.18.627334. [https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1)
 
-A paper will shortly be associated with the tool.
+A peer-reviewed publication associated with the tool will be available soon.
 
 <!-- CONTRIBUTING -->
 
