@@ -142,7 +142,7 @@ names(b_only_lonely_fishres)[names(b_only_lonely_fishres) == "gene_name"] <- "id
 ## Characterizing the Lonely cluster by functional enrichment
 
 | Source | Query size | Background size |
-|-------------|----------------------------|-------------------------------|
+|------------------------|------------------------|------------------------|
 | GO:BP | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "GO:BP",]$effective_domain_size)` |
 | KEGG | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "KEGG",]$effective_domain_size)` |
 | WP | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$query_size)` | `r unique(lonely_cluster_analysis_res$filtered$dr_a[lonely_cluster_analysis_res$filtered$dr_a$source == "WP",]$effective_domain_size)` |
