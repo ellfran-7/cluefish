@@ -288,7 +288,17 @@ venns4paper(
 
 ## Select and Prepare Data ----
 
-# Generate the sensitivity plot using the cleaned and filtered data
+# Remove unnecessary columns that can cause redundancy in the plot
+# Only retain essential columns for the plot generation
+b_lonely_fishres_no_redund <- b_lonely_fishres |> 
+  dplyr::select(-c(gene_id, TF, old_clustr, friendliness, term_name, term_id, source)) |> 
+  dplyr::distinct()
+
+# Exclude the "Lonely" cluster as it is disproportionately large compared to other clusters
+# This exclusion helps in visualizing the relative sizes of other clusters more effectively
+b_lonely_fishres_no_redund_selected <- b_lonely_fishres_no_redund[!b_lonely_fishres_no_redund$new_clustr %in% "Lonely",]
+
+## Generate the sensitivity plot using the cleaned and filtered data ----
 sp_cl <- DRomics::sensitivityplot(
   b_lonely_fishres_no_redund_selected, 
   group = "new_clustr",
