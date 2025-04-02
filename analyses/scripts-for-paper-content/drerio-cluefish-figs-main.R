@@ -35,6 +35,17 @@ file_date = "2024-12-04"
 
 
 
+#> Create directory for saving plots (if it doesn't already exist) ------------
+dir_path <- "figures/for-combo"
+
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+  
+  dir.create(dir_path) # Create it if not
+  
+}
+
+
+
 #> Choosing Colors --------------------
 
 # Diverging and Sequential Palette for General Plots ---

@@ -1,8 +1,8 @@
 #> ==========================================================================
 #> Script to generate the supplementary tables in Franklin et al. (submitted)
 #> ==========================================================================
-#> Case: drerio - RNA-seq ****
-#> Run : 12/04/24 ****
+#> Case:  rnorvegicus - TempO-seq ****
+#> Run : 01/04/25 ****
 
 
 
@@ -31,7 +31,7 @@ loadfonts()
 
 
 #> Set the file_date variable --------------------
-file_date = "2024-12-04"
+file_date = "2025-04-02"
 
 
 
@@ -45,20 +45,36 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 }
 
 
-
 #> Load the necessary data --------------------
 
 ## DRomics pipeline - Transcriptomics data ----
 
 # Load DRomics drcfit object (which holds the background transcript list) 
-f <- readRDS(file = here::here("data", "derived-data", "fitres_zebrafish_phtalate.rds"))
+f <- readRDS(file = here::here("data", "derived-data", "fitres_rat_liver_pfoa.rds"))
+
+# The id names are homemade, sciome generated, combining capital gene names and other numbers (of unknown origin)
+f_id_mod <- sub("_.*", "", f$omicdata$item) 
 
 # Load DRomics "bmdboot" results filtered with only transcripts with a defined confidence interval around the BMD
-b_definedCI <- readRDS(file = here::here("data", "derived-data", "bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds"))
+b_definedCI <- readRDS(file = here::here("data", "derived-data","bootres_rat_liver_pfoa_seed1234_5000iter_definedCI.rds"))
+
+# Extract and clean gene identifiers from 'b_definedCI'
+b_definedCI_mod <- b_definedCI |> 
+  dplyr::mutate(id_mod = sub("_.*", "", id)) |> 
+  dplyr::select(id, id_mod)
+
+# Normalise all gene IDs to lowercase, except for "LOC" identifiers
+b_definedCI_mod <- b_definedCI_onlyids |> 
+  dplyr::mutate(
+    id_mod = dplyr::if_else(grepl("LOC", id_mod), id_mod, tolower(id_mod))
+  )
 
 
 
 ## Cluefish workflow ----
+
+# Load the getids() result
+bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))
 
 # Load the clustrenrich() result
 clustr_enrichres <- readRDS(here::here("outputs", file_date, paste0("clustr_enrichres_", file_date, ".rds")))
@@ -71,9 +87,6 @@ clustr_fusionres <- clustrfusion(
 # Load the lonelyfishing() result
 lonelyfishing_data <- readRDS(here::here("outputs", file_date, paste0("lonely_fishres_", file_date, ".rds")))
 
-# Modify the "ensembl_transcript_id_version" column to "id" for easier merge and integration to DRomics visualisations
-names(lonelyfishing_data$dr_t_c_a_fishing)[names(lonelyfishing_data$dr_t_c_a_fishing) == "transcript_id"] <- "id"
-
 # Combine DRomics info and the workflow info
 b_lonely_fishres <- merge(lonelyfishing_data$dr_t_c_a_fishing, b_definedCI,  by = "id")
 
@@ -84,6 +97,9 @@ lonely_cluster_analysis_res <- readRDS(here::here("outputs", file_date, paste0("
 
 # Load the standard workflow results
 stand_res <- readRDS(here::here("outputs", file_date, paste0("standard_pipeline_res_", file_date, ".rds")))
+
+# ------------------------------------------------------------------------------
+
 
 # ------------------------------------------------------------------------------
 
@@ -121,8 +137,8 @@ enrich_data <- clustr_enrichres$gostres$result |>
 # dim(enrich_data)             # Check dimensions of enrichment data
 
 # # Write the selected enrichment data to a CSV file for supplementary material
-# write.csv2(enrich_data, 
-#            paste0("figures/for-supp/supp-table-original-gprofiler-res", Sys.Date(), ".csv"),
+# write.csv2(enrich_data,
+#            paste0("figures/for-supp/supp-table-original-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
 #            row.names = FALSE)
 
 #> ----------------------------------------
@@ -150,8 +166,8 @@ lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |>
   dplyr::distinct()
 
 # # Export merged and filtered cluster data to CSV for supplementary materials
-# write.csv2(lonelyfish_data, 
-#            paste0("figures/for-supp/supp-table-lonelyfish-res", Sys.Date(), ".csv"),
+# write.csv2(lonelyfish_data,
+#            paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
 #            row.names = FALSE)
 
 #> ----------------------------------------
@@ -181,8 +197,8 @@ lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |>
   dplyr::distinct()
 
 # # Save filtered lonely cluster enrichment data to CSV
-# write.csv2(lonely_enrich_data, 
-#            paste0("figures/for-supp/supp-table-lonelycluster-gprofiler-res", Sys.Date(), ".csv"),
+# write.csv2(lonely_enrich_data,
+#            paste0("figures/for-supp/supp-table-lonelycluster-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
 #            row.names = FALSE)
 
 #> ----------------------------------------
@@ -212,8 +228,8 @@ stand_enrich_data <- stand_res$filtered$dr_a |>
   dplyr::distinct()
 
 # # Save filtered standard enrichment data to CSV for supplemental output
-# write.csv2(stand_enrich_data, 
-#            paste0("figures/for-supp/supp-table-standard-gprofiler-res", Sys.Date(), ".csv"),
+# write.csv2(stand_enrich_data,
+#            paste0("figures/for-supp/supp-table-standard-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
 #            row.names = FALSE)
 
 #> ----------------------------------------
@@ -248,73 +264,8 @@ summary_bmd_clusters <- b_lonely_fishres |>
 dplyr::glimpse(summary_bmd_clusters)
 
 # # Write the summarized BMD values by cluster to a CSV file
-# write.csv2(summary_bmd_clusters, 
-#            paste0("figures/for-supp/supp-table-cluster-summarized-bmd", Sys.Date(), ".csv"),
-#            row.names = FALSE)
-
-#> ----------------------------------------
-
-
-
-
-
-
-#> Hox genes and their transcript modelling metrics
-#>  - gene name
-#>  - BMD.zSD
-#>  - trend
-#>  - typology
-#> ----------------------------------------
-
-# Catch a glimpse of the data
-dplyr::glimpse(b_lonely_fishres)
-
-# Create the dataframe
-hox_gene_data <- b_lonely_fishres |> 
-  dplyr::filter(grepl("^hox", gene_name)) |> 
-  dplyr::select(gene_name, BMD.zSD, trend, TF) |> 
-  dplyr::mutate(gene_name = gsub("_t[0-9]+", "", gene_name)) |>
-  dplyr::mutate(BMD.zSD = signif(BMD.zSD, 2)) |> 
-  dplyr::distinct() |> 
-  dplyr::arrange(gene_name)
-
-hox_gene_data
-
-# # Write the summarized BMD values by cluster to a CSV file
-# write.csv2(hox_gene_data, 
-#            paste0("figures/for-supp/supp-table-hox-gene-data", Sys.Date(), ".csv"),
-#            row.names = FALSE)
-
-#> ----------------------------------------
-
-
-
-
-
-
-#> Crystiallin genes and their transcript modelling metrics
-#>  - gene name
-#>  - BMD.zSD
-#>  - trend
-#>  - typology
-#> ----------------------------------------
-
-# Catch a glimpse of the data
-dplyr::glimpse(b_lonely_fishres)
-
-# Create the dataframe
-cry_gene_data <- b_lonely_fishres |> 
-  dplyr::filter(grepl("^cry", gene_name)) |> 
-  dplyr::select(gene_name, gene_id, id, BMD.zSD, trend, TF) |> 
-  dplyr::mutate(BMD.zSD = signif(BMD.zSD, 2)) |> 
-  dplyr::distinct() |> 
-  dplyr::arrange(gene_name)
-
-cry_gene_data
-
-# # Write the summarized BMD values by cluster to a CSV file
-# write.csv2(cry_gene_data, 
-#            paste0("figures/for-supp/supp-table-cry-gene-data", Sys.Date(), ".csv"),
+# write.csv2(summary_bmd_clusters,
+#            paste0("figures/for-supp/supp-table-cluster-summarized-bmd-rnorvegicus-", Sys.Date(), ".csv"),
 #            row.names = FALSE)
 
 #> ----------------------------------------
@@ -334,13 +285,11 @@ dataset_names <- list('enrich_data' = enrich_data,
                       'lonelyfish_data' = lonelyfish_data, 
                       'lonely_enrich_data' = lonely_enrich_data,
                       'stand_enrich_data' = stand_enrich_data, 
-                      'summary_bmd_clusters' = summary_bmd_clusters, 
-                      'hox_gene_data' = hox_gene_data,
-                      'cry_gene_data' = cry_gene_data)
+                      'summary_bmd_clusters' = summary_bmd_clusters)
 
 #export each data frame to separate sheets in same Excel file
 openxlsx::write.xlsx(dataset_names, 
-                     file = paste0("figures/for-supp/supp-table-data-", Sys.Date(), ".xlsx"),
+                     file = paste0("figures/for-supp/supp-table-data-rnorvegicus-", Sys.Date(), ".xlsx"),
                      rowNames = FALSE)
 
 #> ----------------------------------------

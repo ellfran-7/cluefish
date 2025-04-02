@@ -35,6 +35,16 @@ file_date = "2025-04-02"
 
 
 
+#> Create directory for saving supp. data (if it doesn't already exist) --------
+dir_path <- "figures/for-supp"
+
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+  
+  dir.create(dir_path) # Create it if not
+  
+}
+
+
 #> Choosing Colors --------------------
 
 # Diverging and Sequential Palette for General Plots ---
