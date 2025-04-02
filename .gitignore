@@ -27,8 +27,8 @@ NAMESPACE
 *_cache
 outputs/*
 !outputs/.gitkeep
-raw-data/*
-!raw-data/.gitkeep
-derived-data/*
-!derived-data/.gitkeep
+data/raw-data/*
+!data/raw-data/.gitkeep
+data/derived-data/*
+!data/derived-data/.gitkeep
 docs
