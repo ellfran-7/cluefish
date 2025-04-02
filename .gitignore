@@ -31,4 +31,5 @@ data/raw-data/*
 !data/raw-data/.gitkeep
 data/derived-data/*
 !data/derived-data/.gitkeep
-docs
+docs/
+figures/
