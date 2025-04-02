@@ -3,6 +3,25 @@
 #> ======================================================================
 #> 
 #> Case : dose-response transcriptomic data !!!!!
+#> 
+#> This script applies the DRomics pipeline to the dataset associated with the publication.
+#> 
+#> Dataset background information:
+#> - Authors: Prud'homme SM, Sohm B, Cossu-Leguille C
+#> - Title: 	Dose-dependent effects of dibutyl phthalate on embryonic development in zebrafish (Danio rerio): The value of integrating concentration gradients in transcriptomic analyses
+#> - GEO accession: GSE283957
+#> - Publish date: Dec 10, 2024
+#> - Associated paper: (Submitted) Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge 
+#> - Journal: (Submitted) NAR Genomics and Bioinformatics
+#> - DOI: bioRxiv > https://doi.org/10.1101/2024.12.18.627334
+#>
+#> Dataset specifics:
+#> - Organism: Danio rerio
+#> - Contaminant: di-butyl phthalate (DBP)
+#> - Experiment type: Expression profiling by high throughput sequencing
+#> - Number of doses: control + 4
+#> - Number of replicates: 3
+
 
 # If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
 # follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
@@ -19,29 +38,40 @@ require(ggplot2)
 #> 1. Download the Processed Dataset from GEO
 #> ------------------------------------------
 
-# Download the "GSEXXXXXX_raw_counts_All_Samples.csv" dataset from the GEO repository.
+# Download the "GSE283957_raw_counts_All_Samples.csv" dataset from the GEO repository.
+# This can be done manually or as follows:
+download.file(
+  url = "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE283957&format=file&file=GSE283957%5Fraw%5Fcounts%5FAll%5FSamples%2Ecsv%2Egz",
+  destfile = "data/raw-data/raw_counts_All_Samples.csv.gz"
+)
+
+# Uncompress the .gz file
+R.utils::gunzip("data/raw-data/raw_counts_All_Samples.csv.gz", 
+                remove = FALSE)
+
 
 
 
 #> 2. Load the Dataset into R
 #> ---------------------------
 
-# Load the downloaded CSV file into an R dataframe. This will be referred to as `zebra_dbp_df`.
+# Load the downloaded CSV file into an R dataframe. This will be referred to as `zebra_dbp_counts_df`.
 
-zebra_dbp_df <- read.csv2(file = "data/raw-data/raw_counts_All_Samples.csv",
+zebra_dbp_counts_df <- read.csv2(file = "data/raw-data/raw_counts_All_Samples.csv",
                           header = FALSE)
 
 # Check the structure of the dataframe to ensure it is loaded correctly.
-str(zebra_dbp_df)
+str(zebra_dbp_counts_df)
 
 
-# The dataframe should look like this for the first six columns and four rows:
+# The structure of the dataframe should look like this for the first five rows:
 
-#   V1  V2  V3  V4  V5  V6
-#   Item  0B  0D  0E  5A  5B
-#   ENSDART00000000004.5  119  117  134  107  81
-#   ENSDART00000000005.7  385  553  572  548  619
-#   ENSDART00000000042.11 0 0 2.644 0 6
+# 'data.frame':	46489 obs. of  16 variables:
+# $ V1 : chr  "Item" "ENSDART00000000004.5" "ENSDART00000000005.7" "ENSDART00000000042.11" ...
+# $ V2 : chr  "0B" "119" "385" "0" ...
+# $ V3 : chr  "0D" "117" "553" "0" ...
+# $ V4 : chr  "0E" "134" "572" "2.644" ...
+# $ V5 : chr  "5A" "107" "548" "0" ...
 
 
 
@@ -53,23 +83,21 @@ str(zebra_dbp_df)
 # We need to remove these replicate-specific characters (like 'A', 'B', 'C') from the dose labels.
 
 # Remove non-numeric characters from the first row (except the first column).
-zebra_dbp_df[1, -1] <- gsub("[^0-9]", "", zebra_dbp_df[1, -1])
-
-
+zebra_dbp_counts_df[1, -1] <- gsub("[^0-9]", "", zebra_dbp_counts_df[1, -1])
 
 # Check the structure of the dataframe after the transformation.
-str(zebra_dbp_df)
+str(zebra_dbp_counts_df)
 
 
 
 #> 4. Save the dataframe
 #> ---------------------
 
-write.table(zebra_dbp_df, 
-            file = "data/derived-data/zebra_dbp_df.txt")
+write.table(zebra_dbp_counts_df, 
+            file = "data/derived-data/zebra_dbp_counts_df.txt")
 
 # Reload the saved file to ensure it was saved correctly.
-zebra_dbp_df <- read.table("data/derived-data/zebra_dbp_df.txt")
+zebra_dbp_counts_df <- read.table("data/derived-data/zebra_dbp_counts_df.txt")
 
 
 
@@ -97,7 +125,7 @@ zebra_dbp_df <- read.table("data/derived-data/zebra_dbp_df.txt")
 
 set.seed(1234) # Fixing the seed to reproduce the results
 
-(o <- DRomics::RNAseqdata(zebra_dbp_df, # or use the file directory
+(o <- DRomics::RNAseqdata(zebra_dbp_counts_df, # or use the file directory
                           transfo.method = 'rlog', 
                           round.counts = TRUE)) 
 
@@ -118,7 +146,8 @@ data4PCA <- list(dose = c(0, 0, 0, 5, 5, 5, 10, 10, 10, 50, 50, 50, 100, 100, 10
                  replicate = as.factor(rep(c("rep1", "rep2", "rep3"), times = 5)))
 
 # Generate the PCA plot
-DRomics::PCAdataplot(o, batch = data4PCA$replicate) + ggplot2::theme_bw()
+DRomics::PCAdataplot(o, batch = data4PCA$replicate) + 
+  ggplot2::theme_bw()
 
 # After examining the PCA plot, we observe that the control dose (0D) appears to be an outlier, which may affect the analysis. 
 # To address this, we can remove the 0D sample from the dataset and re-run the DRomics steps.
@@ -130,12 +159,12 @@ DRomics::PCAdataplot(o, batch = data4PCA$replicate) + ggplot2::theme_bw()
 #> --------------------------------------------------
 
 # Remove the 0B replicate (the second column) from the dataframe.
-zebra_dbp_df_rm0 <- zebra_dbp_df[, -2]
+zebra_dbp_counts_df_rm0 <- zebra_dbp_counts_df[, -2]
 
 # Reset column names to V1, V2, V3, etc. after removing the column.
-colnames(zebra_dbp_df_rm0) <- paste0("V", seq_along(colnames(zebra_dbp_df_rm0)))
+colnames(zebra_dbp_counts_df_rm0) <- paste0("V", seq_along(colnames(zebra_dbp_counts_df_rm0)))
 
-(o <- DRomics::RNAseqdata(zebra_dbp_df_rm0,  
+(o <- DRomics::RNAseqdata(zebra_dbp_counts_df_rm0,  
                           transfo.method = 'rlog', 
                           round.counts = TRUE)
 )
@@ -176,7 +205,7 @@ DRomics::PCAdataplot(o, batch = data4PCA$replicate) + ggplot2::theme_bw()
 # - select.method = "quadratic" : detecting monotonic and biphasic trends 
 # - FDR = 0.05 (default)
 
-(s <- itemselect(o, select.method = "quadratic", FDR = 0.05))
+(s <- DRomics::itemselect(o, select.method = "quadratic", FDR = 0.05))
 
 #> output : object of class "itemselect", a list of 5 components
 head(s)
@@ -203,12 +232,12 @@ str(s)
 
 #> parameter choice : 
 # - information.criterion = "AICc" : recommended and default choice for small samples
-# - parallel = "snow" : my computer is Window
-# - ncpus = 4 : my computer has 4 cpus
+# - parallel = "snow" : allow parallel computing for high number of responsive items (snow because my computer is Windows)
+# - ncpus = 4 : my computer has 8 cpus, so anything less is appropriate
 
 parallel::detectCores() # number of computer CPUs
 
-system.time(f <- drcfit(s, parallel = "snow", ncpus = 4, information.criterion = "AICc")) 
+system.time(f <- DRomics::drcfit(s, parallel = "snow", ncpus = 4, information.criterion = "AICc")) 
 
 #> output : object of class "drcfit", a list with 4 components
 head(f)
@@ -237,13 +266,13 @@ saveRDS(f, file = "data/derived-data/fitres_zebrafish_phtalate.rds")
 #     control given by the dose-response fitted model
 
 #> parameter choice : 
-# - z = 1 : défault (detailed by EFSA in 2017)
-# - x = 10 : défault (detailed by EFSA in 2017))
+# - z = 1 : default (detailed by EFSA in 2017)
+# - x = 10 : default (detailed by EFSA in 2017))
 
 # Load the saved fitres
 f <- readRDS(file = "data/derived-data/fitres_zebrafish_phtalate.rds")
 
-(r <- bmdcalc(f, z = 1, x = 10)) 
+(r <- DRomics::bmdcalc(f, z = 1, x = 10)) 
 
 #> output : object of class "bmdcalc", a list with 4 components
 head(r)
@@ -266,14 +295,13 @@ bmdplot(r$res, colorby = "trend")
 # - ncpus : same as for 'drcfit' function
 
 #> parameter choice
-# - niter = 1000 : default
+# - niter = 5000 : high number of samples drawn by bootstrap
+# - parallel = "snow" : same as for 'drcfit' function
+# - ncpus = 6 : this step is more computationally intensive, so using more cpus is required
 
-set.seed(3) # Fixing graine, but not compatible with parallel computation
-system.time(b <- bmdboot(r, niter = 5000, progressbar = TRUE))
-# 100 iter -> 247 s = 4 min sur portable qui ne faisait que cela
-# 1000 iter -> 5400 s pendant CSO LBBE sur portable
-# 1000 iter -> 3100 s sur UF
-# 5000 iter -> 15000 =  4h sur UF
+system.time(b <- DRomics::bmdboot(r, niter = 5000, parallel = "snow", ncpus = 6))
+# This can take quite some time depending on your computer performance...
+# so grab a coffee or tea :)
 
 #> output : object of class "bmdboot", a list with 3 components
 head(b)

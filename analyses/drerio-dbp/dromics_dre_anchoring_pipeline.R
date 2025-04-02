@@ -3,6 +3,9 @@
 #> ======================================================================
 #> 
 #> Case : dose-response anchoring data !!!!!
+#> 
+#> This script applies the DRomics pipeline to the individual enpoint data associated with the publication.
+
 
 # If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
 # follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
@@ -16,13 +19,12 @@ require(ggplot2)
 
 
 
-
 #> 1. Save and load the excel spreadsheet supplementary file associated with the submitted paper
 #> -------------------------------------------------------------------------------------
 
 # This can be done manually, but let's suppose you have the csv saved, under the name "zebra_anchoring_dbp_data.csv" to the "data/raw-data/" directory then, you can load the file as such : 
 
-zebra_anchoring_dbp_data <- read.csv2(file = "data/raw-data/apical/test-apical.csv")
+zebra_anchoring_dbp_data <- read.csv2(file = "data/raw-data/apical/zebra_anchoring_dbp_data.csv")
 
 # Check the structure of the dataframe to ensure it is loaded correctly.
 str(zebra_anchoring_dbp_data)
