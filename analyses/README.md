@@ -1,16 +1,28 @@
 # 📄Content
 
-This directory contains three original R scripts designed to generate derived data outside of the Cluefish workflow:
+This directory contains structured analysis scripts organised in organism and chemical exposure folders, corresponding to different datasets, and contains in this instance three main folders:
 
--  `dromics_dre_transcriptomic_pipeline.R`: A step-by-step `DRomics` pipeline for processing the dose-response transcriptomic raw count dataset published in Franklin et al. (submitted). This script generates the input data for the Cluefish workflow in our case study.
--  `dromics_dre_anchoring_pipeline`: A step-by-step `DRomics` pipeline for analyzing dose-response anchoring (individual) measurements, including body length and eye surface data, as described in Franklin et al. (submitted). The results provide experimental validation for the Cluefish workflow results.
--  `standard_approach_dre_pipeline.R`: A standard functional enrichment pipeline to generate results from the functional enrichment analysis of the deregulated gene list derived from the DRomics pipeline. These results serve as a benchmark for comparison with the Cluefish workflow outputs.
+-  `drerio-dbp`: A folder containing pipeline scripts associated to the main dataset from Franklin et al. (submitted). This contains:
+   - `dromics_dre_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
+   - `dromics_dre_anchoring_pipeline`: Step-by-step `DRomics` pipeline for processing dose-response anchoring measurements (body length, eye surface) providing experimental validation for Cluefish workflow results.
+   - `standard_approach_dre_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
 
-These pipelines are formatted to enable the direct reproduction of the results required for the Cluefish workflow and those published in Franklin et al. (submitted). However, they can also be used as adaptable templates for your own case studies. 
+*Note: The Cluefish analysis for this main dataset is implemented in the root make.R script rather than as a separate file in this directory. This dataset provided the building blocks for the Cluefish workflow.*
+
+-  `pcanadensis-phe`: A folder containing pipeline scripts associated to an external dataset (**GSE263776**) aimed to provide further validation behind the Cluefish workflow in the Franklin et al. (submitted) paper. This contains:
+   - `dromics_pca_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
+   - `standard_approach_pca_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
+   - `cluefish_approach_pca_pipeline.R`: Complete Cluefish pipeline implementation for this dataset.
+-  `rnorvegicus-pfoa`: A folder containing pipeline scripts associated to an external dataset (**GSE147072**) aimed to provide further validation behind the Cluefish workflow in the Franklin et al. (submitted) paper. This contains:
+   - `dromics_rno_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
+   - `standard_approach_rno_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
+   - `cluefish_approach_rno_pipeline.R`: Complete Cluefish pipeline implementation for this dataset.
+
+These pipelines are formatted to enable the reproduction of the results required for the Cluefish workflow and those published in Franklin et al. (submitted). However, they can also be used as adaptable templates for your own case studies. 
 
 For help with the `DRomics` R package, visit the [DRomics documentation](https://lbbe-software.github.io/DRomics/).
 
-A sub-directory named `scripts-for-paper-assets` holds additional files, specifically to generate most of the figures and tables in the paper associated to Cluefish (Franklin et al. submitted). 
+An additional directory named `scripts-for-paper-content` holds additional file scripts, specifically to generate most of the figures and tables in the paper associated to Cluefish (Franklin et al. submitted). 
 
 ## 📍Note
 
