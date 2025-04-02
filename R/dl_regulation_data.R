@@ -8,7 +8,6 @@
 #' 
 #' @param url_tf The URL for the transcription factor data.
 #' @param url_cof The URL for the transcription co-factor data.
-#' @param dl_method The method for downloading files. This includes "internal", "libcurl", "wget", "curl" and "wininet" (Windows only), and there is a value "auto". See ? ?utils::download.file() for more information.
 #' @param path The directory for saving the downloaded files.
 #' @param filename_tf The name associated with the downloaded transcription factor file.
 #' @param filename_cof The name associated with the downloaded co-factor factor file.
@@ -22,7 +21,6 @@
 dl_regulation_data <- function(
     url_tf,
     url_cof,
-    dl_method,
     path,
     filename_tf,
     filename_cof,
@@ -53,14 +51,12 @@ dl_regulation_data <- function(
     ## Download TF file
     utils::download.file(url      = paste0(url_tf),
                          destfile = file.path(path, filename_tf),
-                         mode     = "wb",
-                         method   = dl_method)
+                         mode     = "wb")
     
     ## Download Cof file
     utils::download.file(url      = paste0(url_cof),
                          destfile = file.path(path, filename_cof),
-                         mode     = "wb",
-                         method   = dl_method)
+                         mode     = "wb")
     
   }
   
