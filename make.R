@@ -89,7 +89,7 @@ dl_regulation_data(
 #       °This dataframe provides the deregulated transcript data, which is used throughout the workflow.
 #
 # Both files must be created in advance and can be stored in the `data/derived-data/` directory.
-# If these files are not already available, you can generate them using the `dromics_transcriptomic_pipeline.R` script found in the `analyses/` folder.
+# If these files are not already available, you can generate them using the `dromics_dre_transcriptomic_pipeline.R` script found in the `analyses/` folder.
 
 
 # Load DRomics "drcfit" object
@@ -436,7 +436,7 @@ render_qmd(
 #>> Generate the comparison of cluefish and standard workflow quarto report -------
 
 # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the cluefish workflow
-source(here::here("analyses", "standard_approach_pipeline.R"))
+source(here::here("analyses", "standard_approach_dre_pipeline.R"))
 
 # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
 render_qmd(
