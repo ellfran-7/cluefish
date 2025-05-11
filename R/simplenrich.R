@@ -64,185 +64,183 @@ simplenrich <- function(
     message("The simplenrich() result file already exists. Reading this file. Use 'overwrite = TRUE' to replace it.")
     
     # Read the existing file and return it 
-    readRDS(file.path(path, output_filename))
+    return(readRDS(file.path(path, output_filename)))
+    
+  }
+  
+  # Perform Over-Representation Analysis (ORA) using gprofiler2::gost()
+  gostres <- gprofiler2::gost(
+    query = input_genes, 
+    organism = organism, 
+    ordered_query = FALSE, 
+    multi_query = FALSE, 
+    significant = TRUE, 
+    exclude_iea = FALSE, 
+    measure_underrepresentation = FALSE, 
+    evcodes = TRUE, 
+    user_threshold = user_threshold, 
+    correction_method = correction_method, 
+    domain_scope = bg_type,
+    custom_bg = bg_genes, 
+    numeric_ns = "", 
+    sources = sources, 
+    as_short_link = FALSE, 
+    highlight = TRUE 
+  ) 
+  
+  ## Create dataframe in "gene x annotation per row" (g_a) format for the unfiltered category
+  ## The "annotation per row" (a) is already the output of the gprofiler2::gost() function.
+  dr_g_a_unfiltered <- gostres$result |> 
+    dplyr::select(intersection, term_name, term_size, query_size, 
+                  intersection_size, effective_domain_size, p_value, source) |> 
+    tidyr::separate_rows(intersection, sep = ",") |> 
+    dplyr::rename(gene_id = intersection) |> 
+    dplyr::distinct() # Remove duplicate rows
+  
+  # Turn the tibble to a dataframe
+  dr_g_a_unfiltered <- as.data.frame(dr_g_a_unfiltered)
+  
+  ## Create dataframes in "gene x annotation per row" (g_a) and "annotation per row" (a) formats for the filtered category
+  
+  # Filter the results by only keeping highlighted GO terms
+  if (only_highlighted_GO == TRUE) {
+    
+    dr_a_filtered <- gostres$result |> 
+      dplyr::filter(
+        ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
+      )
+    
+    cat(paste0("Only highlighted GO terms are kept \n"))
     
   } else {
     
-    # Perform Over-Representation Analysis (ORA) using gprofiler2::gost()
-    gostres <- gprofiler2::gost(
-      query = input_genes, 
-      organism = organism, 
-      ordered_query = FALSE, 
-      multi_query = FALSE, 
-      significant = TRUE, 
-      exclude_iea = FALSE, 
-      measure_underrepresentation = FALSE, 
-      evcodes = TRUE, 
-      user_threshold = user_threshold, 
-      correction_method = correction_method, 
-      domain_scope = bg_type,
-      custom_bg = bg_genes, 
-      numeric_ns = "", 
-      sources = sources, 
-      as_short_link = FALSE, 
-      highlight = TRUE 
-    ) 
+    dr_a_filtered <- gostres$result
     
-    ## Create dataframe in "gene x annotation per row" (g_a) format for the unfiltered category
-    ## The "annotation per row" (a) is already the output of the gprofiler2::gost() function.
-    dr_g_a_unfiltered <- gostres$result |> 
-      dplyr::select(intersection, term_name, term_size, query_size, 
-                    intersection_size, effective_domain_size, p_value, source) |> 
-      tidyr::separate_rows(intersection, sep = ",") |> 
-      dplyr::rename(gene_id = intersection) |> 
-      dplyr::distinct() # Remove duplicate rows
-    
-    # Turn the tibble to a dataframe
-    dr_g_a_unfiltered <- as.data.frame(dr_g_a_unfiltered)
-    
-    ## Create dataframes in "gene x annotation per row" (g_a) and "annotation per row" (a) formats for the filtered category
-    
-    # Filter the results by only keeping highlighted GO terms
-    if (only_highlighted_GO == TRUE) {
-      
-      dr_a_filtered <- gostres$result |> 
-        dplyr::filter(
-          ((grepl("GO", source) & highlighted == TRUE) | (!(grepl("GO", source))))
-        )
-      
-      cat(paste0("Only highlighted GO terms are kept \n"))
-      
-    } else {
-      
-      dr_a_filtered <- gostres$result
-      
-      cat(paste0("All GO terms are kept \n"))
-      
-    }
-    
-    
-    # Check if both 'min_term_size' and 'max_term_size' are NULL
-    if (is.null(min_term_size) && is.null(max_term_size)) {
-      
-      dr_a_size_filtered <- dr_a_filtered
-      
-      # Both parameters are NULL, so no filtering is applied
-      cat("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering \n")
-      
-    } else {
-      
-      # If 'min_term_size' is provided (not NULL) and 'max_term_size' is NULL
-      if (!is.null(min_term_size) && is.null(max_term_size)) {
-        
-        # Filter the data to include only gene sets with size greater than or equal to `min_term_size`
-        dr_a_size_filtered <- dr_a_filtered |> 
-          dplyr::filter(term_size >= min_term_size)
-        
-        cat(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes \n"))
-        
-      }
-      
-      # If 'max_term_size' is provided (not NULL) and 'min_term_size' is NULL
-      if (is.null(min_term_size) && !is.null(max_term_size)) {
-        
-        # Filter the data to include only gene sets with size less than or equal to `max_term_size`
-        dr_a_size_filtered <- dr_a_filtered |> 
-          dplyr::filter(term_size <= max_term_size)
-        
-        cat(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes \n"))
-        
-      }
-      
-      # If both 'min_term_size' and 'max_term_size' are provided (not NULL)
-      if (!is.null(min_term_size) && !is.null(max_term_size)) {
-        
-        # Filter the data to include only gene sets with size between `min_term_size` and `max_term_size`
-        dr_a_size_filtered <- dr_a_filtered |> 
-          dplyr::filter(term_size >= min_term_size & term_size <= max_term_size)
-        
-        cat(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes \n"))
-        
-      }
-    }
-    
-    
-    # Conditionally remove biological functions that are not sufficiently enriched by a cluster
-    if (!is.null(ngenes_enrich_filtr)) {
-      
-      # Keep only rows where the number of IDs in the intersection column is 3 or more
-      dr_a_enrich_size_filtered <- dr_a_size_filtered |> 
-        dplyr::mutate(num_genes = sapply(strsplit(intersection, ","), length)) |> 
-        dplyr::filter(num_genes >= ngenes_enrich_filtr) |> 
-        dplyr::select(-num_genes)  # Remove the temporary column
-      
-      cat(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes \n"))
-      cat("--- \n")
-      
-    } else {
-      
-      dr_a_enrich_size_filtered <- dr_a_size_filtered
-      
-      # The parameter is NULL, so no filtering is applied
-      cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
-      cat("--- \n")
-      
-    }
-    
-    # Format the dataframe from "annotation per row" (a) to "gene per row": (g_a)
-    dr_g_a_enrich_size_filtered <- dr_a_enrich_size_filtered |> 
-      dplyr::select(intersection, term_name, term_size, query_size, 
-                    intersection_size, effective_domain_size, p_value, source) |> 
-      tidyr::separate_rows(intersection, sep = ",") |> 
-      dplyr::rename(gene_id = intersection) |> 
-      dplyr::distinct() # Remove duplicate rows
-    
-    
-    # Print the ratio of terms removed because of gene set filtering
-    cat(length(unique(dr_a_size_filtered$term_name)), "/",  length(unique(dr_a_filtered$term_name)), "enriched terms kept after gene set size filters", "\n")
-    
-    # Print the ratio of terms removed because of filtering
-    cat(length(unique(dr_g_a_enrich_size_filtered$term_name)), "/",  length(unique(dr_a_size_filtered$term_name)), "enriched terms kept after enrichment size filter", "\n")
-    
-    # Turn the tibble to a dataframe
-    dr_g_a_enrich_size_filtered <- as.data.frame(dr_g_a_enrich_size_filtered)
-    
-    # Reset the row numbers
-    rownames(dr_g_a_unfiltered) <- NULL
-    rownames(dr_g_a_enrich_size_filtered) <- NULL
-    rownames(dr_a_filtered) <- NULL
-    
-    # Create a list containing the unfiltered, filtered enrichment results and the parameters
-    results <- list(
-      
-      unfiltered = list(
-        dr_g_a = dr_g_a_unfiltered,
-        gostres = gostres),
-      
-      filtered = list(
-        dr_g_a = dr_g_a_enrich_size_filtered,
-        dr_a = dr_a_enrich_size_filtered),
-      
-      params = list(
-        bg_type = bg_type,
-        sources = sources, 
-        user_threshold = user_threshold,
-        min_term_size = min_term_size,
-        max_term_size = max_term_size,
-        only_highlighted_GO = only_highlighted_GO,
-        ngenes_enrich_filtr = ngenes_enrich_filtr
-      )
-      
-    )
-    
-    # Define the class of the output
-    results <- structure(results, class = "simplenrichres")
-    
-    # Save the output
-    saveRDS(results, file.path(path, output_filename))
-    
-    # Return the clustrenrich results
-    return(results)
+    cat(paste0("All GO terms are kept \n"))
     
   }
+  
+  
+  # Check if both 'min_term_size' and 'max_term_size' are NULL
+  if (is.null(min_term_size) && is.null(max_term_size)) {
+    
+    dr_a_size_filtered <- dr_a_filtered
+    
+    # Both parameters are NULL, so no filtering is applied
+    cat("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering \n")
+    
+  } else {
+    
+    # If 'min_term_size' is provided (not NULL) and 'max_term_size' is NULL
+    if (!is.null(min_term_size) && is.null(max_term_size)) {
+      
+      # Filter the data to include only gene sets with size greater than or equal to `min_term_size`
+      dr_a_size_filtered <- dr_a_filtered |> 
+        dplyr::filter(term_size >= min_term_size)
+      
+      cat(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes \n"))
+      
+    }
+    
+    # If 'max_term_size' is provided (not NULL) and 'min_term_size' is NULL
+    if (is.null(min_term_size) && !is.null(max_term_size)) {
+      
+      # Filter the data to include only gene sets with size less than or equal to `max_term_size`
+      dr_a_size_filtered <- dr_a_filtered |> 
+        dplyr::filter(term_size <= max_term_size)
+      
+      cat(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes \n"))
+      
+    }
+    
+    # If both 'min_term_size' and 'max_term_size' are provided (not NULL)
+    if (!is.null(min_term_size) && !is.null(max_term_size)) {
+      
+      # Filter the data to include only gene sets with size between `min_term_size` and `max_term_size`
+      dr_a_size_filtered <- dr_a_filtered |> 
+        dplyr::filter(term_size >= min_term_size & term_size <= max_term_size)
+      
+      cat(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes \n"))
+      
+    }
+  }
+  
+  
+  # Conditionally remove biological functions that are not sufficiently enriched by a cluster
+  if (!is.null(ngenes_enrich_filtr)) {
+    
+    # Keep only rows where the number of IDs in the intersection column is 3 or more
+    dr_a_enrich_size_filtered <- dr_a_size_filtered |> 
+      dplyr::mutate(num_genes = sapply(strsplit(intersection, ","), length)) |> 
+      dplyr::filter(num_genes >= ngenes_enrich_filtr) |> 
+      dplyr::select(-num_genes)  # Remove the temporary column
+    
+    cat(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes \n"))
+    cat("--- \n")
+    
+  } else {
+    
+    dr_a_enrich_size_filtered <- dr_a_size_filtered
+    
+    # The parameter is NULL, so no filtering is applied
+    cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
+    cat("--- \n")
+    
+  }
+  
+  # Format the dataframe from "annotation per row" (a) to "gene per row": (g_a)
+  dr_g_a_enrich_size_filtered <- dr_a_enrich_size_filtered |> 
+    dplyr::select(intersection, term_name, term_size, query_size, 
+                  intersection_size, effective_domain_size, p_value, source) |> 
+    tidyr::separate_rows(intersection, sep = ",") |> 
+    dplyr::rename(gene_id = intersection) |> 
+    dplyr::distinct() # Remove duplicate rows
+  
+  
+  # Print the ratio of terms removed because of gene set filtering
+  cat(length(unique(dr_a_size_filtered$term_name)), "/",  length(unique(dr_a_filtered$term_name)), "enriched terms kept after gene set size filters", "\n")
+  
+  # Print the ratio of terms removed because of filtering
+  cat(length(unique(dr_g_a_enrich_size_filtered$term_name)), "/",  length(unique(dr_a_size_filtered$term_name)), "enriched terms kept after enrichment size filter", "\n")
+  
+  # Turn the tibble to a dataframe
+  dr_g_a_enrich_size_filtered <- as.data.frame(dr_g_a_enrich_size_filtered)
+  
+  # Reset the row numbers
+  rownames(dr_g_a_unfiltered) <- NULL
+  rownames(dr_g_a_enrich_size_filtered) <- NULL
+  rownames(dr_a_filtered) <- NULL
+  
+  # Create a list containing the unfiltered, filtered enrichment results and the parameters
+  results <- list(
+    
+    unfiltered = list(
+      dr_g_a = dr_g_a_unfiltered,
+      gostres = gostres),
+    
+    filtered = list(
+      dr_g_a = dr_g_a_enrich_size_filtered,
+      dr_a = dr_a_enrich_size_filtered),
+    
+    params = list(
+      bg_type = bg_type,
+      sources = sources, 
+      user_threshold = user_threshold,
+      min_term_size = min_term_size,
+      max_term_size = max_term_size,
+      only_highlighted_GO = only_highlighted_GO,
+      ngenes_enrich_filtr = ngenes_enrich_filtr
+    )
+    
+  )
+  
+  # Define the class of the output
+  results <- structure(results, class = "simplenrichres")
+  
+  # Save the output
+  saveRDS(results, file.path(path, output_filename))
+  
+  # Return the clustrenrich results
+  return(results)
   
 }
