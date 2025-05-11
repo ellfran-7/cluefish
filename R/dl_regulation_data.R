@@ -45,9 +45,6 @@ dl_regulation_data <- function(
     
   } else {
     
-    ## Create destination folder for data if it doesn't exist
-    dir.create(path, showWarnings = FALSE, recursive = TRUE)
-    
     ## Download TF file
     utils::download.file(url      = paste0(url_tf),
                          destfile = file.path(path, filename_tf),
