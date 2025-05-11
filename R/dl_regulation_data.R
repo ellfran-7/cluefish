@@ -41,7 +41,7 @@ dl_regulation_data <- function(
   if (file.exists(file.path(path, filename_tf)) & !overwrite) {
     
     # Message stating that the files already exist, and 'overwrite = TRUE' as to be set in order to replace them
-    message("The TF and Cof filenames already exists. Use 'overwrite = TRUE' to replace them")
+    message("The TF and Cof files already exists. Use 'overwrite = TRUE' to replace them")
     
   } else {
     
