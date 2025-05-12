@@ -61,15 +61,17 @@ getids <- function(
   names(query_results)[names(query_results) == gene_id] <- "gene_id"
   names(query_results)[names(query_results) == gene_name] <- "gene_name"
   
+  
+  ## Assign new names to transcripts lacking gene symbols. In such cases, we assign a new name to these transcripts' genes as "unknown" followed by a number based on the order of appearance of these blank names. For instance, if there are 8 occurrences of unknown gene names, the 5th gene symbol will be named "unknown.5".
+  
+  # Assign "Unknown" names to genes lacking a symbol and number them sequentially
+  indices <- which(query_results$gene_name == "" | is.na(query_results$gene_name))
+  num_unknown <- sum(query_results$gene_name == "" | is.na(query_results$gene_name))
+  new_names <- paste("unknown", seq_len(num_unknown), sep = ".")
+  query_results$gene_name[indices] <- new_names
+  
   # Check if the "external_gene_name" identifier is requested in the query under the "gene_name"
   if ("external_gene_name" %in% gene_name) {
-    ## Assign new names to transcripts lacking gene symbols. In such cases, we assign a new name to these transcripts' genes as "unknown" followed by a number based on the order of appearance of these blank names. For instance, if there are 8 occurrences of unknown gene names, the 5th gene symbol will be named "unknown.5".
-    
-    # Assign "Unknown" names to genes lacking a symbol and number them sequentially
-    indices <- which(query_results$gene_name == "" | is.na(query_results$gene_name))
-    num_unknown <- sum(query_results$gene_name == "" | is.na(query_results$gene_name))
-    new_names <- paste("unknown", seq_len(num_unknown), sep = ".")
-    query_results$gene_name[indices] <- new_names
     
     ## Differentiate gene symbols for multiple transcripts associated with the same gene. To achieve this
     ## We append a unique numerical value to gene symbol names based on duplicate positions in Ensembl gene IDs and Ensembl transcript IDs transcript ids. If two transcripts are linked to the same gene ID and symbol "A", their new names will be "A_1.1" and "A_1.2". If they are linked to different gene IDs but the same symbol "A", their new names will be "A_1.1" and "A_2.1" The numbering does not follow a specific order other than alphabetical..
