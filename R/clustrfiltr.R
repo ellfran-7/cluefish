@@ -38,8 +38,6 @@ clustrfiltr <- function(
                              removed =  getclustrs_data[!getclustrs_data$clustr %in% big_clusters, ])
   
   # Order the results by cluster number
-  clustr_order <- sort(dr_t_clustrs_filtr$kept$clustr)
-  
   dr_t_clustrs_filtr$kept <- dr_t_clustrs_filtr$kept |> 
     dplyr::arrange(clustr)
   

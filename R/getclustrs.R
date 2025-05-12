@@ -25,7 +25,7 @@ getclustrs <- function(
   dr_g_string_clustr <- read.csv(file.path(path, nodetable_filename))
   
   # Check if the following columns are present in the table exported from cytoscape, if not stop the function
-  if (!any(c("query.term", "X__mclCluster") %in% colnames(dr_g_string_clustr))) {
+  if (any(!c("query.term", "X__mclCluster") %in% colnames(dr_g_string_clustr))) {
     
     stop(
       paste(
