@@ -93,6 +93,10 @@ clustrenrich <- function(
   cluster_list <- split(dr_g_clustrfiltr_data$gene_id, 
                         dr_g_clustrfiltr_data$clustr)
   
+  # Ensure gprofiler2::gost() inputs (dr and bg) are duplicate-free. This will increase gprofiler2::gost() speed.
+  cluster_list <- lapply(cluster_list, unique)
+  dr_genes <- unique(dr_genes)
+  bg_genes <- unique(bg_genes)
   
   # Perform Over-Representation Analysis (ORA) using gprofiler2::gost()
   multi_gostres <- gprofiler2::gost(

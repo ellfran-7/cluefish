@@ -68,6 +68,10 @@ simplenrich <- function(
     
   }
   
+  # Ensure gprofiler2::gost() inputs (dr and bg) are duplicate-free. This will increase gprofiler2::gost() speed.
+  input_genes <- unique(input_genes)
+  bg_genes <- unique(bg_genes)
+  
   # Perform Over-Representation Analysis (ORA) using gprofiler2::gost()
   gostres <- gprofiler2::gost(
     query = input_genes, 
