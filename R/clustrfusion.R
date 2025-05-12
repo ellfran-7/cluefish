@@ -31,7 +31,7 @@ clustrfusion <- function(
     dplyr::select(-clustr)
   
   # Arrange the gost() results by effective domain size to prioritize sources with a larger panel of biological information about the organism (details in README). Then, select the source column, remove duplicates, and convert to a vector for use in the for loop.
-  ordered_term_sources <- clustr_enrichres$gostres$result |> 
+  ordered_term_sources <- clustrenrich_data$gostres$result |> 
     dplyr::arrange(desc(effective_domain_size)) |> 
     dplyr::select(source) |> 
     dplyr::distinct() |> 
