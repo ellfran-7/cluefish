@@ -31,7 +31,7 @@ loadfonts()
 
 
 #> Set the file_date variable --------------------
-file_date = "2025-04-02"
+file_date = "2024-08-07"
 
 
 
@@ -84,7 +84,7 @@ curves_trend_cols <- c("inc" = "#009988", "dec" = "#EE7733", "U" = "#0077BB", "b
 # Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = here::here("data", "derived-data", "fitres_rat_liver_pfoa.rds"))
 
-# The id names are homemade, sciome generated, combining capital gene names and other numbers (of unknown origin)
+# Extract the gene name portion from the item ID (removing everything after '_')
 f_id_mod <- sub("_.*", "", f$omicdata$item) 
 
 # Load DRomics "bmdboot" results filtered with only transcripts with a defined confidence interval around the BMD

@@ -2,7 +2,7 @@
 #> Script to generate the supplementary tables in Franklin et al. (submitted)
 #> ==========================================================================
 #> Case:  rnorvegicus - TempO-seq ****
-#> Run : 01/04/25 ****
+#> Run : 07/08/24 ****
 
 
 
@@ -31,7 +31,7 @@ loadfonts()
 
 
 #> Set the file_date variable --------------------
-file_date = "2025-04-02"
+file_date = "2024-08-07"
 
 
 
@@ -52,22 +52,22 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 # Load DRomics drcfit object (which holds the background transcript list) 
 f <- readRDS(file = here::here("data", "derived-data", "fitres_rat_liver_pfoa.rds"))
 
-# The id names are homemade, sciome generated, combining capital gene names and other numbers (of unknown origin)
+# Extract the gene name portion from the item ID (removing everything after '_')
 f_id_mod <- sub("_.*", "", f$omicdata$item) 
 
 # Load DRomics "bmdboot" results filtered with only transcripts with a defined confidence interval around the BMD
-b_definedCI <- readRDS(file = here::here("data", "derived-data","bootres_rat_liver_pfoa_seed1234_5000iter_definedCI.rds"))
+b_definedCI <- readRDS(file = here::here("data", "derived-data","bootres_rat_liver_pfoa_seed3_5000iter_definedCI.rds"))
 
-# Extract and clean gene identifiers from 'b_definedCI'
+# Extract, clean and normalise all gene IDs to lowercase, except for "LOC" identifiers
 b_definedCI_mod <- b_definedCI |> 
-  dplyr::mutate(id_mod = sub("_.*", "", id)) |> 
+  dplyr::mutate(id_mod = sub("_.*", "", id)) |>
+  dplyr::mutate(
+    id_mod = dplyr::if_else(grepl("LOC", id_mod), id_mod, tolower(id_mod))) |> 
   dplyr::select(id, id_mod)
 
-# Normalise all gene IDs to lowercase, except for "LOC" identifiers
-b_definedCI_mod <- b_definedCI_onlyids |> 
-  dplyr::mutate(
-    id_mod = dplyr::if_else(grepl("LOC", id_mod), id_mod, tolower(id_mod))
-  )
+# Create the only_IDs version for merging
+b_definedCI_mod_onlyids <- b_definedCI_mod |> 
+  dplyr::select(id, id_mod)
 
 
 
@@ -136,10 +136,10 @@ enrich_data <- clustr_enrichres$gostres$result |>
 # head(enrich_data)            # Show first few rows of enrichment data
 # dim(enrich_data)             # Check dimensions of enrichment data
 
-# # Write the selected enrichment data to a CSV file for supplementary material
-# write.csv2(enrich_data,
-#            paste0("figures/for-supp/supp-table-original-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Write the selected enrichment data to a CSV file for supplementary material
+write.csv2(enrich_data,
+           paste0("figures/for-supp/supp-table-original-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -165,10 +165,10 @@ lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |>
                 term_size, term_id, source) |> 
   dplyr::distinct()
 
-# # Export merged and filtered cluster data to CSV for supplementary materials
-# write.csv2(lonelyfish_data,
-#            paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Export merged and filtered cluster data to CSV for supplementary materials
+write.csv2(lonelyfish_data,
+           paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -196,10 +196,10 @@ lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |>
                 recall = signif(recall, 2)) |> 
   dplyr::distinct()
 
-# # Save filtered lonely cluster enrichment data to CSV
-# write.csv2(lonely_enrich_data,
-#            paste0("figures/for-supp/supp-table-lonelycluster-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Save filtered lonely cluster enrichment data to CSV
+write.csv2(lonely_enrich_data,
+           paste0("figures/for-supp/supp-table-lonelycluster-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -227,10 +227,10 @@ stand_enrich_data <- stand_res$filtered$dr_a |>
                 recall = signif(recall, 2)) |> 
   dplyr::distinct()
 
-# # Save filtered standard enrichment data to CSV for supplemental output
-# write.csv2(stand_enrich_data,
-#            paste0("figures/for-supp/supp-table-standard-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Save filtered standard enrichment data to CSV for supplemental output
+write.csv2(stand_enrich_data,
+           paste0("figures/for-supp/supp-table-standard-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -263,10 +263,10 @@ summary_bmd_clusters <- b_lonely_fishres |>
 # Check the structure of the summarized BMD clusters
 dplyr::glimpse(summary_bmd_clusters)
 
-# # Write the summarized BMD values by cluster to a CSV file
-# write.csv2(summary_bmd_clusters,
-#            paste0("figures/for-supp/supp-table-cluster-summarized-bmd-rnorvegicus-", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Write the summarized BMD values by cluster to a CSV file
+write.csv2(summary_bmd_clusters,
+           paste0("figures/for-supp/supp-table-cluster-summarized-bmd-rnorvegicus-", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 
