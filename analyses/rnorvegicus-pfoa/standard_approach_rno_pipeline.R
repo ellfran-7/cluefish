@@ -3,10 +3,10 @@
 #> =============================================================================
 
 #> This script applies the standard approach pipeline for biological interpretation 
-#> of results of the DRomics analysis of the main zebrafish dbp transcriptomic dataset
+#> of results of the DRomics analysis of the rat liver pfoa external transcriptomic dataset
 
 #> Before continuing you will need to follow the Cluefish workflow in the 
-#> "cluefish_approach_dre_pipeline.R" file at the root up to Step 3, in order 
+#> "cluefish_approach_rno_pipeline.R" file at the root up to Step 3, in order 
 #> to retrieve the bg_t_ids dataset holding the backgrounds identifiers 
 #> retrieved from Ensembl
 #> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -17,10 +17,10 @@
 file_date <- "2025-04-01"
 
 # Load DRomics drcfit object (which holds the background transcript list) 
-f <- readRDS(file = "data/raw-data/fitres_rat_liver_pfoa.rds")
+f <- readRDS(file = "data/derived-data/fitres_rat_liver_pfoa.rds")
 
 # Load DRomics bmdboot object
-b_definedCI <- readRDS(file = "data/raw-data/bootres_rat_liver_pfoa_seed1234_5000iter_definedCI.rds")
+b_definedCI <- readRDS(file = "data/derived-data/bootres_rat_liver_pfoa_seed1234_5000iter_definedCI.rds")
 
 ## Retrieve the getids() output holding the identifiers for the deregulated transcripts
 bg_t_ids <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date, ".txt"))

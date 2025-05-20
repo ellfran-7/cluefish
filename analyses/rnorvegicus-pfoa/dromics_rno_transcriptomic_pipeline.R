@@ -77,7 +77,7 @@ write.csv(gse147072_info, file = "data/raw-data/GSE147072_series_info.csv", row.
 #> 2. Load the Datasets into R
 #> ---------------------------
 
-# Load the count dataset. This will be referred to as `rat_pfoa_counts_df`.
+# Load the count dataset. This will be referred to as `rat_counts_df`.
 rat_counts_df <- read.table(
   file = "data/raw-data/GSE147072_SRA_20_Chemical_matrix.txt",
   header = FALSE)
@@ -207,8 +207,7 @@ data4PCA <- list(dose = c(rep(0, 4), rep(0.156, 4), rep(0.3125, 4), rep(0.6250, 
 DRomics::PCAdataplot(o, batch = data4PCA$replicate) + 
   ggplot2::theme_bw()
 
-# After examining the PCA plot, we observe that the control dose (0D) appears to be an outlier, which may affect the analysis. 
-# To address this, we can remove the 0D sample from the dataset and re-run the DRomics steps.
+# After examining the PCA plot, everything seems to be in order
 
 
 
