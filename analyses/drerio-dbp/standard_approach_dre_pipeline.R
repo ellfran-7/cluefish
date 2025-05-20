@@ -15,7 +15,7 @@
 file_date <- "2024-12-04"
 
 # Load DRomics drcfit object (which holds the background transcript list) 
-f <- readRDS(file = "data/raw-data/fitres_zebrafish_phtalate.rds")
+f <- readRDS(file = "data/derived-data/fitres_zebrafish_phtalate.rds")
 
 # Load DRomics "bmdboot" results, filtered to include only transcripts with a defined confidence interval around the BMD.
 b_definedCI <- readRDS(file = "data/derived-data/bootres_zebrafish_phtalate_UF_seed3_5000iter_definedCI.rds")
