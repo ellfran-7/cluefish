@@ -116,6 +116,7 @@ stand_res <- readRDS(here::here("outputs", file_date, paste0("standard_pipeline_
 #>  - term_size (number of genes associated with the term)
 #>  - gene count in query
 #>  - precision and recall of term in the gene list
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope (effective domain size)
 #> ----------------------------------------
 
@@ -124,10 +125,11 @@ dplyr::glimpse(clustr_enrichres$gostres$result)
 
 # Select relevant columns for enrichment data, ensuring each row represents a unique term and its enrichment data
 enrich_data <- clustr_enrichres$gostres$result |> 
-  dplyr::select(query, term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(query, term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # Uncomment below lines if you want to inspect the dataset interactively
@@ -148,11 +150,10 @@ write.csv2(enrich_data,
 #> Resulting table of all clusters AFTER MERGING AND FISHING (end of workflow) with:
 #>  - original cluster number
 #>  - new cluster number (post-fusion with related clusters)
-#>  - function names and their IDs
-#>  - data sources for terms
-#>  - gene count in query
-#>  - domain scope of each term
-#>  - adjusted p-value (significance level)
+#>  - function names 
+#>  - function size
+#>  - function id
+#>  - data sources for functions
 #> ----------------------------------------
 
 # Check structure of post-merging data for fishing clusters
@@ -166,9 +167,9 @@ lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |>
   dplyr::distinct()
 
 # Export merged and filtered cluster data to CSV for supplementary materials
-write.csv2(lonelyfish_data,
-           paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
-           row.names = FALSE)
+# write.csv2(lonelyfish_data,
+#            paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
+#            row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -182,6 +183,7 @@ write.csv2(lonelyfish_data,
 #>  - highlighted status (indicates driver terms)
 #>  - term_size and gene count within each term
 #>  - precision and recall scores for enrichment
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope
 #> ----------------------------------------
 
@@ -190,18 +192,20 @@ dplyr::glimpse(lonely_cluster_analysis_res$filtered)
 
 # Select columns from the lonely cluster analysis, post-filtering
 lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |> 
-  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # Save filtered lonely cluster enrichment data to CSV
-write.csv2(lonely_enrich_data,
-           paste0("figures/for-supp/supp-table-lonelycluster-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
-           row.names = FALSE)
+# write.csv2(lonely_enrich_data,
+#            paste0("figures/for-supp/supp-table-lonelycluster-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
+#            row.names = FALSE)
 
 #> ----------------------------------------
+
 
 
 
@@ -213,6 +217,7 @@ write.csv2(lonely_enrich_data,
 #>  - highlighted status (indicates terms with strong signals)
 #>  - term_size and query gene counts
 #>  - precision and recall metrics
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope for the term
 #> ----------------------------------------
 
@@ -221,16 +226,17 @@ dplyr::glimpse(stand_res$filtered$dr_a)
 
 # Selecting columns of interest for the standard enrichment analysis results
 stand_enrich_data <- stand_res$filtered$dr_a |> 
-  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # Save filtered standard enrichment data to CSV for supplemental output
-write.csv2(stand_enrich_data,
-           paste0("figures/for-supp/supp-table-standard-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
-           row.names = FALSE)
+# write.csv2(stand_enrich_data,
+#            paste0("figures/for-supp/supp-table-standard-gprofiler-res-rnorvegicus-", Sys.Date(), ".csv"),
+           # row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -264,9 +270,9 @@ summary_bmd_clusters <- b_lonely_fishres |>
 dplyr::glimpse(summary_bmd_clusters)
 
 # Write the summarized BMD values by cluster to a CSV file
-write.csv2(summary_bmd_clusters,
-           paste0("figures/for-supp/supp-table-cluster-summarized-bmd-rnorvegicus-", Sys.Date(), ".csv"),
-           row.names = FALSE)
+# write.csv2(summary_bmd_clusters,
+#            paste0("figures/for-supp/supp-table-cluster-summarized-bmd-rnorvegicus-", Sys.Date(), ".csv"),
+#            row.names = FALSE)
 
 #> ----------------------------------------
 

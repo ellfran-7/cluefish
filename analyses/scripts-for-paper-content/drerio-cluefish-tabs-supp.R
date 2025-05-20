@@ -100,6 +100,7 @@ stand_res <- readRDS(here::here("outputs", file_date, paste0("standard_pipeline_
 #>  - term_size (number of genes associated with the term)
 #>  - gene count in query
 #>  - precision and recall of term in the gene list
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope (effective domain size)
 #> ----------------------------------------
 
@@ -108,10 +109,11 @@ dplyr::glimpse(clustr_enrichres$gostres$result)
 
 # Select relevant columns for enrichment data, ensuring each row represents a unique term and its enrichment data
 enrich_data <- clustr_enrichres$gostres$result |> 
-  dplyr::select(query, term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(query, term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # Uncomment below lines if you want to inspect the dataset interactively
@@ -132,11 +134,10 @@ enrich_data <- clustr_enrichres$gostres$result |>
 #> Resulting table of all clusters AFTER MERGING AND FISHING (end of workflow) with:
 #>  - original cluster number
 #>  - new cluster number (post-fusion with related clusters)
-#>  - function names and their IDs
-#>  - data sources for terms
-#>  - gene count in query
-#>  - domain scope of each term
-#>  - adjusted p-value (significance level)
+#>  - function names 
+#>  - function size
+#>  - function id
+#>  - data sources for functions
 #> ----------------------------------------
 
 # Check structure of post-merging data for fishing clusters
@@ -166,6 +167,7 @@ lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |>
 #>  - highlighted status (indicates driver terms)
 #>  - term_size and gene count within each term
 #>  - precision and recall scores for enrichment
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope
 #> ----------------------------------------
 
@@ -174,10 +176,11 @@ dplyr::glimpse(lonely_cluster_analysis_res$filtered)
 
 # Select columns from the lonely cluster analysis, post-filtering
 lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |> 
-  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # # Save filtered lonely cluster enrichment data to CSV
@@ -197,6 +200,7 @@ lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |>
 #>  - highlighted status (indicates terms with strong signals)
 #>  - term_size and query gene counts
 #>  - precision and recall metrics
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope for the term
 #> ----------------------------------------
 
@@ -205,10 +209,11 @@ dplyr::glimpse(stand_res$filtered$dr_a)
 
 # Selecting columns of interest for the standard enrichment analysis results
 stand_enrich_data <- stand_res$filtered$dr_a |> 
-  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # # Save filtered standard enrichment data to CSV for supplemental output
@@ -340,7 +345,7 @@ dataset_names <- list('enrich_data' = enrich_data,
 
 #export each data frame to separate sheets in same Excel file
 openxlsx::write.xlsx(dataset_names, 
-                     file = paste0("figures/for-supp/supp-table-data-", Sys.Date(), ".xlsx"),
+                     file = paste0("figures/for-supp/supp-table-data-drerio-", Sys.Date(), ".xlsx"),
                      rowNames = FALSE)
 
 #> ----------------------------------------
