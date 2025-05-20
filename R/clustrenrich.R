@@ -26,7 +26,7 @@
 #'
 #' @return A named `list` holding 4 components, where :
 #'      -`dr_g_a_enrich` is a dataframe of type *g_a* holding the enrichment results with each row being a combination of gene and biological function annotation
-#'      -`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
+#'      -`gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost(), with added enrichment ratios in the 'result' dataframe.
 #'      -`dr_g_a_whole` is a dataframe of type *g_a* holding all the biological function annotations found in the g:profiler database for all the deregulated genes.
 #'      -`c_simplifylog` is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
 #'      -`params` is a list of the main parameters used
@@ -119,6 +119,9 @@ clustrenrich <- function(
       dplyr::mutate(query = as.numeric(query)) |> 
       dplyr::arrange(query)
     
+    # Compute enrichment ratios, corresponding to the overlap/expected. This allows the us to quantify the magnitude of a pathway overrepresentation.
+    multi_gostres$result <- multi_gostres$result |> 
+      dplyr::mutate(enrichment_ratio = (intersection_size/query_size) / (term_size/effective_domain_size))
     
     # ---------------
     # using the "multi_gostres$result" the function gradually creates one of the components the output of clustrenrich(), which is the $c_simplifylog. It holds the number of biological functions enriched per cluster, before and after each filtering step for each source. In this first block, we create the base dataframe with no filters performed yet.

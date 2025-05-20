@@ -22,7 +22,7 @@
 #' @return A named `list` holding two components:
 #'      -`unfiltered` is a named `list` holding two sub-components::
 #'            - `dr_g_a` is a dataframe of type *g_a* holding the unfiltered enrichment results (e.g. all GO terms, no limits set on gene set size )
-#'            - `gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost().
+#'            - `gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost(), with added enrichment ratios in the 'result' dataframe.
 #'      -`filtered` is named `list` holding two sub-components:
 #'            - `dr_g_a` is a dataframe of type *g_a* holding the filtered enrichment results.
 #'            - `dr_a` is a dataframe of type *a* holding the filtered enrichment results.
@@ -31,7 +31,7 @@
 #'
 #' @examples
 
-simplenrich <- function(
+simplenrich2 <- function(
     input_genes,
     bg_genes,
     bg_type = "custom_annotated",
@@ -88,11 +88,15 @@ simplenrich <- function(
       highlight = TRUE 
     ) 
     
+    # Compute enrichment ratios, corresponding to the overlap/expected. This allows the us to quantify the magnitude of a pathway overrepresentation.
+    gostres$result <- gostres$result |> 
+      dplyr::mutate(enrichment_ratio = (intersection_size/query_size) / (term_size/effective_domain_size))
+    
     ## Create dataframe in "gene x annotation per row" (g_a) format for the unfiltered category
     ## The "annotation per row" (a) is already the output of the gprofiler2::gost() function.
     dr_g_a_unfiltered <- gostres$result |> 
       dplyr::select(intersection, term_name, term_size, query_size, 
-                    intersection_size, effective_domain_size, p_value, source) |> 
+                    intersection_size, effective_domain_size, p_value, enrichment_ratio, source) |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::rename(gene_id = intersection) |> 
       dplyr::distinct() # Remove duplicate rows
@@ -191,7 +195,7 @@ simplenrich <- function(
     # Format the dataframe from "annotation per row" (a) to "gene per row": (g_a)
     dr_g_a_enrich_size_filtered <- dr_a_enrich_size_filtered |> 
       dplyr::select(intersection, term_name, term_size, query_size, 
-                    intersection_size, effective_domain_size, p_value, source) |> 
+                    intersection_size, effective_domain_size, p_value, enrichment_ratio, source) |> 
       tidyr::separate_rows(intersection, sep = ",") |> 
       dplyr::rename(gene_id = intersection) |> 
       dplyr::distinct() # Remove duplicate rows
