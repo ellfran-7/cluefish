@@ -254,14 +254,14 @@ pop_stand_res <- readRDS(here::here("outputs", pop_file_date, paste0("standard_p
 
 #> Create functions to streamline Venn diagram plots ----------
 
-## Venn diagrams ----
+## Venn diagrams for shared enriched terms ----
 
-venns4paper <- function(
+venns4terms <- function(
     data1,
     data2,
     data3,
     variable,
-    source_id,
+    source_id = NULL,
     ...,
     category.names = c("" , ""),
     filename = "venn-default-output.png",
@@ -269,7 +269,6 @@ venns4paper <- function(
 )
   
 {
-  
   # Enriched terms kept at the end of the standard approach
   data1_terms <- unique((data1 |> 
                            dplyr::filter(source == source_id))[,variable])
@@ -298,11 +297,16 @@ venns4paper <- function(
   
 }
 
+
+
+
 ## Select data and generate the figures
 
 
 #> Case: Zebrafish dataset
 #> --------------------------
+
+## For shared enriched terms between approaches ---
 
 # the filtered standard dataframe (simplenrich() [highlighted, gene set size limits, ngenes enrich limit])
 zebra_stand_results <- zebra_stand_res$filtered$dr_a
@@ -318,21 +322,21 @@ zebra_lonelycluster_analysis_results <- zebra_lonely_cluster_analysis_res$filter
 # Create the source vector
 zebra_source_vector <- unique(na.omit(zebra_cluefish_results$source))
 
-# For each source in the source vector, run the venns4paper() function
+# For each source in the source vector, run the venns4terms() function
 
 # GO:BP
-venns4paper(
+venns4terms(
   data1 = zebra_stand_results,
   data2 = zebra_cluefish_results,
   data3 = zebra_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = zebra_source_vector[1],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-1-for-layout-", gsub(":", "", zebra_source_vector[1]), "-drerio.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-drerio-", gsub(":", "", zebra_source_vector[1]), "-termoverlap-venndiag.png")),
   height = 5, 
   width = 5, 
   units= "cm",
   resolution = 600,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[1], paul_tol_pal[1]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -350,18 +354,18 @@ venns4paper(
 )
 
 # KEGG
-venns4paper(
+venns4terms(
   data1 = zebra_stand_results,
   data2 = zebra_cluefish_results,
   data3 = zebra_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = zebra_source_vector[2],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-2-for-layout-", gsub(":", "", zebra_source_vector[2]), "-drerio.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-drerio-", gsub(":", "", zebra_source_vector[2]), "-termoverlap-venndiag.png")),
   height = 4.5, 
   width = 4.5, 
   units= "cm",
   resolution = 900,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[2], paul_tol_pal[2]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -379,18 +383,18 @@ venns4paper(
 )
 
 # WP
-venns4paper(
+venns4terms(
   data1 = zebra_stand_results,
   data2 = zebra_cluefish_results,
   data3 = zebra_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = zebra_source_vector[3],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-3-for-layout-", gsub(":", "", zebra_source_vector[3]), "-drerio.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-drerio-", gsub(":", "", zebra_source_vector[3]), "-termoverlap-venndiag.png")),
   height = 2.5, 
   width = 2.5, 
   units= "cm",
   resolution = 900,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[3], paul_tol_pal[3]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -407,11 +411,71 @@ venns4paper(
   cat.fontfamily = "Arial"
 )
 
+## For shared considered genes between approaches ---
+
+# the filtered standard dataframe (simplenrich() [highlighted, gene set size limits, ngenes enrich limit])
+zebra_stand_results <- zebra_stand_res$filtered$dr_g_a
+
+# the final Cluefish dataframe (clustrenrich() [highlighted, gene set size limits, ngenes enrich limit], clustrfusion(), lonelyfishing())
+# !!!!!!!!!! This only what is enriched and kept after the various steps !!!!!!!!!!!
+zebra_cluefish_results <- zebra_b_lonely_fishres |> 
+  dplyr::filter(new_clustr != "Lonely")
+
+# the lonely cluster analysis dataframe 
+zebra_lonelycluster_analysis_results <- zebra_lonely_cluster_analysis_res$filtered$dr_a
+
+
+# Enriched terms kept at the end of the standard approach
+data1 <- unique(zebra_stand_results$gene_id)
+
+# Enriched terms kept at the end of cluefish
+data2 <- unique(zebra_cluefish_results$gene_id)
+
+# Enriched terms kept at the end of the lonely cluster analysis
+data3 <- unique(unlist(strsplit(zebra_lonelycluster_analysis_results$intersection, ",")))
+
+# Combine enriched terms from cluefish and the lonely cluster analysis
+data2_and_data3 <- unique(c(data2, data3))
+
+
+# Generate the venn diagram
+VennDiagram::venn.diagram(
+  x = list(
+    data1, 
+    data2_and_data3),
+  category.names = c("" , ""),
+  filename = here::here("figures", "for-combo", "fig-drerio-geneoverlap-venndiag.png"),
+  output = output,
+  height = 5, 
+  width = 5, 
+  units= "cm",
+  resolution = 600,
+  lwd = c(2, 2),
+  lty = c(2, 1),
+  fill = c(grey_pal_seq9[7], grey_pal_seq9[7]), 
+  col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
+  cex = 0, # switch to cex = .9 for text
+  fontface = "bold",
+  fontfamily = "Arial",
+  label.col = c(grey_pal_seq9[2]),
+  cat.cex = .2,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.col = c(grey_pal_seq9[3]),
+  cat.pos = c(-27, 27),
+  cat.dist = c(0.055, 0.055),
+  cat.fontfamily = "Arial"
+)
+
+
+
 #> --------------------------
 
 
 #> Case: Rat liver dataset 
 #> --------------------------
+
+## For shared enriched terms between approaches ---
 
 # the filtered standard dataframe (simplenrich() [highlighted, gene set size limits, ngenes enrich limit])
 rat_stand_results <- rat_stand_res$filtered$dr_a
@@ -427,21 +491,21 @@ rat_lonelycluster_analysis_results <- rat_lonely_cluster_analysis_res$filtered$d
 # Create the source vector
 rat_source_vector <- unique(na.omit(rat_cluefish_results$source))
 
-# For each source in the source vector, run the venns4paper() function
+# For each source in the source vector, run the venns4terms() function
 
 # GO:BP
-venns4paper(
+venns4terms(
   data1 = rat_stand_results,
   data2 = rat_cluefish_results,
   data3 = rat_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = rat_source_vector[1],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-1-for-layout-", gsub(":", "", rat_source_vector[1]), "-rnorvegicus.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-rnorvegicus-", gsub(":", "", zebra_source_vector[1]), "-termoverlap-venndiag.png")),
   height = 2.7, 
   width = 2.7, 
   units= "cm",
   resolution = 600,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[1], paul_tol_pal[1]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -459,18 +523,18 @@ venns4paper(
 )
 
 # KEGG
-venns4paper(
+venns4terms(
   data1 = rat_stand_results,
   data2 = rat_cluefish_results,
   data3 = rat_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = rat_source_vector[2],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-2-for-layout-", gsub(":", "", rat_source_vector[2]), "-rnorvegicus.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-rnorvegicus-", gsub(":", "", zebra_source_vector[2]), "-termoverlap-venndiag.png")),
   height = 5, #4.5 
   width = 5, #4.5
   units= "cm",
   resolution = 900,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[2], paul_tol_pal[2]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -488,18 +552,18 @@ venns4paper(
 )
 
 # WP
-venns4paper(
+venns4terms(
   data1 = rat_stand_results,
   data2 = rat_cluefish_results,
   data3 = rat_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = rat_source_vector[3],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-3-for-layout-", gsub(":", "", rat_source_vector[3]), "-rnorvegicus.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-rnorvegicus-", gsub(":", "", zebra_source_vector[3]), "-termoverlap-venndiag.png")),
   height = 2.2, 
   width = 2.2, 
   units= "cm",
   resolution = 900,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[3], paul_tol_pal[3]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -516,12 +580,70 @@ venns4paper(
   cat.fontfamily = "Arial"
 )
 
+## For shared considered genes between approaches ---
+
+# the filtered standard dataframe (simplenrich() [highlighted, gene set size limits, ngenes enrich limit])
+rat_stand_results <- rat_stand_res$filtered$dr_g_a
+
+# the final Cluefish dataframe (clustrenrich() [highlighted, gene set size limits, ngenes enrich limit], clustrfusion(), lonelyfishing())
+# !!!!!!!!!! This only what is enriched and kept after the various steps !!!!!!!!!!!
+rat_cluefish_results <- rat_b_lonely_fishres |> 
+  dplyr::filter(new_clustr != "Lonely")
+
+# the lonely cluster analysis dataframe 
+rat_lonelycluster_analysis_results <- rat_lonely_cluster_analysis_res$filtered$dr_a
+
+
+# Enriched terms kept at the end of the standard approach
+data1 <- unique(rat_stand_results$gene_id)
+
+# Enriched terms kept at the end of cluefish
+data2 <- unique(rat_cluefish_results$gene_id)
+
+# Enriched terms kept at the end of the lonely cluster analysis
+data3 <- unique(unlist(strsplit(rat_lonelycluster_analysis_results$intersection, ",")))
+
+# Combine enriched terms from cluefish and the lonely cluster analysis
+data2_and_data3 <- unique(c(data2, data3))
+
+
+# Generate the venn diagram
+VennDiagram::venn.diagram(
+  x = list(
+    data1, 
+    data2_and_data3),
+  category.names = c("" , ""),
+  filename = here::here("figures", "for-combo", "fig-rnorvegicus-geneoverlap-venndiag.png"),
+  output = output,
+  height = 5, 
+  width = 5, 
+  units= "cm",
+  resolution = 600,
+  lwd = c(2, 2),
+  lty = c(2, 1),
+  fill = c(grey_pal_seq9[7], grey_pal_seq9[7]), 
+  col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
+  cex = 0, # switch to cex = .9 for text
+  fontface = "bold",
+  fontfamily = "Arial",
+  label.col = c(grey_pal_seq9[2]),
+  cat.cex = .2,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.col = c(grey_pal_seq9[3]),
+  cat.pos = c(-27, 27),
+  cat.dist = c(0.055, 0.055),
+  cat.fontfamily = "Arial"
+)
+
 
 #> --------------------------
 
 
 #> Case: Poplar root dataset 
 #> --------------------------
+
+## For shared enriched terms between approaches ---
 
 # the filtered standard dataframe (simplenrich() [highlighted, gene set size limits, ngenes enrich limit])
 pop_stand_results <- pop_stand_res$filtered$dr_a
@@ -537,21 +659,21 @@ pop_lonelycluster_analysis_results <- pop_lonely_cluster_analysis_res$filtered$d
 # Create the source vector
 pop_source_vector <- unique(na.omit(pop_cluefish_results$source))
 
-# For each source in the source vector, run the venns4paper() function
+# For each source in the source vector, run the venns4terms() function
 
 # GO:BP
-venns4paper(
+venns4terms(
   data1 = pop_stand_results,
   data2 = pop_cluefish_results,
   data3 = pop_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = pop_source_vector[1],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-1-for-layout-", gsub(":", "", pop_source_vector[1]), "-pcanadensis.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-pcanadensis-", gsub(":", "", pop_source_vector[1]), "-termoverlap-venndiag.png")),
   height = 3.5, 
   width = 3.5, 
   units= "cm",
   resolution = 600,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[1], paul_tol_pal[1]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -569,18 +691,18 @@ venns4paper(
 )
 
 # KEGG
-venns4paper(
+venns4terms(
   data1 = pop_stand_results,
   data2 = pop_cluefish_results,
   data3 = pop_lonelycluster_analysis_results,
   variable = "term_name",
   source_id = pop_source_vector[2],
-  filename = here::here("figures", "for-combo", paste0("fig-venndiagramm-2-for-layout-", gsub(":", "", pop_source_vector[2]), "-pcanadensis.png")),
+  filename = here::here("figures", "for-combo", paste0("fig-pcanadensis-", gsub(":", "", pop_source_vector[2]), "-termoverlap-venndiag.png")),
   height = 2.2, 
   width = 2.2, 
   units= "cm",
   resolution = 900,
-  lwd = c(1, 1),
+  lwd = c(2, 2),
   lty = c(2, 1),
   fill = c(paul_tol_pal[2], paul_tol_pal[2]), 
   col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
@@ -596,6 +718,63 @@ venns4paper(
   cat.dist = c(0.055, 0.055),
   cat.fontfamily = "Arial"
 )
+
+## For shared considered genes between approaches ---
+
+# the filtered standard dataframe (simplenrich() [highlighted, gene set size limits, ngenes enrich limit])
+pop_stand_results <- pop_stand_res$filtered$dr_g_a
+
+# the final Cluefish dataframe (clustrenrich() [highlighted, gene set size limits, ngenes enrich limit], clustrfusion(), lonelyfishing())
+# !!!!!!!!!! This only what is enriched and kept after the various steps !!!!!!!!!!!
+pop_cluefish_results <- pop_b_lonely_fishres |> 
+  dplyr::filter(new_clustr != "Lonely")
+
+# the lonely cluster analysis dataframe 
+pop_lonelycluster_analysis_results <- pop_lonely_cluster_analysis_res$filtered$dr_a
+
+
+# Enriched terms kept at the end of the standard approach
+data1 <- unique(pop_stand_results$gene_id)
+
+# Enriched terms kept at the end of cluefish
+data2 <- unique(pop_cluefish_results$gene_id)
+
+# Enriched terms kept at the end of the lonely cluster analysis
+data3 <- unique(unlist(strsplit(pop_lonelycluster_analysis_results$intersection, ",")))
+
+# Combine enriched terms from cluefish and the lonely cluster analysis
+data2_and_data3 <- unique(c(data2, data3))
+
+
+# Generate the venn diagram
+VennDiagram::venn.diagram(
+  x = list(
+    data1, 
+    data2_and_data3),
+  category.names = c("" , ""),
+  filename = here::here("figures", "for-combo", "fig-pcanadensis-geneoverlap-venndiag.png"),
+  output = output,
+  height = 5, 
+  width = 5, 
+  units= "cm",
+  resolution = 600,
+  lwd = c(2, 2),
+  lty = c(2, 1),
+  fill = c(grey_pal_seq9[7], grey_pal_seq9[7]), 
+  col = c(grey_pal_seq9[2], grey_pal_seq9[2]), 
+  cex = 0, # switch to cex = .9 for text
+  fontface = "bold",
+  fontfamily = "Arial",
+  label.col = c(grey_pal_seq9[2]),
+  cat.cex = .2,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.col = c(grey_pal_seq9[3]),
+  cat.pos = c(-27, 27),
+  cat.dist = c(0.055, 0.055),
+  cat.fontfamily = "Arial"
+)
+
 
 #> --------------------------
 
