@@ -203,11 +203,11 @@ lonelyfishing <- function(
     
     # Prepare a dataframe to integrate "term_size" and "highlighted" columns from enrichment results
     gostres_4_merge <- clustrenrich_data$gostres$result |>
-      dplyr::select(query, term_name, term_size, highlighted) |>
+      dplyr::select(query, term_name, term_size, highlighted, source) |>
       dplyr::rename(old_clustr = query)
     
     # Merge dataframes
-    dr_c_a_fishing <- merge(dr_c_a_fishing, gostres_4_merge, by = c("old_clustr", "term_name"))
+    dr_c_a_fishing <- merge(dr_c_a_fishing, gostres_4_merge, by = c("old_clustr", "term_name", "source"))
     
     # Remove row repetitions
     dr_c_a_fishing <- unique(dr_c_a_fishing)
