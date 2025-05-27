@@ -325,7 +325,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 2,
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("lonely_fishres_", file_date, "_corrected.rds"), 
+  output_filename = paste0("lonely_fishres_", file_date, ".rds"), 
   overwrite = FALSE
 )
 
