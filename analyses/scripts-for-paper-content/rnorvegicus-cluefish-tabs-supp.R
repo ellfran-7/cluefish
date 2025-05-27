@@ -167,9 +167,10 @@ lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |>
   dplyr::distinct()
 
 # Export merged and filtered cluster data to CSV for supplementary materials
-# write.csv2(lonelyfish_data,
-#            paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+write.csv2(lonelyfish_data,
+          paste0("figures/for-supp/supp-table-lonelyfish-res-rnorvegicus-", Sys.Date(), ".csv"),
+          row.names = FALSE)
+
 
 #> ----------------------------------------
 

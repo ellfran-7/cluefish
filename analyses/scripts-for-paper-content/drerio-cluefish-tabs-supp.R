@@ -145,15 +145,15 @@ dplyr::glimpse(lonelyfishing_data$dr_c_a_fishing)
 
 # Select and filter merged clusters that are highlighted as significant, keeping relevant columns for supplementary results
 lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |> 
-  dplyr::filter(highlighted == TRUE) |>  # Only include highlighted terms
   dplyr::select(old_clustr, new_clustr, term_name, 
                 term_size, term_id, source) |> 
+  dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name) |> 
   dplyr::distinct()
 
-# # Export merged and filtered cluster data to CSV for supplementary materials
-# write.csv2(lonelyfish_data, 
-#            paste0("figures/for-supp/supp-table-lonelyfish-res", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Export merged and filtered cluster data to CSV for supplementary materials
+write.csv2(lonelyfish_data,
+           paste0("figures/for-supp/supp-table-lonelyfish-res", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 

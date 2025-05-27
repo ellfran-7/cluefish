@@ -180,7 +180,7 @@ bg_t_ids_mod <- read.table(paste0("outputs/", file_date, "/bg_t_ids_", file_date
 dr_t_ids <- bg_t_ids_mod[bg_t_ids_mod$transcript_id %in% b_definedCI_mod_onlyids$id_mod,]
 
 # We need the original ids from the study (e.g. A2M_7932)n which are those used in DRomics. This especially needed for plotting later on 
-dr_t_ids <- merge(dr_t_ids, b_definedCI_onlyids, by.x = "transcript_id", by.y = "id_mod")
+dr_t_ids <- merge(dr_t_ids, b_definedCI_mod_onlyids, by.x = "transcript_id", by.y = "id_mod")
 
 
 
@@ -325,7 +325,7 @@ lonely_fishres <- lonelyfishing(
   clustrfusion_data = clustr_fusionres,
   friendly_limit = 2,
   path = paste0("outputs/", file_date, "/"),
-  output_filename = paste0("lonely_fishres_", file_date, ".rds"), 
+  output_filename = paste0("lonely_fishres_", file_date, "_corrected.rds"), 
   overwrite = FALSE
 )
 
