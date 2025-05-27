@@ -208,6 +208,47 @@ lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |>
 
 
 
+
+#>  Intersection matrix of deregulated genes among highlighted and significantly enriched biological functions identified by standard functional enrichment analysis
+#> ----------------------------------------
+
+# Glimpse of the filtered standard enrichment analysis results
+dplyr::glimpse(stand_res$filtered$dr_g_a)
+
+# Group and get the number of unique genes involved in each term
+term_gene_list <- stand_res$filtered$dr_g_a |>
+  dplyr::group_by(term_name) |>
+  dplyr::summarise(genes = list(unique(gene_id))) |> 
+  deframe()
+
+# Compute pairwise intersections
+term_names <- names(term_gene_list)
+n <- length(term_names)
+
+# Create an empty matrix to store intersection sizes
+overlap_matrix <- matrix(0, 
+                         nrow = n, 
+                         ncol = n, 
+                         dimnames = list(term_names, term_names))
+
+# Fill in the matrix
+for (i in seq_len(n)) {
+  for (j in seq_len(n)) {
+    overlap_matrix[i, j] <- length(intersect(term_gene_list[[i]], term_gene_list[[j]]))
+  }
+}
+
+# Save intersection matrix to CSV
+# write.csv2(overlap_matrix,
+#            paste0("figures/for-supp/supp-overlap-matrix-pcanadensis", Sys.Date(), ".csv"),
+#            row.names = FALSE)
+
+#> ----------------------------------------
+#> 
+
+
+
+
 #> Resulting table of the standard enrichment analysis (after filtering) with:
 #>  - function name and ID
 #>  - data source
@@ -288,6 +329,7 @@ library(openxlsx)
 #define sheet names for each data frame
 dataset_names <- list('enrich_data' = enrich_data, 
                       'lonelyfish_data' = lonelyfish_data, 
+                      'overlap_matrix' = overlap_matrix,
                       'lonely_enrich_data' = lonely_enrich_data,
                       'stand_enrich_data' = stand_enrich_data, 
                       'summary_bmd_clusters' = summary_bmd_clusters)
