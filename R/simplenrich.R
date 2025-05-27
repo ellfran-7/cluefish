@@ -31,7 +31,7 @@
 #'
 #' @examples
 
-simplenrich2 <- function(
+simplenrich <- function(
     input_genes,
     bg_genes,
     bg_type = "custom_annotated",
