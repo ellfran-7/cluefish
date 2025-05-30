@@ -7,7 +7,7 @@ This directory contains structured analysis scripts organised in organism and ch
    - `dromics_dre_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
    - `standard_approach_dre_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
 
-*Note: The Cluefish analysis for this main dataset is implemented in the root make.R script rather than as a separate file in this directory. This dataset provided the building blocks for the Cluefish workflow.*
+*Note: The Cluefish analysis for this main dataset is implemented in the root `make.R` script rather than as a separate file in this directory. This dataset provided the building blocks for the Cluefish workflow.*
 
 -  `pcanadensis-phe`: A folder containing pipeline scripts associated to an external dataset (**GSE263776**) aimed to provide further validation behind the Cluefish workflow in the Franklin et al. (submitted) paper. This contains:
    - `dromics_pca_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
