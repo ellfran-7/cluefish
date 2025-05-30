@@ -1,7 +1,7 @@
-#' Cluefish: A tool to optimise biological interpretation of transcriptomic data series
+#' Cluefish: A workflow to optimise biological interpretation of transcriptomic data series
 #' 
 #' @description 
-#' In the broader context, the Cluefish workflow performs over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to uncover smaller, more specific biological functions. It incorporates innovative features such as cluster merging and the recovery of isolated genes through shared biological contexts, enabling a more comprehensive exploration of the data. This script serves as the main entry point for executing each step of the Cluefish workflow, providing guidance to the user before and after each phase.
+#' In the broader context, the Cluefish workflow performs over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to uncover smaller, more specific biological functions. It incorporates innovative features such as cluster merging and the recovery of isolated genes (lonely gene fishing) through shared biological contexts, enabling a more comprehensive exploration of the data. This script serves as the main entry point for executing each step of the Cluefish workflow, providing guidance to the user before and after each phase. This example uses an in-house zebrafish dataset (GSE283957) and is intended to support reproduction of results presented in the associated publication.
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
