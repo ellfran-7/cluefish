@@ -22,9 +22,10 @@
 #> - Number of replicates: 4
 
 
-# If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
-# follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
-# understanding of each step (and if you want to simply use the tool): https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
+# To reproduce the Cluefish workflow results as presented in Franklin et al. (submitted),
+# please follow the steps below carefully. For a more detailed understanding of each phase—
+# or if you're simply looking to apply the tool in your own work—refer to the DRomics vignette: 
+# https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
 
 
 #> 0. Load and list the packages needed

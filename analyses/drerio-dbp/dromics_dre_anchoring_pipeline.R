@@ -4,12 +4,13 @@
 #> 
 #> Case : dose-response anchoring data !!!!!
 #> 
-#> This script applies the DRomics pipeline to the individual enpoint data associated with the publication.
+#> This script applies the DRomics pipeline to the individual endpoint data associated with the publication.
 
 
-# If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
-# follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
-# understanding of each step (and if you want to simply use the tool): https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
+# To reproduce the Cluefish workflow results as presented in Franklin et al. (submitted),
+# please follow the steps below carefully. For a more detailed understanding of each phase—
+# or if you're simply looking to apply the tool in your own work—refer to the DRomics vignette: 
+# https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
 
 
 #> 0. Load and list the packages needed
@@ -78,44 +79,6 @@ write.table(zebra_anchoring_4DRomics,
 
 # Reload the saved file to ensure it was saved correctly.
 zebra_anchoring_4DRomics <- read.table("data/raw-data/zebra_anchoring_dbp_df.txt")
-
-
-
-
-
-# ============ SELECTION OF RESPONSIVE ENDPOINTS AND MODELLING ===============
-
-
-#> -------------------------------------------------------------
-#> Importation, checking and normalization of RNAseq count data 
-#> -------------------------------------------------------------
-
-#> input : raw count data matrix with :
-#   -> first row = dose 
-#   -> first column = item identification (in our case Ensembl Transcript IDs)
-
-#> parameters details :
-# - transfo.method : the method chosen to transform raw counts in log2 scale using
-#                  DESeq2: "rlog" or "vst" (preferably "rlog" as default)
-# - round.counts : put if TRUE if the counts come from Kallisto or Salmon to round
-#                them before treatment 
-
-#> parameter choice : 
-# - transfo.method = "rlog" : performs shrinkage estimation for dispersions 
-#                           to improve stability and interpretability of estimates
-# - round.counts = TRUE : counts come from Salmon, so round counts
-
-
-set.seed(1234) # Fixing the seed to reproduce te results
-
-o <- DRomics::continuousanchoringdata(zebra_anchoring_4DRomics, backgrounddose = 0, check = TRUE)
-
-print(o)
-plot(o) + theme_bw()
-
-#> output : object of class "RNAseqdata", a list with 7 components
-head(o) # check the first 5 rows of the output
-str(o) # check the structure of the output
 
 
 

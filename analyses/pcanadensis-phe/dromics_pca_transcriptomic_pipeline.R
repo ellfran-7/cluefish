@@ -21,9 +21,10 @@
 #> - Number of replicates: 4
 
 
-# If you're trying to reproduce the Cluefish workflow for the paper by Franklin et al. (submitted),
-# follow these steps carefully. It's also recommended to visit the DRomics vignette for a detailed 
-# understanding of each step (and if you want to simply use the tool): https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
+# To reproduce the Cluefish workflow results as presented in Franklin et al. (submitted),
+# please follow the steps below carefully. For a more detailed understanding of each phase—
+# or if you're simply looking to apply the tool in your own work—refer to the DRomics vignette: 
+# https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
 
 
 #> 0. Load and list the packages needed
@@ -34,6 +35,7 @@ require(stringr)
 require(readr)
 require(dplyr)
 require(GEOquery)
+require(readxl)
 
 
 #> 1. Download the Processed Dataset from GEO
@@ -63,14 +65,12 @@ pop_counts_df <- read.table( # or read.csv2()
 # Check the structure of the dataframe to ensure it is loaded correctly.
 str(pop_counts_df)
 
-# =================== TEMPORARY =======================================
+# =================== TEMPORARY FILE =======================================
 
-require(readxl)
-
-pop_roots_counts_df <- read_excel(path = "data/raw-data/Results_NGS2021_12_EndOMIX_Raw_COUNTS_F_R.xlsx", 
+pop_roots_counts_df <- readxl::read_excel(path = "data/raw-data/Results_NGS2021_12_EndOMIX_Raw_COUNTS_F_R.xlsx", 
                             sheet = "Roots")
 
-# =====================================================================
+# ==========================================================================
 
 pop_roots_counts_df <- as.data.frame(pop_roots_counts_df)
 
