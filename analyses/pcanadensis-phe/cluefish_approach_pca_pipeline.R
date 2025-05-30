@@ -1,9 +1,13 @@
 #> =============================================================================
-#> Cluefish: A tool to optimise biological interpretation of transcriptomic data series
+#> Cluefish: A workflow to optimise biological interpretation of transcriptomic data series
 #> =============================================================================
 
 #> This script applies the cluefish approach pipeline for biological interpretation 
-#> of results of the DRomics analysis of the rat liver pfoa transcriptomic dataset
+#> of results of the DRomics analysis of the poplar root transcriptomic dataset
+#> 
+#> NOTE: This pipeline is specifically configured for the poplar root dataset.
+#> 
+#> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 ## Install packages listed in DESCRIPTION (and/or R and Rmd files) ----
@@ -53,30 +57,6 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 # Step 1 is not performed as the species is not referenced in the knowledgebase
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-# Before performing this step, it is recommended to verify if the organism of interest is available in the AnimalTFDB database. 
-# You can check the list of supported species on their website: https://guolab.wchscu.cn/AnimalTFDB4/#/Species.
-
-# If the organism is found in the database, you need to modify the URL by replacing the organism's Latin name (e.g., "Rattus_norvegicus") with the Latin name of your organism. 
-# For example, the URLs for transcription factors (TF) for zebrafish (Danio rerio) and Sprague Dawley rat (Rattus norvegicus) would be:
-# - Zebrafish: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
-# - Sprague Dawley rat: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Rattus_norvegicus_TF"
-
-# Ensure that the URL structure follows the same pattern as shown above to ensure successful data download of both TF and CoTF files.
-
-# dl_regulation_data(
-#   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Rattus_norvegicus_TF",
-#   url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Rattus_norvegicus_Cof",
-#   path = "data/derived-data/",
-#   filename_tf = paste0("Rattus_norvegicus_TF_", file_date, ".txt"),
-#   filename_cof = paste0("Rattus_norvegicus_Cof_", file_date, ".txt"),
-#   overwrite = TRUE
-# )
-
-# If errors occur, it is likely due to a connection issue with the site. You can try again or manually download the files and place them in the "data/derived-data/" folder. Visit the following link to download the files: https://guolab.wchscu.cn/AnimalTFDB4/#/Download.
-# To download the files, click on the organism (in this case, "Rattus norvegicus") and download both the TGF and CoTF files.
-
-
-
 
 #>> STEP 2 - Load the DRomics results
 #>----------------------------------------------
@@ -110,9 +90,9 @@ b_definedCI <- readRDS(file = "data/derived-data/bootres_pop_root_phe_seed1234_5
 #>> STEP 3 - Retrieve deregulated gene identifiers from Ensembl
 #>-------------------------------------------------------------
 
-# During pre-processing in this study, reads were mapped to the Populus trichocarpa genome. Therefor we are searching for Populus trichocarpa gene identifiers.
+# During pre-processing in this study, reads were mapped to the "Populus trichocarpa" genome (V4, Phytozome). Therefor we are searching for "Populus trichocarpa" gene identifiers.
 
-# Nevertheless, the identifiers are missing a part of their their. The Ensembl stable gene IDs of Populus trichocarpa end in ".v4.1" suffix to the gene IDs. We need to add this back.
+# Nevertheless, there element missing from the identifiers. The Ensembl stable gene IDs of Populus trichocarpa end in ".v4.1" suffix to the gene IDs. We need to add this back.
 
 # Create a vector of all the genes from the experiment but adding the suffixe ".v4.1"
 f_id_mod <- paste0(f$omicdata$item, ".v4.1")
@@ -182,12 +162,6 @@ dr_t_ids <- merge(dr_t_ids, b_definedCI_mod_onlyids, by.x = "transcript_id", by.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Step 4 is not performed as Step 1 is not performed
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# dr_t_regs <- getregs(
-#   getids_data = dr_t_ids,
-#   regulator_file = paste0("data/derived-data/Rattus_norvegicus_TF_", file_date, ".txt"),
-#   coregulator_file = paste0("data/derived-data/Rattus_norvegicus_Cof_", file_date, ".txt"))
-
 
 
 
@@ -385,7 +359,7 @@ curves_to_pdf(
   clustrfusion_data = clustr_fusionres,
   id_col_for_curves = "id",
   tested_doses = unique(f$omicdata$dose), 
-  annot_order = c("GO:BP", "KEGG", "WP"),
+  annot_order = c("GO:BP", "KEGG"),
   colorby = "trend",
   addBMD = TRUE,
   scaling = TRUE,
@@ -410,6 +384,16 @@ curves_to_pdf(
 
 #>> ADDITIONAL STEPS: Generation Quarto reports
 #> --------------------------------------------
+
+# IMPORTANT: Before executing this section, please note that the .qmd files referenced below 
+# need to be thoroughly checked and evaluated prior to report generation. If you are using 
+# a different dataset or your own custom dataset, these .qmd files will require  
+# adaptation and adjustment based on your specific results and data structure.
+#
+# DATASET COMPATIBILITY WARNING: These .qmd reports are currently adapted specifically 
+# for the Zebrafish dataset and were not originally generated for the Rat liver or 
+# Poplar root datasets. Users working with alternative datasets should expect to modify 
+# the report templates accordingly to match their data characteristics and analysis outputs.
 
 #>> Generate the cluefish quarto report -------
 

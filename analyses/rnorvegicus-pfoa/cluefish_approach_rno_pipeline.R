@@ -1,9 +1,13 @@
 #> =============================================================================
-#> Cluefish: A tool to optimise biological interpretation of transcriptomic data series
+#> Cluefish: A workflow to optimise biological interpretation of transcriptomic data series
 #> =============================================================================
 
 #> This script applies the cluefish approach pipeline for biological interpretation 
-#> of results of the DRomics analysis of the rat liver pfoa transcriptomic dataset
+#> of results of the DRomics analysis of the rat liver transcriptomic dataset
+#> 
+#> NOTE: This pipeline is specifically configured for the rat liver dataset.
+#> 
+#> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 ## Install packages listed in DESCRIPTION (and/or R and Rmd files) ----
@@ -412,6 +416,16 @@ curves_to_pdf(
 
 #>> ADDITIONAL STEPS: Generation Quarto reports
 #> --------------------------------------------
+
+# IMPORTANT: Before executing this section, please note that the .qmd files referenced below 
+# need to be thoroughly checked and evaluated prior to report generation. If you are using 
+# a different dataset or your own custom dataset, these .qmd files will require  
+# adaptation and adjustment based on your specific results and data structure.
+#
+# DATASET COMPATIBILITY WARNING: These .qmd reports are currently adapted specifically 
+# for the Zebrafish dataset and were not originally generated for the Rat liver or 
+# Poplar root datasets. Users working with alternative datasets should expect to modify 
+# the report templates accordingly to match their data characteristics and analysis outputs.
 
 #>> Generate the cluefish quarto report -------
 

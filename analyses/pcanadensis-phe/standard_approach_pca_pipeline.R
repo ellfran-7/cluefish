@@ -3,12 +3,15 @@
 #> =============================================================================
 
 #> This script applies the standard approach pipeline for biological interpretation 
-#> of results of the DRomics analysis of the poplar root phe transcriptomic dataset
+#> of results of the DRomics analysis of the poplar root transcriptomic dataset
 
-#> Before continuing you will need to follow the Cluefish workflow in the 
+#> PREREQUISITES: Before continuing you will need to follow the Cluefish workflow in the 
 #> "cluefish_approach_pca_pipeline.R" file at the root up to Step 3, in order 
 #> to retrieve the bg_t_ids dataset holding the backgrounds identifiers 
 #> retrieved from Ensembl
+#> 
+#> NOTE: This pipeline is specifically configured for the poplar root dataset.
+#> 
 #> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # In a first, the standard approach begins similarly to the Cluefish approach

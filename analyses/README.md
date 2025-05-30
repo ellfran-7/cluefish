@@ -3,8 +3,8 @@
 This directory contains structured analysis scripts organised in organism and chemical exposure folders, corresponding to different datasets, and contains in this instance three main folders:
 
 -  `drerio-dbp`: A folder containing pipeline scripts associated to the main dataset from Franklin et al. (submitted). This contains:
-   - `dromics_dre_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
    - `dromics_dre_anchoring_pipeline`: Step-by-step `DRomics` pipeline for processing dose-response anchoring measurements (body length, eye surface) providing experimental validation for Cluefish workflow results.
+   - `dromics_dre_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
    - `standard_approach_dre_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
 
 *Note: The Cluefish analysis for this main dataset is implemented in the root make.R script rather than as a separate file in this directory. This dataset provided the building blocks for the Cluefish workflow.*
@@ -22,8 +22,8 @@ These pipelines are formatted to enable the reproduction of the results required
 
 For help with the `DRomics` R package, visit the [DRomics documentation](https://lbbe-software.github.io/DRomics/).
 
-An additional directory named `scripts-for-paper-content` holds additional file scripts, specifically to generate most of the figures and tables in the paper associated to Cluefish (Franklin et al. submitted). 
+An additional directory named `scripts-for-paper-content` holds additional file scripts, specifically to generate most of the figures and tables in the paper associated to Cluefish (Franklin et al. submitted).
 
 ## 📍Note
 
-The suggested content and structure here follow best practices for research compendiums. However, feel free to organize and store your project files in a way that best suits your needs and workflow.
+The suggested content and structure here follow best practices for research compendiums. However, feel free to organise and store your project files in a way that best suits your needs and workflow.
