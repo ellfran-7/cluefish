@@ -54,6 +54,8 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 # Before performing this step, it is recommended to verify if the organism of interest is available in the AnimalTFDB database. 
 # You can check the list of supported species on their website: https://guolab.wchscu.cn/AnimalTFDB4/#/Species.
 
+# If the organism is not found in the database, you may skip this step, and also the related Step 4. 
+
 # If the organism is found in the database, you need to modify the URL by replacing the organism's Latin name (e.g., "Rattus_norvegicus") with the Latin name of your organism. 
 # For example, the URLs for transcription factors (TF) for zebrafish (Danio rerio) and Sprague Dawley rat (Rattus norvegicus) would be:
 # - Zebrafish: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
