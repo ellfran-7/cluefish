@@ -1,6 +1,6 @@
 # 📄Content
 
-This directory is intended for holding the raw data needed for the first steps of the project. Specifically, it should contain the raw count data, which should be downloaded here. If you are using DRomics, this data will be fed into the DRomics pipeline (for example `analyses/dromics_transcriptomic_pipeline.R`). Any additional raw data (e.g., anchoring data) should also be stored in this directory.
+This directory is intended for holding the raw data needed for the first steps of the project. Specifically, it should contain the raw count data, which should be downloaded here. If you are using DRomics, this data will be fed into the DRomics pipeline (e.g. `analyses/dromics_transcriptomic_pipeline.R`). Any additional raw data (e.g., anchoring data) should also be stored in this directory.
 
 ## 📍Note
 
