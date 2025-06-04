@@ -66,7 +66,7 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
   url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
-  path = "data/derived-data/",
+  path = paste0("outputs/", file_date, "/"),
   filename_tf = paste0("Danio_rerio_TF_", file_date, ".txt"),
   filename_cof = paste0("Danio_rerio_Cof_", file_date, ".txt"),
   overwrite = FALSE
@@ -158,8 +158,8 @@ dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% b_definedCI$id,]
 
 dr_t_regs <- getregs(
   getids_data = dr_t_ids,
-  regulator_file = paste0("data/derived-data/Danio_rerio_TF_", file_date, ".txt"),
-  coregulator_file = paste0("data/derived-data/Danio_rerio_Cof_", file_date, ".txt"))
+  regulator_file = paste0("outputs/", file_date, "/Danio_rerio_TF_", file_date, ".txt"),
+  coregulator_file = paste0("outputs/", file_date, "/Danio_rerio_Cof_", file_date, ".txt"))
 
 
 
