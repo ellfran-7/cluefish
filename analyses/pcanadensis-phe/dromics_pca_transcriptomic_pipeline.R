@@ -5,7 +5,7 @@
 #> This script applies the DRomics pipeline to an external dataset:
 #> 
 #> Dataset background information:
-#> - Authors: Gréaut L, Blaudez D, Le Jean M, Gallois N, Paysant Le-Roux C, Huguet S, Beguiristain T, Billoir E, Cébron A 
+#> - Authors: Gréau L, Blaudez D, Le Jean M, Gallois N, Paysant Le-Roux C, Huguet S, Beguiristain T, Billoir E, Cébron A 
 #> - Title: Transcriptomics highlights dose‑dependent response of poplar to a phenanthrene contamination
 #> - GEO accession: GSE263776
 #> - Publish date: April 08, 2025
