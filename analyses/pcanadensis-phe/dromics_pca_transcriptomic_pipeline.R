@@ -44,39 +44,88 @@ require(readxl)
 # Download the count dataset from the GEO repository.
 # This can be done manually or as follows:
 download.file(
-  url = "https://www.ncbi.nlm.nih.gov/geo/download/name-of-file",
-  destfile = "data/raw-data/name-of-file-and-extension.gz"
+  url = "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE263776&format=file",
+  destfile = "data/raw-data/GSE263776_RAW.tar",
+  mode = "wb"
 )
 
-# Uncompress the .gz file
-R.utils::gunzip("data/raw-data/name-of-file-and-extension.gz", 
-                remove = FALSE)
+# Extract files from the tar archive
+untar("data/raw-data/GSE263776_RAW.tar",
+      exdir = "data/raw-data/GSEA263776_STAR_files/")
+
+# Get root files
+all_files <- list.files("data/raw-data/GSEA263776_STAR_files/")
+root_files <- all_files[grepl("_R_", all_files)]
+
+# Gunzip each file
+for(file in root_files) {
+  file_path <- file.path("data/raw-data/GSEA263776_STAR_files", file)
+  R.utils::gunzip(filename = file_path,
+                  remove = FALSE)  
+  cat("Extracted:", file, "\n")
+}
 
 
 
-#> 2. Load the Datasets into R
-#> ---------------------------
 
-# Load the count dataset. This will be referred to as `pop_counts_df`.
-pop_counts_df <- read.table( # or read.csv2()
-  file = "data/raw-data/name-of-file-and-extension",
-  header = FALSE)
+#> 2. Load the Datasets into R, and reformat into one table
+#> --------------------------------------------------------
 
-# Check the structure of the dataframe to ensure it is loaded correctly.
-str(pop_counts_df)
 
-# =================== TEMPORARY FILE =======================================
+# Get txt files from extracted data
+all_files <- list.files("data/raw-data/GSEA263776_STAR_files/")
+unzipped_root_files <- all_files[grepl("\\.txt$", all_files)]
 
-pop_roots_counts_df <- readxl::read_excel(path = "data/raw-data/Results_NGS2021_12_EndOMIX_Raw_COUNTS_F_R.xlsx", 
-                            sheet = "Roots")
+# Initialize list to hold count data
+count_data_list <- list()
 
-# ==========================================================================
+# Process each count file
+for(i in 1:length(unzipped_root_files)) {
+  file_path <- file.path("data/raw-data/GSEA263776_STAR_files/", unzipped_root_files[i])
+  
+  # Load count data
+  df <- read.table(file_path)
+  
+  # Parse filename for sample info
+  filename <- unzipped_root_files[i]
+  concentration <- gsub(".*_R_([0-9]+)PHE_.*", "\\1", filename)
+  replicate <- gsub(".*PHE_([0-9]+)\\.txt", "\\1", filename)
+  
+  # Build column name
+  col_name <- paste0("R_", concentration, "PHE_rep", replicate)
+  
+  # Extract gene IDs from first file only
+  if(i == 1) {
+    count_data_list[["Gene_ID"]] <- gsub("\\.v4\\.1$", "", df$V1)
+  }
+  
+  # Store V4 column (count data)
+  count_data_list[[col_name]] <- df$V4
+  
+  cat("Processed:", filename, "->", col_name, "\n")
+}
 
-pop_roots_counts_df <- as.data.frame(pop_roots_counts_df)
+# Build final data frame
+pop_roots_counts_df <- data.frame(count_data_list, stringsAsFactors = FALSE)
+
+# Set column order by concentration
+concentration_order <- c("0", "100", "200", "400", "700", "1000", "1500", "2000")
+ordered_cols <- c("Gene_ID")
+
+for(conc in concentration_order) {
+  for(rep in 1:4) {
+    col_name <- paste0("R_", conc, "PHE_rep", rep)
+    if(col_name %in% names(pop_roots_counts_df)) {
+      ordered_cols <- c(ordered_cols, col_name)
+    }
+  }
+}
+
+# Apply column ordering
+pop_roots_counts_df <- pop_roots_counts_df[, ordered_cols]
 
 # Check the structure of the dataframe to ensure it is appropriate
 str(pop_roots_counts_df)
-
 
 # Convert the column names from "R_2000PHE_rep2" to "2000"
 colnames <- names(pop_roots_counts_df)
