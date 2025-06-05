@@ -171,7 +171,7 @@ Here we will go through the main steps one by one !
 
 ### The case study
 
-In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of dibutyl phthalate. The experiment and resulting dataset is further described in our paper (Franklin et al., submitted) (add link/DOI)!!!!!!!!!!!!!!!) and you may access the count data at GEO, under the accession number [GSE283957](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957).
+In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of dibutyl phthalate. The experiment and resulting dataset is further described in the associated paper [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1) and you may access the count data at GEO, under the accession number [GSE283957](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957).
 
 
 
@@ -635,7 +635,7 @@ The function <span class="homemade-function">`clustrfiltr()`</span> applies this
 The choice of size limit depends on factors such as the type of study, the organism, and prior steps in the PPI network creation and clustering. Setting a higher size limit will retain fewer, larger clusters, while a lower limit will include both large and small clusters. Note that:
 
 *  **Large** clusters may lack specific biological context due to their broad inclusivity.
-*  **Small** clusters might not represent distinct biological complexes and could be specific to particular cases or interactions.
+*  **Small** clusters may suffer from limited statistical support and might not represent distinct biological complexes. Instead, they could reflect case-specific or transient interactions.
 
 Consider these factors when deciding on an appropriate size limit.
 
