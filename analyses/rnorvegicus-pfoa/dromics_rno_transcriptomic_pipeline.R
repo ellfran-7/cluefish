@@ -49,7 +49,7 @@ download.file(
 )
 
 # Uncompress the .gz file
-R.utils::gunzip("data/raw-data/GSE147072_SRA_20_Chemical_matrix.txt.gz", 
+R.utils::gunzip(filename = "data/raw-data/GSE147072_SRA_20_Chemical_matrix.txt.gz", 
                 remove = FALSE)
 
 # Download the series matrix file from the GEO repository.
