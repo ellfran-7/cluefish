@@ -42,17 +42,17 @@ knitr::opts_chunk$set(
 
 <!--------------- Add Cluefish graphical abstract from paper -->
 
-
-## Preface
-
-This vignette is intended to help users who wish to use Cluefish. The first part of this vignette is dedicated to an introduction of the context in which Cluefish was developped, followed by an overview of the workflow. The second part is dedicated to a step-by-step guide of the main Cluefish workflow using an example dose-response (DR) dataset.
-
 <center>
 
 <img src="figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
 <p align="center" style="color: grey;"><em>Graphical abstract of the Cluefish workflow.</em></p>
 
 </center>
+
+## Preface
+
+This vignette is intended to help users who wish to use Cluefish. The first part of this vignette is dedicated to an introduction of the context in which Cluefish was developped, followed by an overview of the workflow. The second part is dedicated to a step-by-step guide of the main Cluefish workflow using an example dose-response (DR) dataset.
+
 
 ## Introduction
 
