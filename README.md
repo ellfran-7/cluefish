@@ -92,11 +92,11 @@ to Cluefish vignette</a></strong>
 ------------------------------------------------------------------------
 
 <center>
-
-<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish schematic" />
-
+<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
+<p align="center" style="color: grey;">
+<em>Graphical abstract of the Cluefish workflow.</em>
+</p>
 </center>
-
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
@@ -231,9 +231,10 @@ The raw count data is publicly available on NCBI GEO and can be accessed
 with **GSE283957**.
 
 <center>
-
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
-
+<p align="center" style="color: grey;">
+<em>Schematic of the Cluefish workflow.</em>
+</p>
 </center>
 <p align="right">
 

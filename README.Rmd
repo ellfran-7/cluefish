@@ -78,6 +78,13 @@ Cluefish is designed to be adaptable to a wide range of organisms, both model an
 
 ---------------------------
 
+<center>
+
+<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
+<p align="center" style="color: grey;"><em>Graphical abstract of the Cluefish workflow.</em></p>
+
+</center>
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
@@ -185,6 +192,7 @@ A schematic overview of the Cluefish workflow is shown below. For a full, step-b
 <center>
 
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
+<p align="center" style="color: grey;"><em>Schematic of the Cluefish workflow.</em></p>
 
 </center>
 
