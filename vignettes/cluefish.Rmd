@@ -37,8 +37,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-<img src="../man/figures/cluefish-logo-with-text.png" align="right" width="150"/>
-
 
 <!-- Introduction  -->
 
