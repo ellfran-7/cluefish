@@ -236,7 +236,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 ## License
 
-This project is distributed under the CeCILL Free Software License Agreement v2.1. See `LICENSE.txt` for more information.
+This project is distributed under the CeCILL Free Software License Agreement v2.1 (CECILL-2.1). See `LICENSE.txt` for more information.
 
 CECILL-2.1 is compatible with GNU GPL. See the [official CeCILL site](http://www.cecill.eu/index.en.html) for more information.
 
@@ -254,7 +254,7 @@ Please note that the creative assets, such as the logos and schematics associate
 
 If you have any need that is not yet covered, any feedback on Cluefish, or anything other question, feel free to contact me !
 
-Ellis Franklin - [\@elffran7](https://twitter.com/elffran7) - [ellis.franklin\@univ-lorraine.fr](mailto:ellis.franklin@univ-lorraine.fr){.email}
+Ellis Franklin - [Website](https://ellfranklin.com/) - [LinkedIn](https://www.linkedin.com/in/ellis-franklin-6188831ba/) [Bluesky](https://bsky.app/profile/elfrank7.bsky.social) - [ellis.franklin\@univ-lorraine.fr](mailto:ellis.franklin@univ-lorraine.fr){.email}
 
 Project Link: <https://github.com/ellfran-7/cluefish>
 

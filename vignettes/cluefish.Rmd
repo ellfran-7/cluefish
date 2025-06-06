@@ -1050,7 +1050,7 @@ To generate these reports, use the custom `render_qmd()` function, which builds 
 
 ## License
 
-The **Cluefish** project is distributed under the [CECILL v2.1 license](https://github.com/ellfran-7/cluefish/blob/main/LICENSE). 
+The **Cluefish** project code is distributed under the [CECILL v2.1 license](https://github.com/ellfran-7/cluefish/blob/main/LICENSE). Illustrations and figures are licensed under [CC-BY-SA-4.0 license](https://choosealicense.com/licenses/cc-by-sa-4.0/)
 
 ## Session info
 ```{r echo = FALSE}
