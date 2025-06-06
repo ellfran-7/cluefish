@@ -93,7 +93,7 @@ to Cluefish vignette</a></strong>
 
 <center>
 
-<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish schematic" width="600"/>
+<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish schematic" />
 
 </center>
 
