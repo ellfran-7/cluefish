@@ -241,10 +241,10 @@ pop_stand_res <- readRDS(here::here("outputs", pop_file_date, paste0("standard_p
 
 #> -----------------------------------------------------------------------------
 #> **Main Figure 2.**
-#> Title : ??????.
+#> Short title : Significantly enriched biological functions (left panel) and involved deregulated genes for zebrafish, rat liver, and poplar root datasets.
 #> -----------------------------------------------------------------------------
 
-#> In this section, we will generate the Venn diagrams of shared identified enriched biological functions and pathways for each database tGO:BP, KEGG and/or WP) between the results of the standard and cluefish approaches. 
+#> In this section, we generate Venn diagrams for each dataset to show the overlap of significantly enriched biological functions (by database and approach) and the deregulated genes involved in these functions between the standard and cluefish approaches.
 #> The Venn diagrams are saved as .png files and are combined afterwards to create the composite plot.
 
 #> -----------------------------------------------------------------------------
@@ -780,7 +780,8 @@ VennDiagram::venn.diagram(
 
 
 # Figure composition note: 
-# We generated a total of 8 PNG files for the Venn diagrams. To create the final composite figure as presented in the manuscript, these images were combined in PowerPoint. 
+# ------------------------
+# We generated a total of 12 PNG files for the Venn diagrams. To create the final composite figure as presented in the manuscript, these images were combined in PowerPoint. 
 # Due to challenges with customizing Venn diagrams directly in R (particularly text overlapping with circles), we adopted a two-step approach: first generating diagrams with text to determine counts, then creating clean versions without text. This allowed us to manually position text labels in PowerPoint for optimal placement and readability in the final figure.
 
 
@@ -792,10 +793,10 @@ VennDiagram::venn.diagram(
 
 #> -----------------------------------------------------------------------------
 #> **Main Figure 3.**
-#> Title : ???????????????.
+#> Short title : Results of the Cluefish workflow applied to the zebrafish dataset. 
 #> -----------------------------------------------------------------------------
 
-#> In this section, we will generate and combine a sensitivity plot, and curvesplots into one single composite plot for the **zebrafish** dataset.
+#> In this section, we generate and combine a sensitivity plot of clusters, and cluster-wise curvesplots into one single composite plot for the **zebrafish** dataset.
 #> This composition is done with the <patchwork> package. 
 
 #> -----------------------------------------------------------------------------
@@ -1057,7 +1058,7 @@ my_figs <- officer::read_pptx() |>
 
 #> -----------------------------------------------------------------------------
 #> **Main Figure 4.**
-#> Title : Dose-response curves and computed benchmark dose (BMD) points for deregulated zebrafish transcripts and individual endpoints.
+#> Short title : Dose-response curves and computed benchmark dose (BMD) points for deregulated zebrafish transcripts and individual endpoints. 
 #> -----------------------------------------------------------------------------
 
 #> In this section, we will generate and combine dose-response curves plots of :
@@ -1225,7 +1226,7 @@ b_eyegenes <- merge(eye_gene_ids, zebra_b_definedCI,  by = "id")
 
 #  Add a logical column if the gene is a crystallin or not
 crystalgenes_df4drplots <- b_eyegenes |> 
-  dplyr::mutate(gene_family = ifelse(grepl("cry", gene_name), "cristallin", "other eye-related processes"))
+  dplyr::mutate(gene_family = ifelse(grepl("cry", gene_name), "crystallin", "other eye-related processes"))
 
 (
   cp_crystaleyegenes <- DRomics::curvesplot(
@@ -1247,7 +1248,7 @@ crystalgenes_df4drplots <- b_eyegenes |>
     xlab("Dose (μg/L) (in log scale)") + 
     ylab("Signal (scaled)") +
     labs(color = "Gene family") +
-    scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = c("cristallin" = "#f6618c", "other eye-related processes" = "#aabcc2")) +
+    scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = c("crystallin" = "#f6618c", "other eye-related processes" = "#aabcc2")) +
     theme_light()
   
 )
