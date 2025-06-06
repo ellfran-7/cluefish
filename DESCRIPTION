@@ -28,7 +28,7 @@ Authors@R: c(
            role    = c("ctb"),
            email   = "jeremie.ohanessian@univ-lorraine.fr",
            comment = c(ORCID = "0009-0007-3909-3477")))
-Description: A specialised bioinformatics workflow designed for improving biological interpretation of transcriptomic data series. Using 'Cluefish', you may consider a larger portion of the dataset of interest for biological interest and improve functional enrichment sensitivity towards smaller and more specific biological functions.
+Description: A free and open-source, semi-automated R workflow designed for untargeted, comprehensive biological interpretation of transcriptomic data series. Cluefish applies over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to identify smaller, more specific biological functions. Innovative features, including cluster merging and recovery of isolated genes through shared biological contexts, enable a more complete exploration of the data. 
 URL: https://ellfran-7.github.io/cluefish/
 BugReports: https://github.com/ellfran-7/cluefish
 License: CECILL-2.1
