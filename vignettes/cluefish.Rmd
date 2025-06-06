@@ -51,7 +51,7 @@ This vignette is intended to help users who wish to use Cluefish. The first part
 
 <center>
 
-<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
+<img src="figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
 <p align="center" style="color: grey;"><em>Graphical abstract of the Cluefish workflow.</em></p>
 
 </center>
@@ -94,7 +94,7 @@ Cluefish is composed of 10 main steps:
 
 <center>
 
-<img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
+<img src="figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
 <p align="center" style="color: grey;"><em>Schematic of the Cluefish workflow.</em></p>
 
 </center>
