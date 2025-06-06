@@ -47,7 +47,7 @@ knitr::opts_chunk$set(
 
 ## Preface
 
-This vignette is intended to help users who wish to use Cluefish. The first part of this vignette is dedicated to an introduction of the context in which Cluefish was developped, followed by an overview of the workflow. The second part is dedicated to a step-by-step guide of the main Cluefish workflow using an example dataset.
+This vignette is intended to help users who wish to use Cluefish. The first part of this vignette is dedicated to an introduction of the context in which Cluefish was developped, followed by an overview of the workflow. The second part is dedicated to a step-by-step guide of the main Cluefish workflow using an example dose-response (DR) dataset.
 
 ## Introduction
 
@@ -61,14 +61,16 @@ FE approaches have evolved in four generations: Over-Representation Analysis (OR
 
 Each generation introduced improvements by accounting for gene co-expression, pathway topology, and network crosstalk. However, PT and NT-based approaches face limitations due to incomplete pathway and network information for lesser studied organisms, making ORA and FCS the most widely used methods [@liu2017].
 
+While these earlier methods are commonly applied to transcriptomic data with two or three conditions, dealing with data involving many ordered conditions—referred to as “data series”—poses substantial complexity.
+
 In dose-response (DR) studies, which explore the relationship between exposure and biological effect, DR omics analyses play a critical role [@lovell2016]. Unlike standard differential expression analyses, DR methods, such as the [`DRomics`](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package [@larras2018], model the full DR relationship of each transcript rather than just fold-change between conditions. From these models, a benchmark dose (BMD) is calculated for each transcript : a dose that represents a specific change in response, indicating a gene’s sensitivity to a stressor [@committee2017].
 
-While differential gene expression analysis provides fold-change values and their associated p-values, modeling approaches, such as `DRomics`, characterize the entire DR relationship. PT-based enrichment and FCS, which rely on fold-change values, are therefore not adapted for functional enrichment in a DR context [@khatri2012]. ORA is currently the only suitable method available to complement DR modeling, as it exclusively uses deregulaged gene lists. However, ORA comes with several other limitations. The enrichment results, often based on Fisher’s Exact Tests, can be biased towards broad biological functions, since using all deregulated genes makes it harder to reach statistical significance for smaller or specialized functions. This tendency is intrinsically tied to the granularity of gene sets in certain databases (e.g., GO). Gene sets associated to a biological process/pathway may be overly specific, while others are too general, potentially compromising the relevance of the analysis [@karp2021; @mubeen2022]. Additionally, gene sets may vary in specificity, and results often reflect only part of the deregulated gene list. Therefore, ORA alone (hereafter referred to as the "**standard approach**") is insufficient for interpreting complex DR data, and combining additional methods is essential to capture a fuller and more precise view of the biological context.
+While differential gene expression analysis provides fold-change values and their associated p-values, modelling approaches, such as `DRomics`, characterise the entire DR relationship. PT-based enrichment and FCS, which rely on fold-change values, are therefore not adapted for functional enrichment in a DR context [@khatri2012]. ORA is currently the only suitable method available to complement DR modelling, as it exclusively uses deregulated gene lists. However, ORA comes with several other limitations. The enrichment results, often based on Fisher’s Exact Tests, can be biased towards broad biological functions, since using all deregulated genes makes it harder to reach statistical significance for smaller or specialised functions. This tendency is intrinsically tied to the granularity of gene sets in certain databases (e.g., GO). Gene sets associated to a biological process/pathway may be overly specific, while others are too general, potentially compromising the relevance of the analysis [@karp2021; @mubeen2022]. Additionally, gene sets may vary in specificity, and results often reflect only part of the deregulated gene list. Therefore, ORA alone (hereafter referred to as the "**standard approach**") is insufficient for interpreting complex DR data, and combining additional methods is essential to capture a fuller and more precise view of the biological context.
 
 
 ### Overview of Cluefish
 
-To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) (Franklin et al., submitted), a free and open-source, semi-automated workflow designed for comprehensive and untargeted exploration of DR transcriptomic data. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
+To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1), a free and open-source, semi-automated workflow designed for comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
 Cluefish is composed of 10 main steps:
 
@@ -122,7 +124,7 @@ Additionally, Cluefish relies on external open source software for an intermedia
 
 1.  **Cytoscape**:
     
-    Cluefish uses Cytoscape in order to visualize PPI networks. Install Cytoscape from their [download page](https://cytoscape.org/download.html).
+    Cluefish uses Cytoscape in order to visualise PPI networks. Install Cytoscape from their [download page](https://cytoscape.org/download.html).
 
 2.  **Required Cytoscape Apps**:
     
@@ -139,7 +141,7 @@ Additionally, Cluefish relies on external open source software for an intermedia
 
 ## Naming Convention
 
-To enhance consistency and readability, we have incorporated a standardized naming convention for data files, inputs, intermediate objects, and outputs:
+To enhance consistency and readability, we have incorporated a standardised naming convention for data files, inputs, intermediate objects, and outputs:
   
 1.  **Data type**:
     -   `dr`: deregulated data (only deregulated items)
@@ -173,7 +175,9 @@ Here we will go through the main steps one by one !
 
 In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of dibutyl phthalate. The experiment and resulting dataset is further described in the associated paper [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1) and you may access the count data at GEO, under the accession number [GSE283957](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957).
 
-
+::: note
+In addition to the zebrafish dataset used in this vignette, two external transcriptomic datasets were analysed in the associated study: the rat liver dataset from Gwinn *et al.* ([GSE147072](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147072)) and the poplar root dataset from Gréau *et al.* ([GSE263776](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE263776)). Both datasets are publicly available through the GEO database.You may find their analysis files in the repository itself.
+:::
 
 ### Before walking
 
@@ -215,7 +219,7 @@ Before proceeding, check if your organism of interest is available in the Animal
 
 To download data for a different species, replace "`Danio_rerio`" in the URL with the Latin name of your organism.
 
-Use the <span class="homemade-function">`dl_regulation_data()`</span> function downloads the TF and CoTF data files to a specified directory. Customize the file paths and names by setting the function arguments as shown below:
+Use the <span class="homemade-function">`dl_regulation_data()`</span> function downloads the TF and CoTF data files to a specified directory. Customise the file paths and names by setting the function arguments as shown below:
 
 ```{r, eval = FALSE}
 dl_regulation_data(
@@ -253,7 +257,7 @@ Multiple identifiers are available for transcripts and genes.
 Pay special attention to the type of transcript identifier used, as this will be crucial for the next step. For instance, "**ENSDART00000080481.6**" is the *Ensembl transcript stable ID* for the *rxraa-201*.
 
 ***
-<span class="italic-grey">While the inputs can be derived from any selection method, Cluefish was optimised to work seamlessly with the results from `DRomics`. In addition, Cluefish leverages some of `DRomics` visualization functions and modelling metrics to provide deeper insights into the biological interpretation of the data.</span>
+<span class="italic-grey">While the inputs can be derived from any selection method, Cluefish was optimised to work seamlessly with the results from `DRomics`. In addition, Cluefish leverages some of `DRomics` visualisation functions and modelling metrics to provide deeper insights into the biological interpretation of the data.</span>
 
 ***
 
@@ -312,7 +316,7 @@ To do so :
     biomaRt::listMarts()
     biomaRt::listEnsembl()
     ```
-The main Ensembl BioMart service provides annotations for vertebrate genomes. For annotations of Protists, Metazoa, and Fungi, specialized BioMart interfaces are also available. We can use the `listEnsemblGenomes()`function to list these options:
+The main Ensembl BioMart service provides annotations for vertebrate genomes. For annotations of Protists, Metazoa, and Fungi, specialised BioMart interfaces are also available. We can use the `listEnsemblGenomes()`function to list these options:
     ```{r, eval = FALSE}
     biomaRt::listEnsemblGenomes()
     ```
@@ -360,7 +364,7 @@ For more information on each argument of the function, run `?cluefish::getids()`
 <details>
   <summary>Understand `gene_id`, `gene_name` and `other_id` usage</summary>
   
-  -   **`gene_id`**: This identifier is essential for downstream steps, such as querying the protein-protein interaction (PPI) network ([Step 5]{#step5}) and performing functional enrichment using g:profiler ([Step 7]{#step7}). For instance, with *Danio rerio* as our organism, the `ensembl_gene_id` is supported by both the STRING and g:profiler database, minimizing the need for additional ID conversions and ensuring compatibility across resources.
+  -   **`gene_id`**: This identifier is essential for downstream steps, such as querying the protein-protein interaction (PPI) network ([Step 5]{#step5}) and performing functional enrichment using g:profiler ([Step 7]{#step7}). For instance, with *Danio rerio* as our organism, the `ensembl_gene_id` is supported by both the STRING and g:profiler database, minimising the need for additional ID conversions and ensuring compatibility across resources.
   -   **`gene_name`**:  This identifier enhances biological interpretability by providing descriptive labels, such as the `external_gene_name` or `description`. These labels offer intuitive gene names that clarify gene functions or roles in biological processes, aiding in result interpretation and annotation.
   -   **`other_id`**: Additional identifiers can be rerquested if there are other annotation needs, such as protein IDs or alternative identifiers related to specific transcripts or gene annotations. 
 
@@ -389,7 +393,7 @@ When duplicates are found, the function assigns unique names to `gene_name` usin
 
 If no `gene_name` is found for certain transcripts, the function assigns "`Unknown`" and applies the same **`_g#t#`** numbering (e.g., **`Unknown_g1t1`**, **`Unknown_g1t2`**).
 
-This systematic labeling helps make each transcript-gene relationship unique, aiding in clear interpretation and visualization of results.
+This systematic labeling helps make each transcript-gene relationship unique, aiding in clear interpretation and visualisation of results.
 
 </details>
 
@@ -444,7 +448,7 @@ dplyr::glimpse(dr_t_regs)
 
 ### Step 5: Construct and retrieve the clustered protein-protein interaction (PPI) network {.tabset #step5}
 
-This step involves creating a clustered protein-protein interaction (PPI) network using Cytoscape, an external visualization tool. Start by saving the R output to a file:
+This step involves creating a clustered protein-protein interaction (PPI) network using Cytoscape, an external visualisation tool. Start by saving the R output to a file:
 
 ```{r, eval = FALSE}
 write.table(dr_t_regs, file = "your/chosen/path/filename.txt", row.names = FALSE, sep = "\t")
@@ -676,7 +680,7 @@ table(dr_t_clustrs_filtr$kept$clustr)
 
 ### Step 7: Perform cluster-wise functional enrichment {#step7}
 
-This step applies Over-Representation Analysis (ORA) to characterize each cluster using the `gprofiler2` R package [@kolberg2020], which interfaces with g:Profiler's [@kolberg2023] ressources and functions. The g:GOst function performs ORA across multiple gene lists, analyzing against sources such as GO, KEGG, and WP. For more information on g:Profiler and g:GOst, visit the web interface [here](https://biit.cs.ut.ee/gprofiler/gost). 
+This step applies Over-Representation Analysis (ORA) to characterise each cluster using the `gprofiler2` R package [@kolberg2020], which interfaces with g:Profiler's [@kolberg2023] ressources and functions. The g:GOst function performs ORA across multiple gene lists, analysing against sources such as GO, KEGG, and WP. For more information on g:Profiler and g:GOst, visit the web interface [here](https://biit.cs.ut.ee/gprofiler/gost). 
 
 The <span class="homemade-function">`clustrenrich()`</span> function, built on g:GOst, performs cluster-wise ORA. 
 
@@ -684,7 +688,7 @@ The function applies g:GOst's highlighting GO driver terms by considering the un
 
 Consider the following g:GOst key options: 
 
-*  `sources`: Functional data sources to analyze against (e.g. "GO", "KEGG") 
+*  `sources`: Functional data sources to analyse against (e.g. "GO", "KEGG") 
 *  `domain_scope`: Background choice (e.g. "annotated", "known", "custom")
 *  `correction_method`: Multiple testing correction method, e.g., FDR
 *  `user_threshold`: P-value threshold for significance, e.g. 0.05
@@ -822,7 +826,7 @@ dplyr::glimpse(clustr_fusionres)
 
 ### Step 9: Fish lonely genes {#step9}
 
-Genes not assigned to any cluster are referred to as *lonely genes*. These genes are not typically explored because they do not contribute to functional enrichment, and thus, they do not help in characterizing the data. This step involves "fishing" these *lonely genes* into existing clusters.
+Genes not assigned to any cluster are referred to as *lonely genes*. These genes are not typically explored because they do not contribute to functional enrichment, and thus, they do not help in characterising the data. This step involves "fishing" these *lonely genes* into existing clusters.
 
 ***
 <span class="italic-grey">Genes become lonely in one of two cases :</span> 
@@ -837,7 +841,7 @@ To "fish" these genes meaningfully, the <span class="homemade-function">`lonelyf
 Each lonely gene has a **friendliness** metric, representing the number of potentiel clusters it can be incorporated into. The **friendliness filter** allows the user to set a limit to this metric, solely fishing genes that fall below this limit, while genes that exceed the limit remain in the lonely cluster.
 
 ***
-<span class="italic-grey"> Low values of this limit, such as 1 to 3, result in fewer lonely genes being incorporated but reduce redundancy between clusters. Although this approach does not fish as much, it ensures that lonely genes associated with a wide range of biological functions are not distributed across many clusters, thereby minimizing noise in the results. By default, the limit is set to 0, meaning it is not applied, and all lonely genes eligible for fishing are incorporated.
+<span class="italic-grey"> Low values of this limit, such as 1 to 3, result in fewer lonely genes being incorporated but reduce redundancy between clusters. Although this approach does not fish as much, it ensures that lonely genes associated with a wide range of biological functions are not distributed across many clusters, thereby minimising noise in the results. By default, the limit is set to 0, meaning it is not applied, and all lonely genes eligible for fishing are incorporated.
 
 ***
 
@@ -882,7 +886,7 @@ dplyr::glimpse(lonely_fishres)
 
 ### Step 10: Perform functional enrichment of the lonely cluster genes {#step10}
 
-The lonely cluster, consisting of the remaining lonely genes, can undergo a simple functional enrichment analysis to gain further insight into the biological context it may contain. The customizations used in the earlier cluster-wise enrichment analysis are fully applicable here as well. Therefore, the parameters were set to match those chosen in the previous cluster-wise functional enrichment analysis.
+The lonely cluster, consisting of the remaining lonely genes, can undergo a simple functional enrichment analysis to gain further insight into the biological context it may contain. The customisations used in the earlier cluster-wise enrichment analysis are fully applicable here as well. Therefore, the parameters were set to match those chosen in the previous cluster-wise functional enrichment analysis.
 The function <span class="homemade-function">`simplenrich()`</span> enables a single ORA, with parameters mirroring the earlier <span class="homemade-function">`clustrenrich()`</span> function. The only difference is that a `input_genes` argument is created to take the list of genes.
 
 First, we need to extract the lonely genes:
@@ -941,7 +945,7 @@ dplyr::glimpse(lonely_clustr_analysis_res$filtered$dr_a)
 
 ### Homemade functions
 
-To fully explore the Cluefish results, including DR modeling metrics from `DRomics` outputs is required.
+To fully explore the Cluefish results, including DR modelling metrics from `DRomics` outputs is required.
 
 1. The <span class="homemade-function">`results_to_csv()`</span> function generates a summary .csv file from the Cluefish workflow results, supporting manual exploration.
 
@@ -961,7 +965,7 @@ To fully explore the Cluefish results, including DR modeling metrics from `DRomi
 
    For more information on each argument of the function, run `?cluefish::results_to_csv()`.
 
-Cluefish also leverages `DRomics` visualization functions, like `DRomics::curvesplot()`, to plot fitted dose-response curves.
+Cluefish also leverages `DRomics` visualisation functions, like `DRomics::curvesplot()`, to plot fitted dose-response curves.
 
 2. The <span class="homemade-function">`curves_to_pdf()`</span> function generates a .pdf of the fitted curves for each cluster’s gene set, offering visual insight into cluster composition.
 
@@ -971,10 +975,10 @@ Cluefish also leverages `DRomics` visualization functions, like `DRomics::curves
    *  **`bmdboot_data`**: The `DRomics` `bmdboot` dataframe results after `DRomics::bmdboot()` or following the additional step `DRomics::bmdfilter()`. This must correspond to the data loaded containing the deregulated transcript identifiers in the [Step 2](#step2). 
    *  **`clustrfusion_data`**: The named list output of the <span class="homemade-function">`clustrfusion()`</span> function.
    *  **`tested_doses`**: A vector of the tested doses that can be found in the output of the `DRomics::drcfit()` function as `unique(f$omicdata$dose)`.
-   *  **`annot_order`**: A vector specifying the prioritized order of annotation sources used in the <span class="homemade-function">`clustrenrich()`</span> function. 
+   *  **`annot_order`**: A vector specifying the prioritised order of annotation sources used in the <span class="homemade-function">`clustrenrich()`</span> function. 
    
    ***
-   <span class="italic-grey">The **`annot_order`** specifies the preferred order of annotation sources for assigning a primary descriptor to each cluster. If an enriched function is found in the first source listed, that function will be used as the primary descriptor for the cluster. This order allows you to prioritize annotation databases based on their relevance and the quality of information they provide for your study.</span>
+   <span class="italic-grey">The **`annot_order`** specifies the preferred order of annotation sources for assigning a primary descriptor to each cluster. If an enriched function is found in the first source listed, that function will be used as the primary descriptor for the cluster. This order allows you to prioritise annotation databases based on their relevance and the quality of information they provide for your study.</span>
    
    ***
    
@@ -1014,15 +1018,15 @@ Cluefish also leverages `DRomics` visualization functions, like `DRomics::curves
 
 ### Quarto report templates
 
-The Cluefish compendium includes Quarto report templates that can streamline the summarization of Cluefish results, enhancing interpretability and ease of use. These reports are auto-generated but can be customized as needed.
+The Cluefish compendium includes Quarto report templates that can streamline the summarisation of Cluefish results, enhancing interpretability and ease of use. These reports are auto-generated but can be customised as needed.
 
 The available templates include:
 
 1.  **`report_workflow_results.qmd`**
-    This report summarizes key findings from the DRomics analysis and workflow results. It includes visual summaries like BMD plots per cluster and interactive visualizations using the `plotly` R package, helping to prioritize results and explore each cluster.
+    This report summarises key findings from the DRomics analysis and workflow results. It includes visual summaries like BMD plots per cluster and interactive visualisations using the `plotly` R package, helping to prioritise results and explore each cluster.
     
 2.  **`report_lonely_results.qmd`**
-    This report focuses on the Lonely cluster, summarizing the results of genes that did not associate with other clusters. It includes `plotly` interactive `DRomics` plots like BMD distributions, trend-colored fitted curves, and ECDF plots for detailed exploration.
+    This report focuses on the Lonely cluster, summarising the results of genes that did not associate with other clusters. It includes `plotly` interactive `DRomics` plots like BMD distributions, trend-colored fitted curves, and ECDF plots for detailed exploration.
     
 3.  **`report_comparison_results`**
     This report compares Cluefish with a standard workflow (`simplenrich()`). A script is available to perform the standard approach script can be found in the `analyses` folder, under the name: `standard-pipeline`.
