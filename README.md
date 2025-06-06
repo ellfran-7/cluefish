@@ -91,6 +91,12 @@ to Cluefish vignette</a></strong>
 
 ------------------------------------------------------------------------
 
+<center>
+
+<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish schematic" width="600"/>
+
+</center>
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
