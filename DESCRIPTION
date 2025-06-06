@@ -1,7 +1,7 @@
 Package: cluefish
 Type: Workflow
 Title: Fishing for Clues in the Depths of Transcriptomic Data Series
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person(given   = "Ellis",
            family  = "Franklin",
