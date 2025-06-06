@@ -243,7 +243,7 @@ If you use Cluefish, please cite the associated preprint as follows:
 > Franklin,E., Billoir,E., Veber,P., Ohanessian,J.,
 > Delignette-Muller,M.L. and Prud’homme,S.M. (2024) Cluefish: mining the
 > dark matter of transcriptional data series with over-representation
-> analysis enhanced by aggregated biological prior knowledge.
+> analysis enhanced by aggregated biological prior knowledge. *bioRxiv*,
 > 10.1101/2024.12.18.627334.
 > <https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1>
 
