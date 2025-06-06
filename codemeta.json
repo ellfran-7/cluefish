@@ -112,7 +112,7 @@
     "releaseNotes": "This is the first public release of the cluefish project.\ncluefish provides a streamlined workflow designed to enhance the biological interpretation of transcriptomic data series. Its goal is to capture a greater proportion of deregulated data considered for biological insights while improving the sensitivity of functional enrichment analysis. The latter enables the identification of smaller, more specific biological processes that might otherwise be overlooked.",
     "runtimePlatform": "R version 4.4.1 (2024-12-04)",
     "softwareRequirements": "R (>=4.4.1), biomaRt (>=2.60.1), gprofiler2 (>=0.2.3), g:profiler (e111_eg58_p18_f463989d) , Cytoscape (>=3.10.2), STRING (>=12.0), StringApp (>= 2.1.1), clustermaker2 (>=2.3.4)",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "codemeta:contIntegration": {
         "id": "https://github.com/ellfran-7/cluefish"
     },
