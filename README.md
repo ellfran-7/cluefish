@@ -8,6 +8,7 @@
 # cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150" style="float:right; height:150px;" /></a>
 
 <!-- PROJECT SHIELDS -->
+
 <!--
 *** I'm using markdown "reference style" links for readability.
 *** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
@@ -24,34 +25,55 @@
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/ellis-franklin-6188831ba)
 
 <!-- TABLE OF CONTENTS -->
+
 <details>
+
 <summary>
+
 Table of Contents
 </summary>
+
 <ol>
+
 <li>
+
 <a href="#overview">Overview</a>
 </li>
+
 <li>
+
 <a href="#installation">Installation</a>
 </li>
+
 <li>
+
 <a href="#usage">Usage</a>
 </li>
+
 <li>
+
 <a href="#contributing">Contributing</a>
 </li>
+
 <li>
+
 <a href="#license">License</a>
 </li>
+
 <li>
+
 <a href="#contact">Contact</a>
 </li>
+
 <li>
+
 <a href="#acknowledgments">Acknowledgments</a>
 </li>
+
 </ol>
+
 </details>
+
 <!-- ABOUT THE PROJECT -->
 
 ## Overview
@@ -83,6 +105,7 @@ biological contexts.
 ------------------------------------------------------------------------
 
 <p style="text-align: center;">
+
 <strong>If you’re ready to dive straight into using Cluefish, check out
 the
 <a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction
@@ -92,16 +115,21 @@ to Cluefish vignette</a></strong>
 ------------------------------------------------------------------------
 
 <center>
+
 <img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
 <p align="center" style="color: grey;">
+
 <em>Graphical abstract of the Cluefish workflow.</em>
 </p>
+
 </center>
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- INSTALLATION -->
 
 ## Installation
@@ -138,6 +166,7 @@ You can use Cluefish locally in one of two ways:
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- ADDITIONAL REQUIREMENTS -->
 
 ## Additional Requirements
@@ -170,6 +199,7 @@ Store](https://apps.cytoscape.org/).*
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- USAGE EXAMPLES -->
 
 ## Usage
@@ -219,6 +249,7 @@ into the biological interpretation of the data.
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- WORKFLOW -->
 
 ## Workflow
@@ -231,16 +262,21 @@ The raw count data is publicly available on NCBI GEO and can be accessed
 with **GSE283957**.
 
 <center>
+
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
 <p align="center" style="color: grey;">
+
 <em>Schematic of the Cluefish workflow.</em>
 </p>
+
 </center>
+
 <p align="right">
 
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- CITATION -->
 
 ## Citation
@@ -281,12 +317,13 @@ again!
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- LICENSE -->
 
 ## License
 
 This project is distributed under the CeCILL Free Software License
-Agreement v2.1. See `LICENSE.txt` for more information.
+Agreement v2.1 (CECILL-2.1). See `LICENSE.txt` for more information.
 
 CECILL-2.1 is compatible with GNU GPL. See the [official CeCILL
 site](http://www.cecill.eu/index.en.html) for more information.
@@ -300,6 +337,7 @@ license](https://choosealicense.com/licenses/cc-by-sa-4.0/).
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- CONTACT -->
 
 ## Contact
@@ -307,7 +345,9 @@ license](https://choosealicense.com/licenses/cc-by-sa-4.0/).
 If you have any need that is not yet covered, any feedback on Cluefish,
 or anything other question, feel free to contact me !
 
-Ellis Franklin - [@elffran7](https://twitter.com/elffran7) -
+Ellis Franklin - [Website](https://ellfranklin.com/) -
+[LinkedIn](https://www.linkedin.com/in/ellis-franklin-6188831ba/)
+[Bluesky](https://bsky.app/profile/elfrank7.bsky.social) -
 <ellis.franklin@univ-lorraine.fr>
 
 Project Link: <https://github.com/ellfran-7/cluefish>
@@ -317,6 +357,7 @@ Project Link: <https://github.com/ellfran-7/cluefish>
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- ACKNOWLEDGMENTS -->
 
 ## Acknowledgments
@@ -332,5 +373,7 @@ Project Link: <https://github.com/ellfran-7/cluefish>
 (<a href="#readme-top">back to top</a>)
 
 </p>
+
 <!-- MARKDOWN LINKS & IMAGES -->
+
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
