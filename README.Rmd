@@ -206,11 +206,10 @@ A schematic overview of the Cluefish workflow is shown below. For a full, step-b
 
 ## Citation
 
-If you use Cluefish, please cite the associated preprint as follows:
+If you use Cluefish, please cite the associated paper as follows:
 
-> Franklin,E., Billoir,E., Veber,P., Ohanessian,J., Delignette-Muller,M.L. and Prud’homme,S.M. (2024) Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge. *bioRxiv*, 10.1101/2024.12.18.627334. [https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1)
+> Ellis Franklin, Elise Billoir, Philippe Veber, Jérémie Ohanessian, Marie Laure Delignette-Muller, Sophie Martine Prud’homme, Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge, *NAR Genomics and Bioinformatics*, Volume 7, Issue 3, September 2025, lqaf103, [https://doi.org/10.1093/nargab/lqaf103](https://doi.org/10.1093/nargab/lqaf103)
 
-A peer-reviewed publication associated with the tool will be available soon.
 
 <!-- CONTRIBUTING -->
 
