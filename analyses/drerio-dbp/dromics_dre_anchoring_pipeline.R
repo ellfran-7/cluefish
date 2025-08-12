@@ -20,7 +20,7 @@ require(ggplot2)
 
 
 
-#> 1. Save and load the excel spreadsheet supplementary file associated with the submitted paper
+#> 1. Save and load the excel spreadsheet supplementary file associated with the paper
 #> -------------------------------------------------------------------------------------
 
 # This can be done manually, but let's suppose you have the csv saved, under the name "zebra_anchoring_dbp_data.csv" to the "data/raw-data/" directory then, you can load the file as such : 
