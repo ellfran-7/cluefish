@@ -60,7 +60,7 @@
                         <h4 data-toc-skip class="author">Ellis
 Franklin</h4>
                         
-            <h4 data-toc-skip class="date">2025-06-06</h4>
+            <h4 data-toc-skip class="date">2025-08-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ellfran-7/cluefish/blob/HEAD/vignettes/cluefish.Rmd" class="external-link"><code>vignettes/cluefish.Rmd</code></a></small>
       <div class="d-none name"><code>cluefish.Rmd</code></div>
@@ -157,14 +157,13 @@ capture a fuller and more precise view of the biological context.</p>
 <div class="section level3">
 <h3 id="overview-of-cluefish">Overview of Cluefish<a class="anchor" aria-label="anchor" href="#overview-of-cluefish"></a>
 </h3>
-<p>To address these limitations, we developed <a href="https://github.com/ellfran-7/cluefish" class="external-link">Cluefish</a> <a href="https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1" class="external-link">Franklin
-<em>et al.</em> (submitted)</a>, a free and open-source, semi-automated
-workflow designed for comprehensive and untargeted exploration of
-transcriptomic data series. Its name reflects the three key concepts
-driving the workflow: <strong>Clustering</strong>,
-<strong>Enrichment</strong>, and <strong>Fishing</strong>—metaphorically
-aligned with “<em>fishing for clues</em>”🎣 in complex biological
-data.</p>
+<p>To address these limitations, we developed <a href="https://github.com/ellfran-7/cluefish" class="external-link">Cluefish</a> (<a href="https://doi.org/10.1093/nargab/lqaf103" class="external-link">Franklin <em>et al.</em>
+(2025)</a>), a free and open-source, semi-automated workflow designed
+for comprehensive and untargeted exploration of transcriptomic data
+series. Its name reflects the three key concepts driving the workflow:
+<strong>Clustering</strong>, <strong>Enrichment</strong>, and
+<strong>Fishing</strong>—metaphorically aligned with “<em>fishing for
+clues</em>”🎣 in complex biological data.</p>
 <p>Cluefish is composed of 10 main steps:</p>
 <ol style="list-style-type: decimal">
 <li>Download transcription factor (TF) and co-factor (CoTF) gene
@@ -321,9 +320,9 @@ sequential execution of the workflow steps.</p>
 <p>In order to showcase Cluefish, we will use an example dataset. This
 is a dose-response transcriptomic dataset, where zebrafish embryos were
 exposed to a five dose-gradient of dibutyl phthalate. The experiment and
-resulting dataset is further described in the associated paper <a href="https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1" class="external-link">Franklin
-<em>et al.</em> (submitted)</a> and you may access the count data at
-GEO, under the accession number <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957" class="external-link">GSE283957</a>.</p>
+resulting dataset is further described in the associated paper <a href="https://doi.org/10.1093/nargab/lqaf103" class="external-link">Franklin <em>et al.</em>
+(2025)</a> and you may access the count data at GEO, under the accession
+number <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957" class="external-link">GSE283957</a>.</p>
 <div class="note">
 <p>In addition to the zebrafish dataset used in this vignette, two
 external transcriptomic datasets were analysed in the associated study:
@@ -1609,20 +1608,24 @@ license</a>.</p>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14 ucrt)</span></span>
-<span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
-<span><span class="co">#&gt; Running under: Windows 11 x64 (build 26100)</span></span>
+<pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.3 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
+<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt; [1] LC_COLLATE=French_France.utf8  LC_CTYPE=French_France.utf8   </span></span>
-<span><span class="co">#&gt; [3] LC_MONETARY=French_France.utf8 LC_NUMERIC=C                  </span></span>
-<span><span class="co">#&gt; [5] LC_TIME=French_France.utf8    </span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=fr_FR.UTF-8       LC_NUMERIC=C              </span></span>
+<span><span class="co">#&gt;  [3] LC_TIME=fr_FR.UTF-8        LC_COLLATE=fr_FR.UTF-8    </span></span>
+<span><span class="co">#&gt;  [5] LC_MONETARY=fr_FR.UTF-8    LC_MESSAGES=fr_FR.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=fr_FR.UTF-8       LC_NAME=C                 </span></span>
+<span><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
+<span><span class="co">#&gt; [11] LC_MEASUREMENT=fr_FR.UTF-8 LC_IDENTIFICATION=C       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; time zone: Europe/Paris</span></span>
-<span><span class="co">#&gt; tzcode source: internal</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attached base packages:</span></span>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices datasets  utils     methods   base     </span></span>
@@ -1696,7 +1699,7 @@ license</a>.</p>
 <span><span class="co">#&gt; [125] profvis_0.3.8               urlchecker_1.0.1           </span></span>
 <span><span class="co">#&gt; [127] viridisLite_0.4.2           scales_1.3.0               </span></span>
 <span><span class="co">#&gt; [129] purrr_1.0.2                 crayon_1.5.3               </span></span>
-<span><span class="co">#&gt; [131] rlang_1.1.5                 KEGGREST_1.40.1</span></span></code></pre>
+<span><span class="co">#&gt; [131] rlang_1.1.5                 KEGGREST_1.46.0</span></span></code></pre>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
