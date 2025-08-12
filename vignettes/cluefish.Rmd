@@ -75,7 +75,7 @@ While differential gene expression analysis provides fold-change values and thei
 
 ### Overview of Cluefish
 
-To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1), a free and open-source, semi-automated workflow designed for comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
+To address these limitations, we developed [Cluefish](https://github.com/ellfran-7/cluefish) ([Franklin *et al.* (2025)](https://doi.org/10.1093/nargab/lqaf103)), a free and open-source, semi-automated workflow designed for comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
 Cluefish is composed of 10 main steps:
 
@@ -185,7 +185,7 @@ Here we will go through the main steps one by one !
 
 ### The case study
 
-In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of dibutyl phthalate. The experiment and resulting dataset is further described in the associated paper [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1) and you may access the count data at GEO, under the accession number [GSE283957](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957).
+In order to showcase Cluefish, we will use an example dataset. This is a dose-response transcriptomic dataset, where zebrafish embryos were exposed to a five dose-gradient of dibutyl phthalate. The experiment and resulting dataset is further described in the associated paper [Franklin *et al.* (2025)](https://doi.org/10.1093/nargab/lqaf103) and you may access the count data at GEO, under the accession number [GSE283957](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283957).
 
 ::: note
 In addition to the zebrafish dataset used in this vignette, two external transcriptomic datasets were analysed in the associated study: the rat liver dataset from Gwinn *et al.* ([GSE147072](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147072)) and the poplar root dataset from Gréau *et al.* ([GSE263776](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE263776)). Both datasets are publicly available through the GEO database.You may find their analysis files in the repository itself.

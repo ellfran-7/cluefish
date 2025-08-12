@@ -1,5 +1,5 @@
 #> ==========================================================================
-#> Script to generate the supplementary tables in Franklin et al. (submitted)
+#> Script to generate the supplementary tables in Franklin et al. (2025)
 #> ==========================================================================
 #> Case:  rnorvegicus - TempO-seq ****
 #> Run : 07/08/24 ****

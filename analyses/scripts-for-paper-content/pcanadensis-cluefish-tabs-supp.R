@@ -1,5 +1,5 @@
 #> ==========================================================================
-#> Script to generate the supplementary tables in Franklin et al. (submitted)
+#> Script to generate the supplementary tables in Franklin et al. (2025)
 #> ==========================================================================
 #> Case:  pcanadensis - RNA-seq ****
 #> Run : 06/04/25 ****

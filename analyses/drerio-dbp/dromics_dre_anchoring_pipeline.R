@@ -1,5 +1,5 @@
 #> ======================================================================
-#> DRomics pipeline: Reproducing results from Franklin et al. (submitted)
+#> DRomics pipeline: Reproducing results from Franklin et al. (2025)
 #> ======================================================================
 #> 
 #> Case : dose-response anchoring data !!!!!
@@ -7,7 +7,7 @@
 #> This script applies the DRomics pipeline to the individual endpoint data associated with the publication.
 
 
-# To reproduce the Cluefish workflow results as presented in Franklin et al. (submitted),
+# To reproduce the Cluefish workflow results as presented in Franklin et al. (2025),
 # please follow the steps below carefully. For a more detailed understanding of each phase—
 # or if you're simply looking to apply the tool in your own work—refer to the DRomics vignette: 
 # https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.

@@ -1,5 +1,5 @@
 #> ==================================================================
-#> Script to generate the main figures in Franklin et al. (submitted)
+#> Script to generate the main figures in Franklin et al. (2025)
 #> ==================================================================
 #> 
 #> In this script, the main data visualisations are generated.

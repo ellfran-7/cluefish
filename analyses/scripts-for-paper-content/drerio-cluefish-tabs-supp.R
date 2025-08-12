@@ -1,5 +1,5 @@
 #> ==========================================================================
-#> Script to generate the supplementary tables in Franklin et al. (submitted)
+#> Script to generate the supplementary tables in Franklin et al. (2025)
 #> ==========================================================================
 #> Case: drerio - RNA-seq ****
 #> Run : 12/04/24 ****

@@ -1,5 +1,5 @@
 #> ======================================================================
-#> DRomics pipeline: Reproducing results from Franklin et al. (submitted)
+#> DRomics pipeline: Reproducing results from Franklin et al. (2025)
 #> ======================================================================
 #> 
 #> Case : dose-response transcriptomic data !!!!!
@@ -11,9 +11,9 @@
 #> - Title: 	Dose-dependent effects of dibutyl phthalate on embryonic development in zebrafish (Danio rerio): The value of integrating concentration gradients in transcriptomic analyses
 #> - GEO accession: GSE283957
 #> - Publish date: Dec 10, 2024
-#> - Associated paper: (Submitted) Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge 
-#> - Journal: (Submitted) NAR Genomics and Bioinformatics
-#> - DOI: bioRxiv > https://doi.org/10.1101/2024.12.18.627334
+#> - Associated paper: Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge (2025)
+#> - Journal: NAR Genomics and Bioinformatics
+#> - DOI: https://doi.org/10.1093/nargab/lqaf103
 #>
 #> Dataset specifics:
 #> - Organism: Danio rerio
@@ -23,7 +23,7 @@
 #> - Number of replicates: 3
 
 
-# To reproduce the Cluefish workflow results as presented in Franklin et al. (submitted),
+# To reproduce the Cluefish workflow results as presented in Franklin et al. (2025),
 # please follow the steps below carefully. For a more detailed understanding of each phase—
 # or if you're simply looking to apply the tool in your own work—refer to the DRomics vignette: 
 # https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.

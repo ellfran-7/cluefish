@@ -2,7 +2,7 @@
 
 This directory contains structured analysis scripts organised in organism and chemical exposure folders, corresponding to different datasets, and contains in this instance three main folders:
 
--  `drerio-dbp`: A folder containing pipeline scripts associated to the main dataset from [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1). This contains:
+-  `drerio-dbp`: A folder containing pipeline scripts associated to the main dataset from [Franklin *et al.* (2025)](https://doi.org/10.1093/nargab/lqaf103). This contains:
    - `dromics_dre_anchoring_pipeline`: Step-by-step `DRomics` pipeline for processing dose-response anchoring measurements (body length, eye surface) providing experimental validation for Cluefish workflow results.
    - `dromics_dre_transcriptomic_pipeline.R`: Step-by-step `DRomics` pipeline for processing dose-response transcriptomic raw count data. Generates input data for the Cluefish workflow case study.
    - `standard_approach_dre_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
@@ -18,7 +18,7 @@ This directory contains structured analysis scripts organised in organism and ch
    - `standard_approach_rno_pipeline.R`: Standard functional enrichment pipeline for benchmarking against Cluefish workflow outputs, using the deregulated transcript list derived from the `DRomics` pipeline.
    - `cluefish_approach_rno_pipeline.R`: Complete Cluefish pipeline implementation for this dataset.
 
-These pipelines enable reproduction of results published in [Franklin *et al.* (submitted)](https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1) and can be used as adaptable templates for your own case studies. 
+These pipelines enable reproduction of results published in [Franklin *et al.* (2025)](https://doi.org/10.1093/nargab/lqaf103) and can be used as adaptable templates for your own case studies. 
 
 For help with the `DRomics` R package, visit the [DRomics documentation](https://lbbe-software.github.io/DRomics/).
 

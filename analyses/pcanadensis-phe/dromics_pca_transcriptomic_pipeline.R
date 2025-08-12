@@ -21,7 +21,7 @@
 #> - Number of replicates: 4
 
 
-# To reproduce the Cluefish workflow results as presented in Franklin et al. (submitted),
+# To reproduce the Cluefish workflow results as presented in Franklin et al. (2025),
 # please follow the steps below carefully. For a more detailed understanding of each phase—
 # or if you're simply looking to apply the tool in your own work—refer to the DRomics vignette: 
 # https://lbbe-software.github.io/DRomics/articles/DRomics_vignette.html.
