@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Fishing for Clues in the Depths of Transcriptomic Data Series">
-<meta name="description" content="A specialised bioinformatics workflow designed for improving biological interpretation of transcriptomic data series. Using Cluefish, you may consider a larger portion of the dataset of interest for biological interest and improve functional enrichment sensitivity towards smaller and more specific biological functions.">
-<meta property="og:description" content="A specialised bioinformatics workflow designed for improving biological interpretation of transcriptomic data series. Using Cluefish, you may consider a larger portion of the dataset of interest for biological interest and improve functional enrichment sensitivity towards smaller and more specific biological functions.">
+<meta name="description" content="A free and open-source, semi-automated R workflow designed for untargeted, comprehensive biological interpretation of transcriptomic data series. Cluefish applies over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to identify smaller, more specific biological functions. Innovative features, including cluster merging and recovery of isolated genes through shared biological contexts, enable a more complete exploration of the data.">
+<meta property="og:description" content="A free and open-source, semi-automated R workflow designed for untargeted, comprehensive biological interpretation of transcriptomic data series. Cluefish applies over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to identify smaller, more specific biological functions. Innovative features, including cluster merging and recovery of isolated genes through shared biological contexts, enable a more complete exploration of the data.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cluefish</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,6 +97,11 @@ Table of Contents
 <strong>If you’re ready to dive straight into using Cluefish, check out the <a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction to Cluefish vignette</a></strong>
 </p>
 <hr>
+<center>
+<img src="reference/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract"><p align="center" style="color: grey;">
+<em>Graphical abstract of the Cluefish workflow.</em>
+</p>
+</center>
 <p align="right">
 </p>
 <p>(<a href="#readme-top">back to top</a>)</p>
@@ -198,7 +203,9 @@ Table of Contents
 </h2>
 <p>A schematic overview of the Cluefish workflow is shown below. For a full, step-by-step guide, refer to the vignette, <a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction to Cluefish</a>, which provides instructions using the <em>ZebrafishDBP</em> example dataset. The raw count data is publicly available on NCBI GEO and can be accessed with <strong>GSE283957</strong>.</p>
 <center>
-<p><img src="reference/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"></p>
+<img src="reference/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"><p align="center" style="color: grey;">
+<em>Schematic of the Cluefish workflow.</em>
+</p>
 </center>
 <p align="right">
 </p>
@@ -209,11 +216,10 @@ Table of Contents
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>If you use Cluefish, please cite the associated preprint as follows:</p>
+<p>If you use Cluefish, please cite the associated paper as follows:</p>
 <blockquote>
-<p>Franklin,E., Billoir,E., Veber,P., Ohanessian,J., Delignette-Muller,M.L. and Prud’homme,S.M. (2024) Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge. 10.1101/2024.12.18.627334. <a href="https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1" class="external-link uri">https://www.biorxiv.org/content/10.1101/2024.12.18.627334v1</a></p>
+<p>Ellis Franklin, Elise Billoir, Philippe Veber, Jérémie Ohanessian, Marie Laure Delignette-Muller, Sophie Martine Prud’homme, Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge, <em>NAR Genomics and Bioinformatics</em>, Volume 7, Issue 3, September 2025, lqaf103, <a href="https://doi.org/10.1093/nargab/lqaf103" class="external-link uri">https://doi.org/10.1093/nargab/lqaf103</a></p>
 </blockquote>
-<p>A peer-reviewed publication associated with the tool will be available soon.</p>
 <!-- CONTRIBUTING -->
 </div>
 <div class="section level2">
@@ -237,7 +243,7 @@ Table of Contents
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>This project is distributed under the CeCILL Free Software License Agreement v2.1. See <code>LICENSE.txt</code> for more information.</p>
+<p>This project is distributed under the CeCILL Free Software License Agreement v2.1 (CECILL-2.1). See <code>LICENSE.txt</code> for more information.</p>
 <p>CECILL-2.1 is compatible with GNU GPL. See the <a href="http://www.cecill.eu/index.en.html" class="external-link">official CeCILL site</a> for more information.</p>
 <p>Please note that the creative assets, such as the logos and schematics associated with Cluefish, are distributed under the <a href="https://choosealicense.com/licenses/cc-by-sa-4.0/" class="external-link">CC-BY-SA-4.0 license</a>.</p>
 <p align="right">
@@ -250,7 +256,7 @@ Table of Contents
 <h2 id="contact">Contact<a class="anchor" aria-label="anchor" href="#contact"></a>
 </h2>
 <p>If you have any need that is not yet covered, any feedback on Cluefish, or anything other question, feel free to contact me !</p>
-<p>Ellis Franklin - <a href="https://twitter.com/elffran7" class="external-link">@elffran7</a> - <a href="mailto:ellis.franklin@univ-lorraine.fr" class="email">ellis.franklin@univ-lorraine.fr</a></p>
+<p>Ellis Franklin - <a href="https://ellfranklin.com/" class="external-link">Website</a> - <a href="https://www.linkedin.com/in/ellis-franklin-6188831ba/" class="external-link">LinkedIn</a> <a href="https://bsky.app/profile/elfrank7.bsky.social" class="external-link">Bluesky</a> - <a href="mailto:ellis.franklin@univ-lorraine.fr" class="email">ellis.franklin@univ-lorraine.fr</a></p>
 <p>Project Link: <a href="https://github.com/ellfran-7/cluefish" class="external-link uri">https://github.com/ellfran-7/cluefish</a></p>
 <p align="right">
 </p>

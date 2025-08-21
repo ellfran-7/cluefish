@@ -1,7 +1,7 @@
-#' Cluefish: A tool to optimise biological interpretation of transcriptomic data series
+#' Cluefish: A workflow to optimise biological interpretation of transcriptomic data series
 #' 
 #' @description 
-#' In the broader context, the Cluefish workflow performs over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to uncover smaller, more specific biological functions. It incorporates innovative features such as cluster merging and the recovery of isolated genes through shared biological contexts, enabling a more comprehensive exploration of the data. This script serves as the main entry point for executing each step of the Cluefish workflow, providing guidance to the user before and after each phase.
+#' In the broader context, the Cluefish workflow performs over-representation analysis on pre-clustered protein-protein interaction networks, using clusters as anchors to uncover smaller, more specific biological functions. It incorporates innovative features such as cluster merging and the recovery of isolated genes (lonely gene fishing) through shared biological contexts, enabling a more comprehensive exploration of the data. This script serves as the main entry point for executing each step of the Cluefish workflow, providing guidance to the user before and after each phase. This example uses an in-house zebrafish dataset (GSE283957) and is intended to support reproduction of results presented in the associated publication ([Franklin *et al.* (2025)](https://doi.org/10.1093/nargab/lqaf103))
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
@@ -54,6 +54,8 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 # Before performing this step, it is recommended to verify if the organism of interest is available in the AnimalTFDB database. 
 # You can check the list of supported species on their website: https://guolab.wchscu.cn/AnimalTFDB4/#/Species.
 
+# If the organism is not found in the database, you may skip this step, and also the related Step 4. 
+
 # If the organism is found in the database, you need to modify the URL by replacing the organism's Latin name (e.g., "Rattus_norvegicus") with the Latin name of your organism. 
 # For example, the URLs for transcription factors (TF) for zebrafish (Danio rerio) and Sprague Dawley rat (Rattus norvegicus) would be:
 # - Zebrafish: "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"
@@ -64,7 +66,7 @@ if (!dir.exists(dir_path)) { # Check if the directory path exists
 dl_regulation_data(
   url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
   url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
-  path = "data/derived-data/",
+  path = paste0("outputs/", file_date, "/"),
   filename_tf = paste0("Danio_rerio_TF_", file_date, ".txt"),
   filename_cof = paste0("Danio_rerio_Cof_", file_date, ".txt"),
   overwrite = FALSE
@@ -89,7 +91,7 @@ dl_regulation_data(
 #       °This dataframe provides the deregulated transcript data, which is used throughout the workflow.
 #
 # Both files must be created in advance and can be stored in the `data/derived-data/` directory.
-# If these files are not already available, you can generate them using the `dromics-transcriptomic-pipeline.R` script found in the `analyses/` folder.
+# If these files are not already available, you can generate them using the `dromics_dre_transcriptomic_pipeline.R` script found in the `analyses/` folder.
 
 
 # Load DRomics "drcfit" object
@@ -156,8 +158,8 @@ dr_t_ids <- bg_t_ids[bg_t_ids$transcript_id %in% b_definedCI$id,]
 
 dr_t_regs <- getregs(
   getids_data = dr_t_ids,
-  regulator_file = paste0("data/derived-data/Danio_rerio_TF_", file_date, ".txt"),
-  coregulator_file = paste0("data/derived-data/Danio_rerio_Cof_", file_date, ".txt"))
+  regulator_file = paste0("outputs/", file_date, "/Danio_rerio_TF_", file_date, ".txt"),
+  coregulator_file = paste0("outputs/", file_date, "/Danio_rerio_Cof_", file_date, ".txt"))
 
 
 
@@ -175,7 +177,7 @@ write.table(DR_output4string, file = paste0("outputs/", file_date, "/DR_output4s
 
 # Once the clustered network is created, the resulting *.csv* files need to be stored in `outputs/`.
 
-# The Ensembl gene IDs of all the responsive transcripts are manually exported into the StringApp plug-in found within the Cytoscape platform. They are queried with the parameters configured to include all types of interactions, a confidence score of 0.9 and no additional interactions. This creates an interaction network based on the known and predicted protein-protein associations data in the STRING database. Subsequently, to group the interaction network, we use clusterMaker2 to run Markov Chain Clustering (MCL). The inflation parameter is set as the default value (4.0) to reduce cluster size. To extract the relevant cluster information, the 'node table' containing the clustered elements is manually exported from the StringApp as a comma-separated values (CSV) file into the outputs/ folder. This exported table encompasses all the transcripts found within a cluster, their identifications, along with an appended cluster ID column. 
+# The Ensembl gene IDs of all the responsive transcripts are manually exported into the StringApp plug-in found within the Cytoscape platform. They are queried with the parameters configured to include all types of interactions, a confidence score of 0.9 and no additional interactions. This creates an interaction network based on the known and predicted protein-protein associations data in the STRING database. Subsequently, to group the interaction network, we use clusterMaker2 to run Markov Chain Clustering (MCL). The inflation parameter is set as the default value (4.0) to reduce cluster size. To extract the relevant cluster information, the 'node table' containing the clustered elements is manually exported from the StringApp as a comma-separated values (CSV) file into the outputs/ folder. This exported table encompasses all the transcripts found within a cluster, their identifications, along with an appended cluster ID column.
 
 
 # This table, found in the "outputs/" folder, can then be imported back into the Rstudio environment in order to pursue the workflow : 
@@ -436,7 +438,7 @@ render_qmd(
 #>> Generate the comparison of cluefish and standard workflow quarto report -------
 
 # Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the cluefish workflow
-source(here::here("analyses", "standard-approach-pipeline.R"))
+source(here::here("analyses", "standard_approach_dre_pipeline.R"))
 
 # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
 render_qmd(

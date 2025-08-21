@@ -21,13 +21,15 @@ README.html
 inst/doc
 NAMESPACE
 
-# Unwanted files (e.g. in derived-data/ the files are too large)
+# Unwanted files (e.g. in derived-data/ the files are too large) ----
 *.rmarkdown
 *_files
 *_cache
-outputs/
-derived-data/
-analyses/standard-approach/results
-analyses/lonely_cluster_analysis/results
-
-docs
+outputs/*
+!outputs/.gitkeep
+data/raw-data/*
+!data/raw-data/.gitkeep
+data/derived-data/*
+!data/derived-data/.gitkeep
+docs/
+figures/

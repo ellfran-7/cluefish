@@ -31,7 +31,7 @@ clustrfusion <- function(
     dplyr::select(-clustr)
   
   # Arrange the gost() results by effective domain size to prioritize sources with a larger panel of biological information about the organism (details in README). Then, select the source column, remove duplicates, and convert to a vector for use in the for loop.
-  ordered_term_sources <- clustr_enrichres$gostres$result |> 
+  ordered_term_sources <- clustrenrich_data$gostres$result |> 
     dplyr::arrange(desc(effective_domain_size)) |> 
     dplyr::select(source) |> 
     dplyr::distinct() |> 
@@ -187,11 +187,11 @@ clustrfusion <- function(
   
   # Prepare dataframe to integrate term_size and highlighted columns from enrichment results
   gostres_4_merge <- clustrenrich_data$gostres$result |> 
-    dplyr::select(query, term_name, term_size, highlighted) |> 
+    dplyr::select(query, term_name, term_size, highlighted, source) |> 
     dplyr::rename(old_clustr = query)
   
   # Merge dataframes
-  dr_c_a_fusion <- merge(dr_c_a_fusion, gostres_4_merge, by = c("old_clustr", "term_name"))
+  dr_c_a_fusion <- merge(dr_c_a_fusion, gostres_4_merge, by = c("old_clustr", "term_name", "source"))
   
   # Remove row repetitions
   dr_c_a_fusion <- unique(dr_c_a_fusion)

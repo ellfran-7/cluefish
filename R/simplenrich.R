@@ -22,7 +22,7 @@
 #' @return A named `list` holding two components:
 #'      -`unfiltered` is a named `list` holding two sub-components::
 #'            - `dr_g_a` is a dataframe of type *g_a* holding the unfiltered enrichment results (e.g. all GO terms, no limits set on gene set size )
-#'            - `gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost().
+#'            - `gostres` is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost(), with added enrichment ratios in the 'result' dataframe.
 #'      -`filtered` is named `list` holding two sub-components:
 #'            - `dr_g_a` is a dataframe of type *g_a* holding the filtered enrichment results.
 #'            - `dr_a` is a dataframe of type *a* holding the filtered enrichment results.
@@ -173,7 +173,6 @@ simplenrich <- function(
   # Conditionally remove biological functions that are not sufficiently enriched by a cluster
   if (!is.null(ngenes_enrich_filtr)) {
     
-    # Keep only rows where the number of IDs in the intersection column is 3 or more
     dr_a_enrich_size_filtered <- dr_a_size_filtered |> 
       dplyr::mutate(num_genes = sapply(strsplit(intersection, ","), length)) |> 
       dplyr::filter(num_genes >= ngenes_enrich_filtr) |> 

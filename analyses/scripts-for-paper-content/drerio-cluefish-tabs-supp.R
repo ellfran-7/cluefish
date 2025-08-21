@@ -1,5 +1,5 @@
 #> ==========================================================================
-#> Script to generate the supplementary tables in Franklin et al. (submitted)
+#> Script to generate the supplementary tables in Franklin et al. (2025)
 #> ==========================================================================
 #> Case: drerio - RNA-seq ****
 #> Run : 12/04/24 ****
@@ -35,35 +35,14 @@ file_date = "2024-12-04"
 
 
 
-#> Choosing Colors --------------------
+#> Create directory for saving supp. data (if it doesn't already exist) --------
+dir_path <- "figures/for-supp"
 
-# Diverging and Sequential Palette for General Plots ---
-
-# Colorblind-safe palettes were created using:
-#   - Chroma.js by Gregor Aisch: [https://gka.github.io/palettes/#/9|s|00429d,96ffea,ffffe0|ffffe0,ff005e,93003a|1|1]
-#   - Viz Palette by Elijah Mekks and Susie Lu: [https://projects.susielu.com/viz-palette?colors=[%22#4cb0af%22,%22#e4b5ff%22]&backgroundColor=%22white%22&fontColor=%22black%22&mode=%22normal%22]
-
-# 3 colours for GO, KEGG and WP (following Paul Tol's colours palettes):
-
-# Choice 1:
-paul_tol_pal <- c('#77aadd', '#44bb99', '#eedd88')
-
-# Choice 2:
-paul_tol_pal <- c('#88CCEE', '#CC6677', '#eedd88')
-
-
-# Diverging palette ranging from dark teal to dark purple/orchid:
-cluefish_pal_div9 <- c('#00393a', '#086969', '#2b9c9b', '#6cd0ce', '#f5f5f5', '#dcadf5', '#a67abf', '#724a8c', '#421d5b')
-
-# Sequential  grey palette:
-grey_pal_seq9 <- c('#1f1f1f', '#353535', '#4d4d4d', '#666666', '#808080', '#9b9b9b', '#b7b7b7', '#d4d4d4', '#f2f2f2')
-
-# Qualitative Color Scheme for Curves Plots ---
-
-# Colorblind-safe qualitative colors inspired by Paul Tol's quantitative color schemes:
-#   - Reference: [https://personal.sron.nl/~pault/#sec:qualitative]
-curves_trend_cols <- c("inc" = "#009988", "dec" = "#EE7733", "U" = "#0077BB", "bell" = "#EE3377")
-
+if (!dir.exists(dir_path)) { # Check if the directory path exists
+  
+  dir.create(dir_path) # Create it if not
+  
+}
 
 
 
@@ -121,6 +100,7 @@ stand_res <- readRDS(here::here("outputs", file_date, paste0("standard_pipeline_
 #>  - term_size (number of genes associated with the term)
 #>  - gene count in query
 #>  - precision and recall of term in the gene list
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope (effective domain size)
 #> ----------------------------------------
 
@@ -129,10 +109,11 @@ dplyr::glimpse(clustr_enrichres$gostres$result)
 
 # Select relevant columns for enrichment data, ensuring each row represents a unique term and its enrichment data
 enrich_data <- clustr_enrichres$gostres$result |> 
-  dplyr::select(query, term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(query, term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # Uncomment below lines if you want to inspect the dataset interactively
@@ -153,11 +134,10 @@ enrich_data <- clustr_enrichres$gostres$result |>
 #> Resulting table of all clusters AFTER MERGING AND FISHING (end of workflow) with:
 #>  - original cluster number
 #>  - new cluster number (post-fusion with related clusters)
-#>  - function names and their IDs
-#>  - data sources for terms
-#>  - gene count in query
-#>  - domain scope of each term
-#>  - adjusted p-value (significance level)
+#>  - function names 
+#>  - function size
+#>  - function id
+#>  - data sources for functions
 #> ----------------------------------------
 
 # Check structure of post-merging data for fishing clusters
@@ -165,15 +145,15 @@ dplyr::glimpse(lonelyfishing_data$dr_c_a_fishing)
 
 # Select and filter merged clusters that are highlighted as significant, keeping relevant columns for supplementary results
 lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |> 
-  dplyr::filter(highlighted == TRUE) |>  # Only include highlighted terms
   dplyr::select(old_clustr, new_clustr, term_name, 
                 term_size, term_id, source) |> 
+  dplyr::filter(term_name %in% clustr_fusionres$dr_g_a_fusion$term_name) |> 
   dplyr::distinct()
 
-# # Export merged and filtered cluster data to CSV for supplementary materials
-# write.csv2(lonelyfish_data, 
-#            paste0("figures/for-supp/supp-table-lonelyfish-res", Sys.Date(), ".csv"),
-#            row.names = FALSE)
+# Export merged and filtered cluster data to CSV for supplementary materials
+write.csv2(lonelyfish_data,
+           paste0("figures/for-supp/supp-table-lonelyfish-res", Sys.Date(), ".csv"),
+           row.names = FALSE)
 
 #> ----------------------------------------
 
@@ -187,6 +167,7 @@ lonelyfish_data <- lonelyfishing_data$dr_c_a_fishing |>
 #>  - highlighted status (indicates driver terms)
 #>  - term_size and gene count within each term
 #>  - precision and recall scores for enrichment
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope
 #> ----------------------------------------
 
@@ -195,10 +176,11 @@ dplyr::glimpse(lonely_cluster_analysis_res$filtered)
 
 # Select columns from the lonely cluster analysis, post-filtering
 lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |> 
-  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # # Save filtered lonely cluster enrichment data to CSV
@@ -218,6 +200,7 @@ lonely_enrich_data <- lonely_cluster_analysis_res$filtered$dr_a |>
 #>  - highlighted status (indicates terms with strong signals)
 #>  - term_size and query gene counts
 #>  - precision and recall metrics
+#>  - enrichment ratio (overlap/expect)
 #>  - domain scope for the term
 #> ----------------------------------------
 
@@ -226,10 +209,11 @@ dplyr::glimpse(stand_res$filtered$dr_a)
 
 # Selecting columns of interest for the standard enrichment analysis results
 stand_enrich_data <- stand_res$filtered$dr_a |> 
-  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, effective_domain_size) |> 
+  dplyr::select(term_name, term_id, source, p_value, term_size, query_size, intersection_size, precision, recall, enrichment_ratio, effective_domain_size) |> 
   dplyr::mutate(p_value = signif(p_value, 2),
                 precision = signif(precision, 2),
-                recall = signif(recall, 2)) |> 
+                recall = signif(recall, 2),
+                enrichment_ratio = signif(enrichment_ratio, 2)) |> 
   dplyr::distinct()
 
 # # Save filtered standard enrichment data to CSV for supplemental output
@@ -361,7 +345,7 @@ dataset_names <- list('enrich_data' = enrich_data,
 
 #export each data frame to separate sheets in same Excel file
 openxlsx::write.xlsx(dataset_names, 
-                     file = paste0("figures/for-supp/supp-table-data-", Sys.Date(), ".xlsx"),
+                     file = paste0("figures/for-supp/supp-table-data-drerio-", Sys.Date(), ".xlsx"),
                      rowNames = FALSE)
 
 #> ----------------------------------------

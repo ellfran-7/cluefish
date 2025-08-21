@@ -1,6 +1,6 @@
 # 📄Content
 
-This directory is intended for storing derived data generated outside of the workflow. It includes results from the DRomics pipeline (`analyses/dromics-transcriptomics-pipeline.R` and `analyses/dromics-anchoring-pipeline.R`), as well as from the standard approach pipeline (`analyses/standard-approach-pipeline.R`). Any additional results produced outside the workflow should also be stored in this directory.
+This directory is intended for storing derived data generated outside of the workflow. It includes results from the DRomics pipeline (e.g. `analyses/dromics-transcriptomics-pipeline.R` and `analyses/dromics-anchoring-pipeline.R`), as well as from the standard approach pipeline (e.g. `analyses/standard-approach-pipeline.R`). Any additional results produced outside the workflow should also be stored in this directory.
 
 ## 📍Note
 

@@ -45,7 +45,7 @@ getclustrs <- function(
   dr_g_string_clustr <- data.frame(query_term = dr_g_string_clustr$query.term, 
                                    clustr = dr_g_string_clustr$X__mclCluster)
   
-  # Rename the column in the gene_data dataframe to match the 'query_term' column in dr_g_string_clustr
+  # Rename the 'query_term' column in dr_g_string_clustr to colname_for_merge to match the column in gene_data
   colnames(dr_g_string_clustr)[1] <- colname_for_merge
   
   # Create a 'clustr_data' dataframe similar to 'getregs_data' but with an added cluster ID column. This allows us to have dose-response modelling metrics to illustrate the PPIN network
