@@ -22,7 +22,7 @@ devtools::load_all(here::here())
 
 
 ## State the Time Variable for file saving and reading ---
-file_date <- "2024-12-04"
+file_date <- "2025-08-21"
 
 
 ## Create directory for saving Cluefish output files (if it doesn't already exist) ---
@@ -72,8 +72,15 @@ dl_regulation_data(
   overwrite = FALSE
 )
 
+# Note: If the automatic download fails (for example, if the server blocks the request or returns an HTML 405 page),
+# please manually download the files from the AnimalTFDB website:
+# - TF file: https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF
+# - CoTF file: https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof
+# Then save them in the folder "outputs/<file_date>/" with filenames:
+# - "Danio_rerio_TF_<file_date>.txt"
+# - "Danio_rerio_Cof_<file_date>.txt"
 
-
+  
 
 
 #>> STEP 2 - Load the DRomics results
