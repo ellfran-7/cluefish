@@ -11,7 +11,7 @@
 #' @param path The directory for saving the downloaded files.
 #' @param filename_tf The name associated with the downloaded transcription factor file.
 #' @param filename_cof The name associated with the downloaded co-factor factor file.
-#' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to `FALSE`).
+#' @param overwrite If `TRUE`, the function overwrites existing output files; otherwise, it reads the existing files. (default is set to `FALSE`).
 #'
 #' @return No return value; files are downloaded and stored in the specified directory.
 #' @export
