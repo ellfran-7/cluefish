@@ -5,7 +5,7 @@
 #' 
 #' @author Ellis Franklin \email{ellis.franklin@univ-lorraine.fr}
 #' 
-#' @date 2024/12/04
+#' @date 2025/08/21
 
 
 ## Install packages listed in DESCRIPTION (and/or R and Rmd files) ----
@@ -72,16 +72,42 @@ dl_regulation_data(
   overwrite = FALSE
 )
 
-# Note: If the automatic download fails (for example, if the server blocks the request or returns an HTML 405 page),
-# please manually download the files from the AnimalTFDB website:
-# - TF file: https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF
-# - CoTF file: https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof
-# Then save them in the folder "outputs/<file_date>/" with filenames:
-# - "Danio_rerio_TF_<file_date>.txt"
-# - "Danio_rerio_Cof_<file_date>.txt"
+# MANUAL DOWNLOAD FALLBACK
+# ------------------------
+# Note: If the automatic download fails (e.g., the server blocks the request
+# or returns an HTML 405 page), you can manually download the files:
+# 1. Go to: https://guolab.wchscu.cn/AnimalTFDB4/#/
+# 2. Click "Download" and find your organism.
+# 3. Download both the "TF list" and "TF Cofactor list".
+# 4. You should get:
+#    - "Danio_rerio_TF.txt"
+#    - "Danio_rerio_Cof.txt"
+# 5. Move them to the folder "outputs/<file_date>/"
 
-  
+# The following code will rename the manually downloaded files by adding the date.
+# Uncomment and run **only if needed**:
 
+# manual_files <- c("Danio_rerio_TF", "Danio_rerio_Cof")
+# dated_files  <- c(
+#   paste0("Danio_rerio_TF_", file_date, ".txt"),
+#   paste0("Danio_rerio_Cof_", file_date, ".txt")
+# )
+# 
+# for (i in seq_along(manual_files)) {
+#   src <- file.path("outputs", file_date, manual_files[i])
+#   dest <- file.path("outputs", file_date, dated_files[i])
+# 
+#   if (file.exists(src)) {
+#     # Rename the file by adding the date
+#     file.rename(from = src, to = dest)
+#     message("Renamed '", manual_files[i], "' to '", dated_files[i], "'")
+#   } else {
+#     message(
+#       "File '", manual_files[i], "' not found. Please download it manually from AnimalTFDB: ",
+#       "https://guolab.wchscu.cn/AnimalTFDB4/#/"
+#     )
+#   }
+# }
 
 #>> STEP 2 - Load the DRomics results
 #>----------------------------------------------
@@ -406,7 +432,7 @@ curves_to_pdf(
 #
 # For example: `clustr_enrichres_2024-07-07.rds` and `lonely_fishres_2024-07-07.rds`
 # Today's date can be dynamically generated using the "Sys.date()" function.
-file_date <- "2024-12-04" 
+file_date <- "2025-08-21" 
 
 # Now, render and preview the html report. The output is moved to the directory chosen in 'output_path'.
 #
@@ -444,8 +470,11 @@ render_qmd(
 
 #>> Generate the comparison of cluefish and standard workflow quarto report -------
 
-# Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the cluefish workflow
-source(here::here("analyses", "standard_approach_dre_pipeline.R"))
+# Basic enrichment of the deregulated transcripts genes from the DRomics workflow, for comparison with the cluefish workflow. 
+# Note: This example uses the dataset from our supplementary material 
+# ([Franklin *et al.* (2025)](https://doi.org/10.1093/nargab/lqaf103)), specifically the DBP dose-response in Danio rerio. 
+# The code is tailored to that dataset (folder "drerio-dbp") and is shown here for illustration.
+source(here::here("analyses", "drerio-dbp", "standard_approach_dre_pipeline.R"))
 
 # Render and preview the comparison_results_report html report comparing the results of both approaches on the same data
 render_qmd(
