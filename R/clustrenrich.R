@@ -267,6 +267,9 @@ clustrenrich <- function(
     dplyr::rename(gene_id = intersection, 
                   clustr = query)
   
+  # Save original gost results for summary purposes
+  dr_g_a_gostres_og <- dr_g_a_gostres
+  
   # Conditionally remove biological functions that are not sufficiently enriched by a cluster
   if (!is.null(ngenes_enrich_filtr)) {
     
