@@ -17,10 +17,11 @@ knitr::opts_chunk$set(
 
 <!-- PROJECT LOGO -->
 
-# cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150" style="float:right; height:150px;" /></a>
+# cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150" style="float:right; height:120px;"/></a>
 
 <!-- PROJECT SHIELDS -->
 
+```{=html}
 <!--
 *** I'm using markdown "reference style" links for readability.
 *** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
@@ -28,14 +29,13 @@ knitr::opts_chunk$set(
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+```
 
-[![Contributors](https://img.shields.io/github/contributors/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/graphs/contributors) [![Forks](https://img.shields.io/github/forks/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/network/members) [![Stargazers](https://img.shields.io/github/stars/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/stargazers) [![Issues](https://img.shields.io/github/issues/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/issues) 
-[![License](https://img.shields.io/badge/licence-CECILL_2.1-blue)](https://github.com/ellfran-7/cluefish/blob/main/LICENSE) [![LinkedIn](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/ellis-franklin-6188831ba)
+[![Contributors](https://img.shields.io/github/contributors/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/graphs/contributors) [![Forks](https://img.shields.io/github/forks/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/network/members) [![Stargazers](https://img.shields.io/github/stars/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/stargazers) [![Issues](https://img.shields.io/github/issues/ellfran-7/cluefish.svg?style=flat-square)](https://github.com/ellfran-7/cluefish/issues) [![License](https://img.shields.io/badge/licence-CECILL_2.1-blue)](https://github.com/ellfran-7/cluefish/blob/main/LICENSE) [![LinkedIn](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/ellis-franklin-6188831ba)
 
 <!-- TABLE OF CONTENTS -->
 
 <details>
-
 <summary>Table of Contents</summary>
 
 <ol>
@@ -58,30 +58,38 @@ knitr::opts_chunk$set(
 
 </details>
 
+
 <!-- ABOUT THE PROJECT -->
 
 ## Overview
 
 Cluefish is a free and open-source, semi-automated R workflow designed for comprehensive and untargeted exploration of transcriptomic data series. Its name reflects the three key concepts driving the workflow: **Clustering**, **Enrichment**, and **Fishing**—metaphorically aligned with "*fishing for clues*"🎣 in complex biological data.
 
-When used alongside the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package, Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. In toxicology/ecotoxicology, this will support the understanding/highlighting of contaminant’s mode of action. 
+When used alongside the [DRomics](https://lbbe-software.github.io/DRomics/) (Dose-Response for Omics) R package, Cluefish provides a more comprehensive analysis of dose-response transcriptomic data. In toxicology/ecotoxicology, this will support the understanding/highlighting of contaminant’s mode of action.
 
 This workflow addresses the limitations of the standard Over-Representation Analysis (ORA) by applying ORA to pre-clustered networks. These clusters serve as anchors for ORA, enhancing enrichment detection sensitivity and thus enabling the identification of smaller, more specific biological processes while simultaneously forming exploratory gene groups.
 
 Cluefish is designed to be adaptable to a wide range of organisms, both model and non-model, ensuring broad applicability across various biological contexts.
 
----------------------------
+------------------------------------------------------------------------
 
 <p style="text-align: center;">
-  <strong>If you're ready to dive straight into using Cluefish, check out the <a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction to Cluefish vignette</a></strong>
+
+<strong>If you're ready to dive straight into using Cluefish, check out the <a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction to Cluefish vignette</a></strong>
+
 </p>
 
----------------------------
+------------------------------------------------------------------------
 
 <center>
 
-<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
-<p align="center" style="color: grey;"><em>Graphical abstract of the Cluefish workflow.</em></p>
+<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract"/>
+
+<p align="center" style="color: grey;">
+
+<em>Graphical abstract of the Cluefish workflow.</em>
+
+</p>
 
 </center>
 
@@ -90,7 +98,6 @@ Cluefish is designed to be adaptable to a wide range of organisms, both model an
 (<a href="#readme-top">back to top</a>)
 
 </p>
-
 
 <!-- INSTALLATION -->
 
@@ -192,7 +199,12 @@ A schematic overview of the Cluefish workflow is shown below. For a full, step-b
 <center>
 
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
-<p align="center" style="color: grey;"><em>Schematic of the Cluefish workflow.</em></p>
+
+<p align="center" style="color: grey;">
+
+<em>Schematic of the Cluefish workflow.</em>
+
+</p>
 
 </center>
 
@@ -202,14 +214,13 @@ A schematic overview of the Cluefish workflow is shown below. For a full, step-b
 
 </p>
 
-<!-- CITATION --> 
+<!-- CITATION -->
 
 ## Citation
 
 If you use Cluefish, please cite the associated paper as follows:
 
-> Ellis Franklin, Elise Billoir, Philippe Veber, Jérémie Ohanessian, Marie Laure Delignette-Muller, Sophie Martine Prud’homme, Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge, *NAR Genomics and Bioinformatics*, Volume 7, Issue 3, September 2025, lqaf103, [https://doi.org/10.1093/nargab/lqaf103](https://doi.org/10.1093/nargab/lqaf103)
-
+> Ellis Franklin, Elise Billoir, Philippe Veber, Jérémie Ohanessian, Marie Laure Delignette-Muller, Sophie Martine Prud’homme, Cluefish: mining the dark matter of transcriptional data series with over-representation analysis enhanced by aggregated biological prior knowledge, *NAR Genomics and Bioinformatics*, Volume 7, Issue 3, September 2025, lqaf103, <https://doi.org/10.1093/nargab/lqaf103>
 
 <!-- CONTRIBUTING -->
 

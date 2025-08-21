@@ -5,7 +5,7 @@
 
 <!-- PROJECT LOGO -->
 
-# cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150" style="float:right; height:150px;" /></a>
+# cluefish <img src="man/figures/cluefish-logo-with-text.png" alt="Logo" align="right" height="150" style="float:right; height:120px;"/></a>
 
 <!-- PROJECT SHIELDS -->
 
@@ -28,10 +28,7 @@
 
 <details>
 
-<summary>
-
-Table of Contents
-</summary>
+<summary>Table of Contents</summary>
 
 <ol>
 
@@ -110,16 +107,19 @@ biological contexts.
 the
 <a href="https://ellfran-7.github.io/cluefish/articles/cluefish.html">Introduction
 to Cluefish vignette</a></strong>
+
 </p>
 
 ------------------------------------------------------------------------
 
 <center>
 
-<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract" />
+<img src="man/figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract"/>
+
 <p align="center" style="color: grey;">
 
 <em>Graphical abstract of the Cluefish workflow.</em>
+
 </p>
 
 </center>
@@ -264,9 +264,11 @@ with **GSE283957**.
 <center>
 
 <img src="man/figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"/>
+
 <p align="center" style="color: grey;">
 
 <em>Schematic of the Cluefish workflow.</em>
+
 </p>
 
 </center>
