@@ -63,21 +63,12 @@ lonelyfishing <- function(
   dr_g_a_annots_filtr <- clustrenrich_data$dr_g_a_whole |>
     dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name)
   
-  # If the output file does not exist or overwrite is set to TRUE, proceed with the fishing
-  # Filtering all genes not part of any cluster : the lonely genes
-  dr_t_no_clustr <- dr_data[!(dr_data$gene_id %in% clustrfusion_data$dr_g_a_fusion$gene_id),]
-  
-  # Filtering annotations based on enriched biological functions
-  # In the fishing process, the function only considers terms and pathways that are enriched. In this case, Keep rows with term_names present in cluster fusion data
-  dr_g_a_annots_filtr <- clustrenrich_data$dr_g_a_whole |>
-    dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name)
-  
   # Check if there are no lonely genes to be fished (no lonely gene shares a functional annotation with a cluster)
   if (!any(dr_t_no_clustr$gene_id %in% dr_g_a_annots_filtr$gene_id)) {
     
-    cat("No lonely genes were fished\n")
+    message("No lonely genes were fished")
     
-    cat(length(unique(dr_t_no_clustr$gene_id)), "remain\n")
+    message(length(unique(dr_t_no_clustr$gene_id)), " remain")
     
     # Associate the fusion results to the lonely results as there has been no change
     dr_g_c_a_lonely_results <- clustrfusion_data$dr_g_a_fusion
@@ -144,8 +135,12 @@ lonelyfishing <- function(
   
   # The function specifically focuses on the driver GO terms to avoid excessive redundancy, as the GO term tree is already highly redundant and present in massive quantities. Including all GO terms would significantly inflate the size of the dataframes and therefore the results to explore.We also want to remove pointless mother root tems such as "KEGG root term" and "WIKIPATHWAYS"
   dr_g_a_annot_data <- clustrenrich_data$dr_g_a_whole |>
-    dplyr::filter(term_name %in% clustrfusion_data$dr_g_a_fusion$term_name & source == "GO:BP" |
-                    source %in% c("KEGG", "WP") & !(term_name %in% c("KEGG root term", "WIKIPATHWAYS")))
+    dplyr::filter(
+      (term_name %in% clustrfusion_data$dr_g_a_fusion$term_name & grepl("^GO:", source)) |
+        (source %in% c("KEGG", "WP") & !(term_name %in% c("KEGG root term", "WIKIPATHWAYS"))) |
+        !grepl("^GO:", source) & !(source %in% c("KEGG", "WP"))
+    )
+  
   
   # Combine the lonely fishing results with the driver GO, KEGG and Wikipathways annotations
   dr_g_c_a_fishing <- merge(dr_g_c_a_fishing_4merge, dr_g_a_annot_data, by = "gene_id", all.x = TRUE)
@@ -194,6 +189,9 @@ lonelyfishing <- function(
   dr_t_c_a_fishing <- dr_t_c_a_fishing |> 
     dplyr::relocate(dplyr::any_of(optional_columns), .after = gene_id)
   
+  # Remove row repetitions
+  dr_t_c_a_fishing <- unique(dr_t_c_a_fishing)
+  
   ## The results are in a combined gene/biological function annotation per row format, but we also want the results in a combined clustr/biological function annotation per row format.
   
   # Remove "gene_id" column, select columns of interest to create cluster dataset
@@ -238,40 +236,40 @@ lonelyfishing <- function(
   ## Print the summmary
   
   # Before fishing summary
-  cat("Before Fishing:", "\n")
+  message("Before fishing:")
   
   # Print the number of total genes
-  cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr_beforefish$gene_id)), "\n")
+  message("- Total lonely genes: ", length(unique(dr_g_a_no_clustr_beforefish$gene_id)))
   
   # Print the number of annotated genes
-  cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated_beforefish$gene_id)), "\n")
+  message("- Annotated lonely genes: ", length(unique(dr_g_a_no_clustr_annotated_beforefish$gene_id)))
   
   # Space
-  cat("", "\n")
+  message("")
   
   # Print the number of lonely genes fishes
-  cat("Fished", length(unique(dr_g_a_lonely_data$gene_id)), "Lonely Genes into existing clusters !", "\n")
+  message("Fished ", length(unique(dr_g_a_lonely_data$gene_id)), " lonely genes into existing clusters !")
   
   # Check if friendly limit set
   if (friendly_limit != 0) {
     # Print the number of genes added to the Lonely cluster
-    cat(length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$friendliness > friendly_limit,]$gene_id)), "exceeding the friendliness limit were moved back to the Lonely Cluster !", "\n") 
+    message(length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$friendliness > friendly_limit,]$gene_id)), " exceeding the friendliness limit were moved back to the lonely cluster !") 
   } else {
     # Print text sating the absence of a friendly limit
-    cat("No friendly limit set.", "\n") 
+    message("No friendly limit set.") 
   }
   
   # Space
-  cat("", "\n")
+  message("")
   
   # Before fishing summary
-  cat("After Fishing:", "\n")
+  message("After fishing:")
   
   # Print the number of lonely genes remaining
-  cat("- Total Lonely Genes:", length(unique(dr_t_c_a_fishing[dr_t_c_a_fishing$new_clustr == "Lonely",]$gene_id)), "\n")
+  message("- Total lonely genes: ", length(unique(dr_t_c_a_fishing[dr_t_c_a_fishing$new_clustr == "Lonely",]$gene_id)))
   
   # Print the number of annotated lonely genes remaining
-  cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated_afterfish$gene_id)), "\n")
+  message("- Annotated lonely genes: ", length(unique(dr_g_a_no_clustr_annotated_afterfish$gene_id)))
   
   
   # Reset row numbers

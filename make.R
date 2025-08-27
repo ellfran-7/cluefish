@@ -255,8 +255,10 @@ gprofiler2::set_base_url("http://biit.cs.ut.ee/gprofiler_archive3/e94_eg41_p11")
 # You can simply use the stable version of g:Profiler 
 gprofiler2::set_base_url("http://biit.cs.ut.ee/gprofiler")
 # This corresponds to the latest stable release version 'e111_eg58_p18_f463989d' at the time of this run ["2024-08-07T13:01:09.277618+00:00"]
-
 # Make sure that you are using the appropriate version of the g:Profiler database !!!
+
+# Note: You can also include custom GMT annotation files using the gmt_file_paths parameter
+# For GMT file format guidance, see: https://biit.cs.ut.ee/gmt-helper/
 
 # Now, we can run the clustrenrich() to perform cluster-wise functional enrichment. 
 clustr_enrichres <- clustrenrich(
@@ -273,9 +275,10 @@ clustr_enrichres <- clustrenrich(
   max_term_size = 500,
   only_highlighted_GO = TRUE,
   ngenes_enrich_filtr = 3,
+  # gmt_file_paths = c("path/to/custom_annotations.gmt"), # Optional: add custom GMT files
   path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("clustr_enrichres_", file_date, ".rds"),
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 # Selecting appropriate minimum and maximum term sizes is challenging and depends on various factors, such as the organism, the type of transcriptomic data, and the definition of "generalistic terms."
@@ -327,7 +330,7 @@ lonely_fishres <- lonelyfishing(
   friendly_limit = 0,
   path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("lonely_fishres_", file_date, ".rds"), 
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 
@@ -355,6 +358,7 @@ lonely_clustr_analysis_res <- simplenrich(
   min_term_size = 5,
   max_term_size = 500,
   ngenes_enrich_filtr = 3,
+  # gmt_file_paths = c("path/to/custom_annotations.gmt"), # Optional: add custom GMT files,
   path = paste0("outputs/", file_date, "/"),
   output_filename = paste0("lonely_clustr_analysis_res_", file_date, ".rds"),
   overwrite = FALSE

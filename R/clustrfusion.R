@@ -30,6 +30,11 @@ clustrfusion <- function(
                   new_clustr = clustr) |> 
     dplyr::select(-clustr)
   
+  # Check if there are any enrichment results to work with
+  if (is.null(clustrenrich_data$gostres$result) || nrow(clustrenrich_data$gostres$result) == 0) {
+    stop("No enrichment results found in the input data. Cluster fusion requires enriched terms to identify clusters that share biological functions. Please run clustrenrich() first with data that produces enrichment results.")
+  }
+  
   # Arrange the gost() results by effective domain size to prioritize sources with a larger panel of biological information about the organism (details in README). Then, select the source column, remove duplicates, and convert to a vector for use in the for loop.
   ordered_term_sources <- clustrenrich_data$gostres$result |> 
     dplyr::arrange(desc(effective_domain_size)) |> 
@@ -171,7 +176,7 @@ clustrfusion <- function(
   clusters_participated_in_fusion <- total_clusters_before_fusion - total_clusters_after_fusion
   
   # Print the ratio of clusters after/before the fusion
-  cat(total_clusters_after_fusion, "/", total_clusters_before_fusion, "clusters left after the fusion process. \n")
+  message(total_clusters_after_fusion, "/", total_clusters_before_fusion, " clusters left after the fusion process.")
   
   # Order columns
   dr_g_a_fusion <- dr_g_a_enrich |> 
