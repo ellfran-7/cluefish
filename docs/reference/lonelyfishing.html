@@ -93,6 +93,26 @@ The function introduces the concept of "Friendly" genes, allowing users to set a
 -<code>params</code> is a list of the main parameters used; in this case the friendly_limit</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Recover lonely (i.o.w., isolated) genes through shared biological annotations</span></span></span>
+<span class="r-in"><span><span class="co"># Requires outputs from multiple previous steps</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">example_lonelyfishing_res</span> <span class="op">&lt;-</span> <span class="fu">lonelyfishing</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  dr_data <span class="op">=</span> <span class="va">your_getregs_res</span>, <span class="co"># OR your_getids_res</span></span></span>
+<span class="r-in"><span>  clustrenrich_data <span class="op">=</span> <span class="va">your_clustrenrich_res</span>,</span></span>
+<span class="r-in"><span>  clustrfusion_data <span class="op">=</span> <span class="va">your_clustrfusion_res</span>,</span></span>
+<span class="r-in"><span>  friendly_limit <span class="op">=</span> <span class="fl">0</span>,  <span class="co"># No minimum friendship requirement</span></span></span>
+<span class="r-in"><span>  path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  output_filename <span class="op">=</span> <span class="st">"example_lonelyfishing_res.rds"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check how many lonely genes were recovered</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">fishing_results</span><span class="op">$</span><span class="va">dr_t_c_a_fishing</span><span class="op">$</span><span class="va">new_clustr</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -63,6 +63,23 @@
 -<code>params</code> is a list of the main parameters used; in this case monoterm_fusion</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Merge clusters based on shared functional enrichment</span></span></span>
+<span class="r-in"><span><span class="co"># Requires output from clustrenrich()</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fusion_results</span> <span class="op">&lt;-</span> <span class="fu">clustrfusion</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  clustrenrich_data <span class="op">=</span> <span class="va">your_clustrenrich_res</span>,</span></span>
+<span class="r-in"><span>  monoterm_fusion <span class="op">=</span> <span class="cn">FALSE</span>  <span class="co"># Allow fusion based on all shared terms</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Compare original vs fused cluster assignments</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">fusion_results</span><span class="op">$</span><span class="va">dr_t_c_a_fusion</span><span class="op">$</span><span class="va">old_clustr</span>, </span></span>
+<span class="r-in"><span>      <span class="va">fusion_results</span><span class="op">$</span><span class="va">dr_t_c_a_fusion</span><span class="op">$</span><span class="va">new_clustr</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

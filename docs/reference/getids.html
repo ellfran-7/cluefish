@@ -92,6 +92,28 @@
     <p>A <code>dataframe</code> of type <em>t</em> containing the biomaRt query results with a modified "external_gene_name" column if itself present and duplicates exist.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Example using transcript IDs from a DRomics drcfit object</span></span></span>
+<span class="r-in"><span><span class="va">example_transcripts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ENSDART00000000069.8"</span>, <span class="st">"ENSDART00000002164.9"</span>, </span></span>
+<span class="r-in"><span>                        <span class="st">"ENSDART00000001691.8"</span>, <span class="st">"ENSDART00000000070.7"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                        </span></span>
+<span class="r-in"><span><span class="co"># Retrieve gene identifiers from Ensembl</span></span></span>
+<span class="r-in"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu">getids</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  id_query <span class="op">=</span> <span class="va">example_transcripts</span>,</span></span>
+<span class="r-in"><span>  biomart_db <span class="op">=</span> <span class="st">"genes"</span>, </span></span>
+<span class="r-in"><span>  species_dataset <span class="op">=</span> <span class="st">"drerio_gene_ensembl"</span>,</span></span>
+<span class="r-in"><span>  transcript_id <span class="op">=</span> <span class="st">"ensembl_transcript_id_version"</span>,</span></span>
+<span class="r-in"><span>  gene_id <span class="op">=</span> <span class="st">"ensembl_gene_id"</span>,</span></span>
+<span class="r-in"><span>  gene_name <span class="op">=</span> <span class="st">"external_gene_name"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gene_ids</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'gene_ids' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

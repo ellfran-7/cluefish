@@ -91,6 +91,27 @@ The files will be stored in the <code>data/derived-data/</code> folder, which wi
     <p>No return value; files are downloaded and stored in the specified directory.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu">dl_regulation_data</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  url_tf <span class="op">=</span> <span class="st">"https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF"</span>,</span></span>
+<span class="r-in"><span>  url_cof <span class="op">=</span> <span class="st">"https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof"</span>,</span></span>
+<span class="r-in"><span>  path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  filename_tf <span class="op">=</span> <span class="st">"Danio_rerio_TF_example.txt"</span>,</span></span>
+<span class="r-in"><span>  filename_cof <span class="op">=</span> <span class="st">"Danio_rerio_Cof_example.txt"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>downloaded length 0 != reported length 2657</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open URL 'https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF': HTTP status was '405 Method Not Allowed'</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in utils::download.file(url = paste0(url_tf), destfile = file.path(path,     filename_tf), mode = "wb"):</span> cannot open URL 'https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF'</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Files are saved to tempdir() and will be automatically cleaned up</span></span></span>
+<span class="r-in"><span><span class="co"># To see where files were saved:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, pattern <span class="op">=</span> <span class="st">"Danio_rerio.*example"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> character(0)</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
