@@ -66,9 +66,9 @@ lonelyfishing <- function(
   # Check if there are no lonely genes to be fished (no lonely gene shares a functional annotation with a cluster)
   if (!any(dr_t_no_clustr$gene_id %in% dr_g_a_annots_filtr$gene_id)) {
     
-    cat("No lonely genes were fished\n")
+    message("No lonely genes were fished")
     
-    cat(length(unique(dr_t_no_clustr$gene_id)), "remain\n")
+    message(length(unique(dr_t_no_clustr$gene_id)), " remain")
     
     # Associate the fusion results to the lonely results as there has been no change
     dr_g_c_a_lonely_results <- clustrfusion_data$dr_g_a_fusion
@@ -236,40 +236,40 @@ lonelyfishing <- function(
   ## Print the summmary
   
   # Before fishing summary
-  cat("Before Fishing:", "\n")
+  message("Before fishing:")
   
   # Print the number of total genes
-  cat("- Total Lonely Genes:", length(unique(dr_g_a_no_clustr_beforefish$gene_id)), "\n")
+  message("- Total lonely genes: ", length(unique(dr_g_a_no_clustr_beforefish$gene_id)))
   
   # Print the number of annotated genes
-  cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated_beforefish$gene_id)), "\n")
+  message("- Annotated lonely genes: ", length(unique(dr_g_a_no_clustr_annotated_beforefish$gene_id)))
   
   # Space
-  cat("", "\n")
+  message("")
   
   # Print the number of lonely genes fishes
-  cat("Fished", length(unique(dr_g_a_lonely_data$gene_id)), "Lonely Genes into existing clusters !", "\n")
+  message("Fished ", length(unique(dr_g_a_lonely_data$gene_id)), " lonely genes into existing clusters !")
   
   # Check if friendly limit set
   if (friendly_limit != 0) {
     # Print the number of genes added to the Lonely cluster
-    cat(length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$friendliness > friendly_limit,]$gene_id)), "exceeding the friendliness limit were moved back to the Lonely Cluster !", "\n") 
+    message(length(unique(dr_g_c_a_fishing[dr_g_c_a_fishing$friendliness > friendly_limit,]$gene_id)), " exceeding the friendliness limit were moved back to the lonely cluster !") 
   } else {
     # Print text sating the absence of a friendly limit
-    cat("No friendly limit set.", "\n") 
+    message("No friendly limit set.") 
   }
   
   # Space
-  cat("", "\n")
+  message("")
   
   # Before fishing summary
-  cat("After Fishing:", "\n")
+  message("After fishing:")
   
   # Print the number of lonely genes remaining
-  cat("- Total Lonely Genes:", length(unique(dr_t_c_a_fishing[dr_t_c_a_fishing$new_clustr == "Lonely",]$gene_id)), "\n")
+  message("- Total lonely genes: ", length(unique(dr_t_c_a_fishing[dr_t_c_a_fishing$new_clustr == "Lonely",]$gene_id)))
   
   # Print the number of annotated lonely genes remaining
-  cat("- Annotated Lonely Genes:", length(unique(dr_g_a_no_clustr_annotated_afterfish$gene_id)), "\n")
+  message("- Annotated lonely genes: ", length(unique(dr_g_a_no_clustr_annotated_afterfish$gene_id)))
   
   
   # Reset row numbers

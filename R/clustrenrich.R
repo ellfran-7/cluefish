@@ -162,11 +162,11 @@ clustrenrich <- function(
   # Initialize list to store all gost results
   all_gost_results <- list()
   
-  cat("Performing cluster-wise functional enrichment...\n")
+  message("Performing cluster-wise functional enrichment...")
   
   # Perform standard Over-Representation Analysis using gprofiler2::gost()
   if (!is.null(sources) && length(sources) > 0) {
-    cat(paste("For standard sources:", paste(sources, collapse = ", "), "\n"))
+    message(paste("For standard sources:", paste(sources, collapse = ", ")))
     
     multi_gostres <- gprofiler2::gost(
       query = cluster_list, 
@@ -197,7 +197,7 @@ clustrenrich <- function(
     all_gost_results[["standard"]] <- multi_gostres
   } else {
     
-    cat(paste("No standard sources chosen (sources == NULL or empty)\n"))
+    message(paste("No standard sources chosen (sources == NULL or empty)"))
     
     # Initialize empty result structure with proper format
     multi_gostres <- list(
@@ -228,17 +228,17 @@ clustrenrich <- function(
   
   if (!is.null(gmt_file_paths) && length(gmt_file_paths) > 0) {
     
-    cat("For custom uploaded GMT files...\n")
+    message("For custom uploaded GMT files...")
     
     for (i in seq_along(gmt_file_paths)) {
       gmt_path <- gmt_file_paths[i]
-      cat(paste(" -\n"))
-      cat(paste(" Processing GMT file", i, "of", length(gmt_file_paths), ":", basename(gmt_path), "\n"))
+      message(paste(" -"))
+      message(paste(" Processing GMT file", i, "of", length(gmt_file_paths), ":", basename(gmt_path)))
       
       tryCatch({
         # Upload GMT file
         gmt_id <- gprofiler2::upload_GMT_file(gmt_path)
-        cat(paste(" GMT file uploaded with ID:", gmt_id, "\n"))
+        message(paste(" GMT file uploaded with ID:", gmt_id))
         
         # Perform enrichment analysis with GMT file
         gmt_gostres <- gprofiler2::gost(
@@ -271,9 +271,9 @@ clustrenrich <- function(
             dplyr::arrange(query)
           
           all_gost_results[[paste0("gmt_", i)]] <- gmt_gostres
-          cat(paste("Found", nrow(gmt_gostres$result), "enriched terms from GMT file\n"))
+          message(paste("Found", nrow(gmt_gostres$result), "enriched terms from GMT file"))
         } else {
-          cat("No enriched terms found in GMT file\n")
+          message("No enriched terms found in GMT file")
         }
         
         # Read GMT annotations for later use
@@ -379,7 +379,7 @@ clustrenrich <- function(
   }
   # ---------------
   
-  cat("---\n")
+  message("---")
   
   # Conditionally filter out non-highlighted GO terms
   if (only_highlighted_GO == TRUE && nrow(multi_gostres$result) > 0) {
@@ -426,11 +426,11 @@ clustrenrich <- function(
     }
     # ----------------
     
-    cat(paste0("Non-highlighted GO terms are removed \n"))
+    message(paste0("Non-highlighted GO terms are removed "))
     
   } else {
     
-    cat(paste0("All GO terms are kept \n"))
+    message(paste0("All GO terms are kept "))
     
   }
   
@@ -441,7 +441,7 @@ clustrenrich <- function(
   if (is.null(min_term_size) && is.null(max_term_size)) {
     
     # Both parameters are NULL, so no filtering is applied
-    cat("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering \n")
+    message("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering ")
     
   } else if (nrow(multi_gostres_filtr$result) > 0) {
     
@@ -452,7 +452,7 @@ clustrenrich <- function(
       multi_gostres_filtr$result <- multi_gostres_filtr$result |>
         dplyr::filter(term_size >= min_term_size)
       
-      cat(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes \n"))
+      message(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes "))
       
     }
     
@@ -463,7 +463,7 @@ clustrenrich <- function(
       multi_gostres_filtr$result <- multi_gostres_filtr$result |>
         dplyr::filter(term_size <= max_term_size)
       
-      cat(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes \n"))
+      message(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes "))
       
     }
     
@@ -474,7 +474,7 @@ clustrenrich <- function(
       multi_gostres_filtr$result <- multi_gostres_filtr$result |>
         dplyr::filter(term_size >= min_term_size & term_size <= max_term_size)
       
-      cat(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes \n"))
+      message(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes "))
       
     }
   }
@@ -540,8 +540,8 @@ clustrenrich <- function(
     # Update the dr_g_a_gostres df with the filtered and sorted data
     dr_g_a_gostres <- dr_g_a_termkept
     
-    cat(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes \n"))
-    cat("--- \n")
+    message(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes "))
+    message("--- ")
     
   } else { 
     
@@ -552,23 +552,23 @@ clustrenrich <- function(
     }
     
     # The parameter is NULL, so no filtering is applied
-    cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
-    cat("--- \n")
+    message("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering ")
+    message("--- ")
   }
   
   
   ## Print out a summary of the enrichment results with or without filtering :
   # Print the ratio of clusters participating in enrichment
-  cat(length(unique(dr_g_a_gostres_og$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), "clusters participating in enrichment", "\n")
+  message(length(unique(dr_g_a_gostres_og$clustr)), "/",  length(unique(clustrfiltr_data$kept$clustr)), " clusters participating in enrichment")
   
   # Print the ratio of terms removed because of gene set filtering
   original_terms <- if (nrow(multi_gostres$result) > 0) length(unique(multi_gostres$result$term_name)) else 0
   after_size_filter <- if (nrow(dr_g_a_gostres_og) > 0) length(unique(dr_g_a_gostres_og$term_name)) else 0
-  cat(after_size_filter, "/", original_terms, "enriched terms kept after gene set size filters", "\n")
+  message(after_size_filter, "/", original_terms, " enriched terms kept after gene set size filters")
   
   # Print the ratio of terms removed because of filtering
   after_enrich_filter <- if (nrow(dr_g_a_gostres) > 0) length(unique(dr_g_a_gostres$term_name)) else 0
-  cat(after_enrich_filter, "/", after_size_filter, "enriched terms kept after enrichment size filter", "\n")
+  message(after_enrich_filter, "/", after_size_filter, " enriched terms kept after enrichment size filter")
   
   
   # --------------

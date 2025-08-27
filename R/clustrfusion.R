@@ -176,7 +176,7 @@ clustrfusion <- function(
   clusters_participated_in_fusion <- total_clusters_before_fusion - total_clusters_after_fusion
   
   # Print the ratio of clusters after/before the fusion
-  cat(total_clusters_after_fusion, "/", total_clusters_before_fusion, "clusters left after the fusion process. \n")
+  message(total_clusters_after_fusion, "/", total_clusters_before_fusion, " clusters left after the fusion process.")
   
   # Order columns
   dr_g_a_fusion <- dr_g_a_enrich |> 

@@ -135,11 +135,11 @@ simplenrich <- function(
   # Initialize list to store all gost results
   all_gost_results <- list()
   
-  cat("Performing simple functional enrichment...\n")
+  message("Performing simple functional enrichment...")
   
   # Perform standard Over-Representation Analysis using gprofiler2::gost()
   if (!is.null(sources) && length(sources) > 0) {
-    cat(paste("For standard sources:", paste(sources, collapse = ", "), "\n"))
+    message(paste("For standard sources:", paste(sources, collapse = ", ")))
     
     gostres <- gprofiler2::gost(
       query = input_genes, 
@@ -163,7 +163,7 @@ simplenrich <- function(
     all_gost_results[["standard"]] <- gostres
   } else {
     
-    cat(paste("No standard sources chosen (sources == NULL or empty)\n"))
+    message(paste("No standard sources chosen (sources == NULL or empty)"))
     
     # Initialize empty result structure with proper format
     gostres <- list(
@@ -194,17 +194,17 @@ simplenrich <- function(
   
   if (!is.null(gmt_file_paths) && length(gmt_file_paths) > 0) {
     
-    cat("For custom uploaded GMT files...\n")
+    message("For custom uploaded GMT files...")
     
     for (i in seq_along(gmt_file_paths)) {
       gmt_path <- gmt_file_paths[i]
-      cat(paste(" -\n"))
-      cat(paste(" Processing GMT file", i, "of", length(gmt_file_paths), ":", basename(gmt_path), "\n"))
+      message(paste(" -"))
+      message(paste(" Processing GMT file", i, "of", length(gmt_file_paths), ":", basename(gmt_path)))
       
       tryCatch({
         # Upload GMT file
         gmt_id <- gprofiler2::upload_GMT_file(gmt_path)
-        cat(paste(" GMT file uploaded with ID:", gmt_id, "\n"))
+        message(paste(" GMT file uploaded with ID:", gmt_id))
         
         # Perform enrichment analysis with GMT file
         gmt_gostres <- gprofiler2::gost(
@@ -235,9 +235,9 @@ simplenrich <- function(
             )
           
           all_gost_results[[paste0("gmt_", i)]] <- gmt_gostres
-          cat(paste("Found", nrow(gmt_gostres$result), "enriched terms from GMT file\n"))
+          message(paste("Found", nrow(gmt_gostres$result), "enriched terms from GMT file"))
         } else {
-          cat("No enriched terms found in GMT file\n")
+          message("No enriched terms found in GMT file")
         }
         
         # Read GMT annotations for later use
@@ -324,7 +324,7 @@ simplenrich <- function(
   # Turn the tibble to a dataframe
   dr_g_a_unfiltered <- as.data.frame(dr_g_a_unfiltered)
   
-  cat("---\n")
+  message("---")
   
   ## Create dataframes in "gene x annotation per row" (g_a) and "annotation per row" (a) formats for the filtered category
   
@@ -338,13 +338,13 @@ simplenrich <- function(
            (!(grepl("^GO", source) & !grepl("^GMT:", source))))
       )
     
-    cat(paste0("Non-highlighted GO terms are removed \n"))
+    message(paste0("Non-highlighted GO terms are removed "))
     
   } else {
     
     dr_a_filtered <- gostres$result
     
-    cat(paste0("All GO terms are kept \n"))
+    message(paste0("All GO terms are kept "))
     
   }
   
@@ -354,7 +354,7 @@ simplenrich <- function(
     dr_a_size_filtered <- dr_a_filtered
     
     # Both parameters are NULL, so no filtering is applied
-    cat("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering \n")
+    message("Both `min_term_size` and `max_term_size` are NULL. No gene set size filtering ")
     
   } else if (nrow(dr_a_filtered) > 0) {
     
@@ -365,7 +365,7 @@ simplenrich <- function(
       dr_a_size_filtered <- dr_a_filtered |> 
         dplyr::filter(term_size >= min_term_size)
       
-      cat(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes \n"))
+      message(paste0("Filtered gene sets sizes for at least: ", min_term_size, " genes "))
       
     }
     
@@ -376,7 +376,7 @@ simplenrich <- function(
       dr_a_size_filtered <- dr_a_filtered |> 
         dplyr::filter(term_size <= max_term_size)
       
-      cat(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes \n"))
+      message(paste0("Filtered gene sets sizes for at most: ", max_term_size, "genes "))
       
     }
     
@@ -387,7 +387,7 @@ simplenrich <- function(
       dr_a_size_filtered <- dr_a_filtered |> 
         dplyr::filter(term_size >= min_term_size & term_size <= max_term_size)
       
-      cat(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes \n"))
+      message(paste0("Filtered gene sets sizes for: ", min_term_size, " to ", max_term_size, " genes "))
       
     }
   } else {
@@ -400,16 +400,16 @@ simplenrich <- function(
     dr_a_enrich_size_filtered <- dr_a_size_filtered |> 
       dplyr::filter(intersection_size >= ngenes_enrich_filtr)
     
-    cat(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes \n"))
-    cat("--- \n")
+    message(paste0("Filtered gene sets enriched by at least: ", ngenes_enrich_filtr, " genes "))
+    message("--- ")
     
   } else {
     
     dr_a_enrich_size_filtered <- dr_a_size_filtered
     
     # The parameter is NULL, so no filtering is applied
-    cat("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering \n")
-    cat("--- \n")
+    message("`ngenes_enrich_filtr` is NULL. No gene set enrichment size filtering ")
+    message("--- ")
     
   }
   
@@ -443,8 +443,8 @@ simplenrich <- function(
   after_size_filter <- if (nrow(dr_a_size_filtered) > 0) length(unique(dr_a_size_filtered$term_name)) else 0
   after_enrich_filter <- if (nrow(dr_a_enrich_size_filtered) > 0) length(unique(dr_a_enrich_size_filtered$term_name)) else 0
   
-  cat(after_size_filter, "/", after_highlight_filter, "enriched terms kept after gene set size filters", "\n")
-  cat(after_enrich_filter, "/", after_size_filter, "enriched terms kept after enrichment size filter", "\n")
+  message(after_size_filter, "/", after_highlight_filter, " enriched terms kept after gene set size filters")
+  message(after_enrich_filter, "/", after_size_filter, " enriched terms kept after enrichment size filter")
   
   # Turn the tibble to a dataframe
   dr_g_a_enrich_size_filtered <- as.data.frame(dr_g_a_enrich_size_filtered)

@@ -31,7 +31,7 @@ clustrfiltr <- function(
   big_clusters <- names(cluster_sizes[cluster_sizes >= size_filtr])
   
   # Print the count of clusters before and after filtering
-  cat("Total clusters kept:", length(big_clusters), "/", length(unique(dr_g_clustrs$clustr)), "\n")
+  message("Total clusters kept: ", length(big_clusters), "/", length(unique(dr_g_clustrs$clustr)))
   
   # Separate clusters into kept and removed based on the size filter to create the list result
   dr_t_clustrs_filtr <- list(kept = getclustrs_data[getclustrs_data$clustr %in% big_clusters, ],
