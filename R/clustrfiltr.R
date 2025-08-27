@@ -13,7 +13,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Create example clustered data
 #' example_getclustrs_res <- data.frame(
 #'   transcript_id = paste0("ENSDART", sprintf("%08d", 1:20), ".8"),
