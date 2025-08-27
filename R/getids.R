@@ -18,6 +18,23 @@
 #' @export
 #'
 #' @examples
+#' \donttest{
+#' # Example using transcript IDs from a DRomics drcfit object
+#' example_transcripts <- c("ENSDART00000000069.8", "ENSDART00000002164.9", 
+#'                         "ENSDART00000001691.8", "ENSDART00000000070.7")
+#'                         
+#' # Retrieve gene identifiers from Ensembl
+#' ids <- getids(
+#'   id_query = example_transcripts,
+#'   biomart_db = "genes", 
+#'   species_dataset = "drerio_gene_ensembl",
+#'   transcript_id = "ensembl_transcript_id_version",
+#'   gene_id = "ensembl_gene_id",
+#'   gene_name = "external_gene_name"
+#' )
+#' 
+#' head(gene_ids)
+#' }
 
 getids <- function(
     id_query, 

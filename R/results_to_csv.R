@@ -14,7 +14,19 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Create summary CSV of complete workflow results
+#' # Requires lonelyfishing and bmdboot data
 #' 
+#' results_to_csv(
+#'   lonelyfishing_data = your_lonelyfishing_res,
+#'   bmdboot_data = your_bmdboot_res, 
+#'   path = tempdir(),
+#'   output_filename = "cluefish_summary_results.csv"
+#' )
+#' 
+#' # CSV contains: gene IDs, cluster assignments, BMD values, trends, etc.
+#' }
 
 results_to_csv <- function(
     lonelyfishing_data,

@@ -13,7 +13,19 @@
 #'      -`params` is a list of the main parameters used; in this case monoterm_fusion
 #' 
 #' @examples
+#' \dontrun{
+#' # Merge clusters based on shared functional enrichment
+#' # Requires output from clustrenrich()
 #' 
+#' fusion_results <- clustrfusion(
+#'   clustrenrich_data = your_clustrenrich_res,
+#'   monoterm_fusion = FALSE  # Allow fusion based on all shared terms
+#' )
+#' 
+#' # Compare original vs fused cluster assignments
+#' table(fusion_results$dr_t_c_a_fusion$old_clustr, 
+#'       fusion_results$dr_t_c_a_fusion$new_clustr)
+#' }
 
 clustrfusion <- function(
     clustrenrich_data,

@@ -13,6 +13,22 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # This function requires clustered Protein-Protein Interaction (PPI) Network data from Cytoscape
+#' # 1. Export your gene IDs to STRING database in Cytoscape
+#' # 2. Construct a PPI network
+#' # 2. Apply MCL clustering (with params, for example, inflation = 4.0 and confidence score = 0.9)
+#' # 3. Export node table as CSV
+#' 
+#' example_getclustrs_res <- getclustrs(
+#'   gene_data = your_getregs_res, # OR your_getids_res
+#'   colname_for_merge = "gene_id",
+#'   path = "outputs/2025-08-21/cytoscape-files/",
+#'   nodetable_filename = "string_clustered_network.csv"
+#' )
+#' 
+#' # See package vignette for complete Cytoscape workflow
+#' }
 
 getclustrs <- function(
     gene_data,

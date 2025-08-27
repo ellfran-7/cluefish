@@ -21,7 +21,22 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Recover lonely (i.o.w., isolated) genes through shared biological annotations
+#' # Requires outputs from multiple previous steps
 #' 
+#' example_lonelyfishing_res <- lonelyfishing(
+#'   dr_data = your_getregs_res, # OR your_getids_res
+#'   clustrenrich_data = your_clustrenrich_res,
+#'   clustrfusion_data = your_clustrfusion_res,
+#'   friendly_limit = 0,  # No minimum friendship requirement
+#'   path = tempdir(),
+#'   output_filename = "example_lonelyfishing_res.rds"
+#' )
+#' 
+#' # Check how many lonely genes were recovered
+#' table(fishing_results$dr_t_c_a_fishing$new_clustr)
+#' }
 
 lonelyfishing <- function(
     dr_data,

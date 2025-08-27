@@ -42,6 +42,23 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # This function requires multiple processed objects from previous steps
+#' # See complete workflow in package vignette
+#' 
+#' example_clustrenrich_res <- clustrenrich(
+#'   clustrfiltr_data = your_clustrfiltr_res,
+#'   dr_genes = your_deregulated_gene_ids,
+#'   bg_genes = your_background_gene_ids,
+#'   bg_type = "custom_annotated",
+#'   sources = c("GO:BP", "KEGG", "WP"),
+#'   organism = "drerio",
+#'   user_threshold = 0.05,
+#'   correction_method = "fdr",
+#'   path = tempdir(),
+#'   output_filename = "clustrenrich_res.rds"
+#' )
+#' }
 
 clustrenrich <- function(
     clustrfiltr_data,

@@ -22,7 +22,28 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Generate dose-response curve plots by cluster
+#' # Uses actual doses from your ex_f object: c(0, 5, 10, 50, 100)
 #' 
+#' curves_to_pdf(
+#'   lonelyfishing_data = your_lonelyfishing_res,
+#'   bmdboot_data = your_bmdboot_res,
+#'   clustrfusion_data = your_clustrfusion_res,
+#'   tested_doses = c(0, 5, 10, 50, 100),  # From f$omicdata$dose
+#'   annot_order = c("GO:BP", "KEGG", "WP"),
+#'   colorby = "trend",
+#'   addBMD = TRUE,
+#'   dose_log_transfo = TRUE,
+#'   xunit = "µg/L",
+#'   xtitle = "Dose (µg/L)", 
+#'   ytitle = "Signal",
+#'   colors = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+#'             "U" = "#7570B3", "bell" = "#E7298A"),
+#'   path = tempdir(),
+#'   output_filename = "cluefish_curvesplot_per_cluster.pdf"
+#' )
+#' }
 
 curves_to_pdf <- function(
     lonelyfishing_data, 
