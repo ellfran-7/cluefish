@@ -20,7 +20,7 @@
 #'                     "ENSDART00000001691.8", "ENSDART00000000070.7"),
 #'   gene_id = c("ENSDARG00000000068", "ENSDARG00000000069",
 #'               "ENSDARG00000001463", "ENSDARG00000008433")
-#'   gene_name = c("NHERF1", "DAP", "tdh2", "UNC45B),
+#'   gene_name = c("NHERF1", "DAP", "tdh2", "UNC45B"),
 #'   stringsAsFactors = FALSE
 #' )
 #' 

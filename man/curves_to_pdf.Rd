@@ -56,3 +56,27 @@ No return value; the \code{.pdf} file is downloaded and stored in the specified 
 \description{
 This function generates a PDF file featuring dose-response curves for each cluster of deregulated genes. Each plot is labeled with the cluster ID and the number of transcripts in the cluster. By default, the curves are color-coded to indicate whether the trend is increasing, decreasing, U-shaped, or bell-shaped. Users can also apply any modifications available in the original DRomics::curvesplot() function.
 }
+\examples{
+\dontrun{
+# Generate dose-response curve plots by cluster
+# Uses actual doses from your ex_f object: c(0, 5, 10, 50, 100)
+
+curves_to_pdf(
+  lonelyfishing_data = your_lonelyfishing_res,
+  bmdboot_data = your_bmdboot_res,
+  clustrfusion_data = your_clustrfusion_res,
+  tested_doses = c(0, 5, 10, 50, 100),  # From f$omicdata$dose
+  annot_order = c("GO:BP", "KEGG", "WP"),
+  colorby = "trend",
+  addBMD = TRUE,
+  dose_log_transfo = TRUE,
+  xunit = "µg/L",
+  xtitle = "Dose (µg/L)", 
+  ytitle = "Signal",
+  colors = c("inc" = "#1B9E77", "dec" = "#D95F02", 
+            "U" = "#7570B3", "bell" = "#E7298A"),
+  path = tempdir(),
+  output_filename = "cluefish_curvesplot_per_cluster.pdf"
+)
+}
+}

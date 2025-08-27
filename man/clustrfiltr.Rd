@@ -20,3 +20,25 @@ A named \code{list} holding 2 components, where :
 \description{
 This function filters clusters based on size, selecting genes that belong to clusters meeting the user-defined size criteria.
 }
+\examples{
+\dontrun{
+# Create example clustered data
+example_getclustrs_res <- data.frame(
+  transcript_id = paste0("ENSDART", sprintf("\%08d", 1:20), ".8"),
+  gene_id = paste0("ENSDARG", sprintf("\%08d", 1:20)),
+  gene_name = paste0("gene", 1:20),
+  clustr = c(rep("1", 6), rep("2", 4),
+             rep("3", 3), rep("4", 7)),
+  TF = sample(c(TRUE, FALSE), 20, replace = TRUE),
+  stringsAsFactors = FALSE
+)
+
+# Filter clusters by minimum size
+example_clustrfiltr_res <- clustrfiltr(
+  getclustrs_data = example_getclustrs_res,
+  size_filtr = 4  # Keep clusters with ≥4 genes
+)
+
+table(filtered_clusters$clustr)
+}
+}

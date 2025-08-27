@@ -38,7 +38,6 @@
 #' @export
 #'
 #' @examples
-#' @examples
 #' \dontrun{
 #' # This function requires two character vectors:
 #' #  - deregulated gene ids derived from DRomics (b$res$id or b_definedCI$id)

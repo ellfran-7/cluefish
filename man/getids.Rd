@@ -38,3 +38,22 @@ A \code{dataframe} of type \emph{t} containing the biomaRt query results with a 
 \description{
 This function connects to the Ensembl or Ensembl Metazoa database, queries a specified species dataset using the biomaRt package, and returns the results of the query. If the query includes the 'external_gene_name' attribute, representing readable gene symbols, the function examines whether any duplicates of this identifier exist across various Ensembl transcript and gene IDs rows. This situation occurs when a gene symbol corresponds to different Ensembl gene IDs and Ensembl transcript IDs. If duplicates are detected, the function modifies the external gene name to address this discrepancy.
 }
+\examples{
+\donttest{
+# Example using transcript IDs from a DRomics drcfit object
+example_transcripts <- c("ENSDART00000000069.8", "ENSDART00000002164.9", 
+                        "ENSDART00000001691.8", "ENSDART00000000070.7")
+                        
+# Retrieve gene identifiers from Ensembl
+ids <- getids(
+  id_query = example_transcripts,
+  biomart_db = "genes", 
+  species_dataset = "drerio_gene_ensembl",
+  transcript_id = "ensembl_transcript_id_version",
+  gene_id = "ensembl_gene_id",
+  gene_name = "external_gene_name"
+)
+
+head(gene_ids)
+}
+}

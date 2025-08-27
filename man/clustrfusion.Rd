@@ -21,3 +21,18 @@ A named \code{list} holding 4 components, where :
 \description{
 This function fusions clusters that share the same biological function enrichment in at-least one of the sources used (e.g. GO, KEGG...).
 }
+\examples{
+\dontrun{
+# Merge clusters based on shared functional enrichment
+# Requires output from clustrenrich()
+
+fusion_results <- clustrfusion(
+  clustrenrich_data = your_clustrenrich_res,
+  monoterm_fusion = FALSE  # Allow fusion based on all shared terms
+)
+
+# Compare original vs fused cluster assignments
+table(fusion_results$dr_t_c_a_fusion$old_clustr, 
+      fusion_results$dr_t_c_a_fusion$new_clustr)
+}
+}

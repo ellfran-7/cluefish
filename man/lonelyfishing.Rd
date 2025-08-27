@@ -40,3 +40,21 @@ This function expands gene clusters by incorporating "lonely" genes—those not 
 
 The function introduces the concept of "Friendly" genes, allowing users to set a friendly_limit that determines the maximum number of clusters a gene can be part of. Genes exceeding this limit are reassigned to the "Lonely" cluster, and a "friendliness" column is created to show the number of clusters each gene participates in.
 }
+\examples{
+\dontrun{
+# Recover lonely (i.o.w., isolated) genes through shared biological annotations
+# Requires outputs from multiple previous steps
+
+example_lonelyfishing_res <- lonelyfishing(
+  dr_data = your_getregs_res, # OR your_getids_res
+  clustrenrich_data = your_clustrenrich_res,
+  clustrfusion_data = your_clustrfusion_res,
+  friendly_limit = 0,  # No minimum friendship requirement
+  path = tempdir(),
+  output_filename = "example_lonelyfishing_res.rds"
+)
+
+# Check how many lonely genes were recovered
+table(fishing_results$dr_t_c_a_fishing$new_clustr)
+}
+}

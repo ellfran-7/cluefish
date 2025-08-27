@@ -21,3 +21,36 @@ This function renders a Quarto \code{.qmd} document to a specified output format
 the resulting file to a designated output path. It uses \code{quarto::quarto_render} to
 perform the rendering and \code{fs::file_move} to handle the file movement.
 }
+\examples{
+\donttest{
+# Create a simple example Quarto document
+qmd_content <- '
+---
+title: "Test Report"
+format: html
+params:
+  file_date: "2025-01-01"
+---
+
+# Example Report
+
+Analysis date: `r params$file_date`
+'
+
+# Write temporary .qmd file
+temp_qmd <- file.path(tempdir(), "example_report.qmd")
+writeLines(qmd_content, temp_qmd)
+
+# Render the report
+render_qmd(
+  input_file = temp_qmd,
+  output_file = "rendered_example_report",
+  file_ext = "html",
+  output_path = tempdir(),
+  execute_params = list(`file-date` = "2025-01-01")
+)
+
+# Check output
+list.files(tempdir(), pattern = "rendered_example", full.names = TRUE)
+}
+}

@@ -85,3 +85,22 @@ Users can filter terms/pathways based on gene set size (min_term_size and max_te
 
 Additionally, users can choose to retain only highlighted/driver GO terms to reduce redundancy and focus on key biological functions. A secondary gprofiler2::gost() run with significant = FALSE retrieves annotations for all deregulated genes, which is utilised later in the lonelyfishing() function. Throughout the process, a dataframe tracks the number of biological functions linked to each cluster after each filtering step, categorized by source. All main parameters used are saved in the output for transparency and reproducibility.
 }
+\examples{
+\dontrun{
+# This function requires multiple processed objects from previous steps
+# See complete workflow in package vignette
+
+example_clustrenrich_res <- clustrenrich(
+  clustrfiltr_data = your_clustrfiltr_res,
+  dr_genes = your_deregulated_gene_ids,
+  bg_genes = your_background_gene_ids,
+  bg_type = "custom_annotated",
+  sources = c("GO:BP", "KEGG", "WP"),
+  organism = "drerio",
+  user_threshold = 0.05,
+  correction_method = "fdr",
+  path = tempdir(),
+  output_filename = "clustrenrich_res.rds"
+)
+}
+}

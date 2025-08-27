@@ -20,3 +20,23 @@ A \code{dataframe} of type \emph{t} similar to the \emph{getids_data} input with
 \description{
 This function retrieves information on the regulatory status of genes using the files downloaded with the \code{dl_regulation_data()} function. It firstly checks if the specifed files have beel downloaded, and whether they contain the è \code{Ensembl}
 }
+\examples{
+\dontrun{
+# Create example gene data (normally from getids())
+example_getids_res <- data.frame(
+  transcript_id = c("ENSDART00000000069.8", "ENSDART00000002164.9", 
+                    "ENSDART00000001691.8", "ENSDART00000000070.7"),
+  gene_id = c("ENSDARG00000000068", "ENSDARG00000000069",
+              "ENSDARG00000001463", "ENSDARG00000008433")
+  gene_name = c("NHERF1", "DAP", "tdh2", "UNC45B"),
+  stringsAsFactors = FALSE
+)
+
+# Add regulatory status (requires downloaded TF/CoTF files)
+gene_regs <- getregs(
+  getids_data = example_getids_res,
+  regulator_file = file.path(tempdir(), "Danio_rerio_TF_example.txt"),
+  coregulator_file = file.path(tempdir(), "Danio_rerio_Cof_example.txt")
+)
+}
+}

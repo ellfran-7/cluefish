@@ -35,3 +35,18 @@ The downloaded files are saved as .txt files in the specified directory.
 If the files already exist locally and \code{overwrite} is not set to TRUE, the function will not download them again.
 The files will be stored in the \verb{data/derived-data/} folder, which will be created if necessary.
 }
+\examples{
+\donttest{
+dl_regulation_data(
+  url_tf = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/TF_list_final/Danio_rerio_TF",
+  url_cof = "https://guolab.wchscu.cn/AnimalTFDB4_static/download/Cof_list_final/Danio_rerio_Cof",
+  path = tempdir(),
+  filename_tf = "Danio_rerio_TF_example.txt",
+  filename_cof = "Danio_rerio_Cof_example.txt"
+)
+
+# Files are saved to tempdir() and will be automatically cleaned up
+# To see where files were saved:
+list.files(tempdir(), pattern = "Danio_rerio.*example", full.names = TRUE)
+}
+}

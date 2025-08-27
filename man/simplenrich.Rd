@@ -77,3 +77,27 @@ enriched set, and on whether to keep only highlighted driver GO terms.
 The output contains both unfiltered and filtered results, in two formats:
 "gene × annotation per row" and "annotation per row".
 }
+\examples{
+\dontrun{
+# This function requires two character vectors:
+#  - deregulated gene ids derived from DRomics (b$res$id or b_definedCI$id)
+#  - background gene ids from the experiment (f$omicdata$items)
+
+# Perform simple functional enrichment
+example_simplenrich_res <- simplenrich(
+  input_genes = your_deregulated_gene_ids,
+  bg_genes = your_background_gene_ids,
+  bg_type = "custom_annotated",
+  sources = c("GO:BP", "KEGG"),
+  organism = "drerio",
+  user_threshold = 0.05,
+  correction_method = "fdr",
+  min_term_size = 5,
+  max_term_size = 500,
+  only_highlighted_GO = TRUE,
+  ngenes_enrich_filtr = 3,
+  path = tempdir(),
+  output_filename = "example_simplenrich_res.rds"
+)
+}
+}

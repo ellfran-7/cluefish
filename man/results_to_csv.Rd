@@ -29,3 +29,18 @@ No return value; the \code{.csv} file is downloaded and stored in the specified 
 \description{
 This function creates a concise summary table capturing key details derived from the workflow results from the \code{lonelyfishing()} function. It is formatted with each row being a combination of transcript, cluster and biological function annotation.
 }
+\examples{
+\dontrun{
+# Create summary CSV of complete workflow results
+# Requires lonelyfishing and bmdboot data
+
+results_to_csv(
+  lonelyfishing_data = your_lonelyfishing_res,
+  bmdboot_data = your_bmdboot_res, 
+  path = tempdir(),
+  output_filename = "cluefish_summary_results.csv"
+)
+
+# CSV contains: gene IDs, cluster assignments, BMD values, trends, etc.
+}
+}
