@@ -63,7 +63,7 @@ clustrenrich <- function(
     path, 
     output_filename, 
     overwrite = FALSE 
-)
+    )
 
 {
   
@@ -327,28 +327,10 @@ clustrenrich <- function(
   
   # Handle case where no results are found at all
   if (is.null(multi_gostres$result) || nrow(multi_gostres$result) == 0) {
-    warning("No enrichment results found for any source or GMT file")
-    
-    # Create empty result structure
-    multi_gostres$result <- data.frame(
-      query = numeric(0),
-      significant = logical(0),
-      p_value = numeric(0),
-      term_size = numeric(0),
-      query_size = numeric(0),
-      intersection_size = numeric(0),
-      source = character(0),
-      term_id = character(0),
-      term_name = character(0),
-      effective_domain_size = numeric(0),
-      source_order = numeric(0),
-      parents = character(0),
-      evidence_codes = character(0),
-      intersection = character(0),
-      highlighted = logical(0),
-      enrichment_ratio = numeric(0),
-      stringsAsFactors = FALSE
+    stop(
+      "No enrichment results found. Please check your input genes, background, organism, or try running with significant = FALSE."
     )
+    
   } else {
     # Add enrichment ratios to all results (both standard and GMT)
     multi_gostres$result <- multi_gostres$result |> 
