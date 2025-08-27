@@ -159,7 +159,7 @@ clustrenrich <- function(
   dr_genes <- unique(dr_genes)
   bg_genes <- unique(bg_genes)
   
-  # Initialize list to store all gost results
+  # Initialise list to store all gost results
   all_gost_results <- list()
   
   message("Performing cluster-wise functional enrichment...")
@@ -199,7 +199,7 @@ clustrenrich <- function(
     
     message(paste("No standard sources chosen (sources == NULL or empty)"))
     
-    # Initialize empty result structure with proper format
+    # Initialise empty result structure with proper format
     multi_gostres <- list(
       result = data.frame(
         query = numeric(0),

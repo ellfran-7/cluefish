@@ -43,7 +43,7 @@ clustrfusion <- function(
     dplyr::pull(source)
   
   
-  # Initialize the fusion log dataframe to track cluster fusion events. This dataframe will record the clusters merged for each source evaluated during fusion.
+  # Initialise the fusion log dataframe to track cluster fusion events. This dataframe will record the clusters merged for each source evaluated during fusion.
   c_fusionlog <- data.frame(old_clustr = sort(as.numeric(dr_g_a_enrich$old_clustr)))
   
   # Create a list to store fusion information for each source

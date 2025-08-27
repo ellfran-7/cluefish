@@ -1042,7 +1042,7 @@ require(officer)
 # Convert the plot object to a class dml (for editable graphics in PowerPoint)
 p_cp <- rvg::dml(ggobj = sp_cp_plots)
 
-# Initialize PowerPoint presentation and add a slide with the plot
+# Initialise PowerPoint presentation and add a slide with the plot
 my_figs <- officer::read_pptx() |> 
   officer::add_slide() |> 
   officer::ph_with(p_cp, ph_location(left = 0, top = 0, height = 7.48, width = 8.66)) |> 

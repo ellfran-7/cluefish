@@ -76,7 +76,7 @@ for(file in root_files) {
 all_files <- list.files("data/raw-data/GSEA263776_STAR_files/")
 unzipped_root_files <- all_files[grepl("\\.txt$", all_files)]
 
-# Initialize list to hold count data
+# Initialise list to hold count data
 count_data_list <- list()
 
 # Process each count file
