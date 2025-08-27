@@ -18,5 +18,5 @@ from the AnimalTFDB4 database (https://guolab.wchscu.cn/AnimalTFDB4/#/).}
 A \code{dataframe} of type \emph{t} similar to the \emph{getids_data} input with an added column indicating the (co-)regulator status of each transcript's deregulated gene.
 }
 \description{
-This function retrieves information on the regulatory status of genes using the files downloaded with the \code{dl_regulation_data()} function.
+This function retrieves information on the regulatory status of genes using the files downloaded with the \code{dl_regulation_data()} function. It firstly checks if the specifed files have beel downloaded, and whether they contain the è \code{Ensembl}
 }

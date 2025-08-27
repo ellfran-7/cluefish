@@ -8,8 +8,8 @@
 <title>Introduction to cluefish • cluefish</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to cluefish">
 </head>
 <body>
@@ -60,7 +60,7 @@
                         <h4 data-toc-skip class="author">Ellis
 Franklin</h4>
                         
-            <h4 data-toc-skip class="date">2025-08-12</h4>
+            <h4 data-toc-skip class="date">2025-08-27</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ellfran-7/cluefish/blob/HEAD/vignettes/cluefish.Rmd" class="external-link"><code>vignettes/cluefish.Rmd</code></a></small>
       <div class="d-none name"><code>cluefish.Rmd</code></div>
@@ -71,7 +71,7 @@ Franklin</h4>
 <!-- Introduction  -->
 <!--------------- Add Cluefish graphical abstract from paper -->
 <center>
-<img src="figures%2Fcluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract"><p align="center" style="color: grey;">
+<img src="figures/cluefish-graphical-abstract-2025-06-06.png" alt="Cluefish graphical abstract"><p align="center" style="color: grey;">
 <em>Graphical abstract of the Cluefish workflow.</em>
 </p>
 </center>
@@ -186,7 +186,7 @@ forming the <em>lonely cluster</em> (<a href="#step10">Step
 10</a>).</li>
 </ol>
 <center>
-<img src="figures%2Fcluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"><p align="center" style="color: grey;">
+<img src="figures/cluefish-schematic-2024-09-27-rm-asterisk.png" alt="Cluefish schematic" width="600"><p align="center" style="color: grey;">
 <em>Schematic of the Cluefish workflow.</em>
 </p>
 </center>
@@ -634,9 +634,9 @@ unique, aiding in clear interpretation and visualisation of results.</p>
 <code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">bg_t_ids</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 39,890</span></span>
 <span><span class="co">#&gt; Columns: 3</span></span>
-<span><span class="co">#&gt; $ transcript_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDART00000000678.7", "ENSDART00000000877.7", "ENSDART…</span></span>
-<span><span class="co">#&gt; $ gene_id       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000000638", "ENSDARG00000044279", "ENSDARG0000…</span></span>
-<span><span class="co">#&gt; $ gene_name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "opn1mw4", "opn1mw3", "psmb13a", "unknown.1", "drd2l_t1"…</span></span></code></pre></div>
+<span><span class="co">#&gt; $ transcript_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDART00000000678.7"<span style="color: #949494;">, </span>"ENSDART00000000877.7"<span style="color: #949494;">, </span>"ENSDART…</span></span>
+<span><span class="co">#&gt; $ gene_id       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000000638"<span style="color: #949494;">, </span>"ENSDARG00000044279"<span style="color: #949494;">, </span>"ENSDARG0000…</span></span>
+<span><span class="co">#&gt; $ gene_name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "opn1mw4"<span style="color: #949494;">, </span>"opn1mw3"<span style="color: #949494;">, </span>"psmb13a"<span style="color: #949494;">, </span>"unknown.1"<span style="color: #949494;">, </span>"drd2l_t1"…</span></span></code></pre></div>
 <p>As the result consists of the background list identifiers, you need
 to subset the deregulated data. This can be done as shown below:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
@@ -670,10 +670,10 @@ CoTF files.</p>
 <code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">dr_t_regs</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 2,433</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; $ transcript_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDART00000135999.2", "ENSDART00000173686.2", "ENSDART…</span></span>
-<span><span class="co">#&gt; $ gene_id       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000092550", "ENSDARG00000033683", "ENSDARG0000…</span></span>
-<span><span class="co">#&gt; $ gene_name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "unknown.4894", "tpma_t3", "adgrl4_t2", "rnf144aa", "SLC…</span></span>
-<span><span class="co">#&gt; $ TF            <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, …</span></span></code></pre></div>
+<span><span class="co">#&gt; $ transcript_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDART00000135999.2"<span style="color: #949494;">, </span>"ENSDART00000173686.2"<span style="color: #949494;">, </span>"ENSDART…</span></span>
+<span><span class="co">#&gt; $ gene_id       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000092550"<span style="color: #949494;">, </span>"ENSDARG00000033683"<span style="color: #949494;">, </span>"ENSDARG0000…</span></span>
+<span><span class="co">#&gt; $ gene_name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "unknown.4894"<span style="color: #949494;">, </span>"tpma_t3"<span style="color: #949494;">, </span>"adgrl4_t2"<span style="color: #949494;">, </span>"rnf144aa"<span style="color: #949494;">, </span>"SLC…</span></span>
+<span><span class="co">#&gt; $ TF            <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <p><br></p>
 </div>
 <div class="section level3 tabset">
@@ -717,7 +717,7 @@ environment to continue the analysis.</p>
 
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step0.png" style="width:75.0%" alt="Home page of the Cytoscape App"><div class="figcaption">Home page of the Cytoscape App</div>
+<img src="figures/cytoscape-step0.png" style="width:75.0%" alt="Home page of the Cytoscape App"><div class="figcaption">Home page of the Cytoscape App</div>
 </div>
 </center>
 <p><br></p>
@@ -728,7 +728,7 @@ environment to continue the analysis.</p>
 <code>Table from File</code></p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step1.png" style="width:50.0%" alt="File to Import"><div class="figcaption">File to Import</div>
+<img src="figures/cytoscape-step1.png" style="width:50.0%" alt="File to Import"><div class="figcaption">File to Import</div>
 </div>
 </center>
 <p><br></p>
@@ -739,7 +739,7 @@ environment to continue the analysis.</p>
 and select <code>OK</code></p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step2.png" style="width:65.0%" alt="Name and confirm import"><div class="figcaption">Name and confirm import</div>
+<img src="figures/cytoscape-step2.png" style="width:65.0%" alt="Name and confirm import"><div class="figcaption">Name and confirm import</div>
 </div>
 </center>
 <p><br></p>
@@ -751,7 +751,7 @@ and select <code>OK</code></p>
 (2)</p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step3.png" style="width:65.0%" alt="Copy gene id column values"><div class="figcaption">Copy gene id column values</div>
+<img src="figures/cytoscape-step3.png" style="width:65.0%" alt="Copy gene id column values"><div class="figcaption">Copy gene id column values</div>
 </div>
 </center>
 <p><br></p>
@@ -762,7 +762,7 @@ and select <code>OK</code></p>
 StringApp.</p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step4.png" style="width:65.0%" alt="Check “Protein Query”"><div class="figcaption">Check “Protein Query”</div>
+<img src="figures/cytoscape-step4.png" style="width:65.0%" alt="Check “Protein Query”"><div class="figcaption">Check “Protein Query”</div>
 </div>
 </center>
 <p><br></p>
@@ -773,7 +773,7 @@ StringApp.</p>
 (<code>Ctrl</code>+<code>V</code>) the copied values</p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step5.png" style="width:65.0%" alt="Paste values into query"><div class="figcaption">Paste values into query</div>
+<img src="figures/cytoscape-step5.png" style="width:65.0%" alt="Paste values into query"><div class="figcaption">Paste values into query</div>
 </div>
 </center>
 <p><br></p>
@@ -803,7 +803,7 @@ analysis as we are focusing solely on the deregulated items.&lt;/p&gt;"><sup>4</
 <p>Visit the <a href="https://string-db.org/" class="external-link">STRING documentation</a>
 to getting a fuller understand of these concepts.</p>
 <div class="float">
-<img src="figures%2Fcytoscape-step6.png" style="width:70.0%" alt="Modify the query options"><div class="figcaption">Modify the query options</div>
+<img src="figures/cytoscape-step6.png" style="width:70.0%" alt="Modify the query options"><div class="figcaption">Modify the query options</div>
 </div>
 </center>
 <p><br></p>
@@ -814,7 +814,7 @@ to getting a fuller understand of these concepts.</p>
 “<strong>Clustering</strong>” (2)</p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step7.png" style="width:80.0%" alt="Resulting PPI network"><div class="figcaption">Resulting PPI network</div>
+<img src="figures/cytoscape-step7.png" style="width:80.0%" alt="Resulting PPI network"><div class="figcaption">Resulting PPI network</div>
 </div>
 </center>
 <p><br></p>
@@ -829,7 +829,7 @@ of MCL clustering, visit &lt;a href="http://micans.org/mcl/" class="external-lin
 click “<strong>OK</strong>”</p>
 <center>
 <div class="float">
-<img src="figures%2Fcytoscape-step8.png" style="width:65.0%" alt="Options for MCL Clustering"><div class="figcaption">Options for MCL Clustering</div>
+<img src="figures/cytoscape-step8.png" style="width:65.0%" alt="Options for MCL Clustering"><div class="figcaption">Options for MCL Clustering</div>
 </div>
 </center>
 <p><br></p>
@@ -843,7 +843,7 @@ table in .csv format within your working directory.</p>
 <p>With the node table saved, we can now return to the R environment and
 import the table.</p>
 <div class="float">
-<img src="figures%2Fcytoscape-step9.png" style="width:75.0%" alt="Selection and exporting the Node Table"><div class="figcaption">Selection and exporting the Node Table</div>
+<img src="figures/cytoscape-step9.png" style="width:75.0%" alt="Selection and exporting the Node Table"><div class="figcaption">Selection and exporting the Node Table</div>
 </div>
 </center>
 </div>
@@ -869,11 +869,11 @@ nodetable path and filename, as shown below :</p>
 <code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">dr_t_clustrs</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 775</span></span>
 <span><span class="co">#&gt; Columns: 5</span></span>
-<span><span class="co">#&gt; $ gene_id       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000000068", "ENSDARG00000000086", "ENSDARG0000…</span></span>
-<span><span class="co">#&gt; $ transcript_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDART00000000069.8", "ENSDART00000132378.4", "ENSDART…</span></span>
-<span><span class="co">#&gt; $ gene_name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "nherf1a_g2t1", "itsn1", "pms1_t2", "asnsd1_t2", "unknow…</span></span>
-<span><span class="co">#&gt; $ TF            <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, F…</span></span>
-<span><span class="co">#&gt; $ clustr        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 139, 140, 27, 172, 159, 56, 47, 36, 187, 164, 144, 52, 6…</span></span></code></pre></div>
+<span><span class="co">#&gt; $ gene_id       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000000068"<span style="color: #949494;">, </span>"ENSDARG00000000086"<span style="color: #949494;">, </span>"ENSDARG0000…</span></span>
+<span><span class="co">#&gt; $ transcript_id <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDART00000000069.8"<span style="color: #949494;">, </span>"ENSDART00000132378.4"<span style="color: #949494;">, </span>"ENSDART…</span></span>
+<span><span class="co">#&gt; $ gene_name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "nherf1a_g2t1"<span style="color: #949494;">, </span>"itsn1"<span style="color: #949494;">, </span>"pms1_t2"<span style="color: #949494;">, </span>"asnsd1_t2"<span style="color: #949494;">, </span>"unknow…</span></span>
+<span><span class="co">#&gt; $ TF            <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>F…</span></span>
+<span><span class="co">#&gt; $ clustr        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 139<span style="color: #949494;">, </span>140<span style="color: #949494;">, </span>27<span style="color: #949494;">, </span>172<span style="color: #949494;">, </span>159<span style="color: #949494;">, </span>56<span style="color: #949494;">, </span>47<span style="color: #949494;">, </span>36<span style="color: #949494;">, </span>187<span style="color: #949494;">, </span>164<span style="color: #949494;">, </span>144<span style="color: #949494;">, </span>52<span style="color: #949494;">, </span>6…</span></span></code></pre></div>
 <p>We can also get an idea of the size of the clusters:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">dr_t_clustrs</span><span class="op">$</span><span class="va">clustr</span><span class="op">)</span></span>
@@ -938,8 +938,7 @@ limit.</p>
 <code class="sourceCode R"><span><span class="va">dr_t_clustrs_filtr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clustrfiltr.html">clustrfiltr</a></span><span class="op">(</span></span>
 <span>  getclustrs_data <span class="op">=</span> <span class="va">dr_t_clustrs</span>,</span>
 <span>  size_filtr <span class="op">=</span> <span class="fl">4</span> <span class="co"># default value</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Total clusters kept: 53 / 204</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p>For more information on each argument of the function, run
 <code>?cluefish::clustrfiltr()</code>.</p>
 <p>The function outputs a named list with three components:</p>
@@ -1113,11 +1112,11 @@ used; in this case the choice for <code>monoterm_fusion</code>
 <strong><code>dr_g_a_enrich</code></strong> dataframe:</p>
 <pre><code><span><span class="co">#&gt; Rows: 754</span></span>
 <span><span class="co">#&gt; Columns: 5</span></span>
-<span><span class="co">#&gt; $ gene_id   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000051783", "ENSDARG00000009285", "ENSDARG00000020…</span></span>
-<span><span class="co">#&gt; $ clustr    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …</span></span>
-<span><span class="co">#&gt; $ term_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Cytoplasmic ribosomal proteins", "Cytoplasmic ribosomal pro…</span></span>
-<span><span class="co">#&gt; $ term_id   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "WP:WP324", "WP:WP324", "WP:WP324", "WP:WP324", "WP:WP324", …</span></span>
-<span><span class="co">#&gt; $ source    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP", …</span></span></code></pre>
+<span><span class="co">#&gt; $ gene_id   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000051783"<span style="color: #949494;">, </span>"ENSDARG00000009285"<span style="color: #949494;">, </span>"ENSDARG00000020…</span></span>
+<span><span class="co">#&gt; $ clustr    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ term_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Cytoplasmic ribosomal proteins"<span style="color: #949494;">, </span>"Cytoplasmic ribosomal pro…</span></span>
+<span><span class="co">#&gt; $ term_id   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "WP:WP324"<span style="color: #949494;">, </span>"WP:WP324"<span style="color: #949494;">, </span>"WP:WP324"<span style="color: #949494;">, </span>"WP:WP324"<span style="color: #949494;">, </span>"WP:WP324"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ source    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>"WP"<span style="color: #949494;">, </span>…</span></span></code></pre>
 <p>After running the function, we recommend checking if the filters need
 adjustment, as finding the right lower and upper limits for gene set
 sizes can be quite a challenge. These limits depend on the organism, the
@@ -1195,8 +1194,7 @@ merging. </span></p>
 <code class="sourceCode R"><span><span class="va">clustr_fusionres</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clustrfusion.html">clustrfusion</a></span><span class="op">(</span></span>
 <span>  clustrenrich_data <span class="op">=</span> <span class="va">clustr_enrichres</span>,</span>
 <span>  monoterm_fusion <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; 44 / 53 clusters left after the fusion process.</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The output is a named list with four components:</p>
 <ul>
 <li>
@@ -1428,23 +1426,23 @@ corresponding to an enriched term :</p>
 <code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">lonely_clustr_analysis_res</span><span class="op">$</span><span class="va">filtered</span><span class="op">$</span><span class="va">dr_a</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 12</span></span>
 <span><span class="co">#&gt; Columns: 17</span></span>
-<span><span class="co">#&gt; $ query                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "query_1", "query_1", "query_1", "query_1", "que…</span></span>
-<span><span class="co">#&gt; $ significant           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, …</span></span>
-<span><span class="co">#&gt; $ p_value               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 2.09e-13, 1.12e-06, 1.06e-02, 1.26e-02, 2.98e-02…</span></span>
-<span><span class="co">#&gt; $ term_size             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 70, 139, 41, 106, 15, 23, 268, 143, 72, 46, 78, …</span></span>
-<span><span class="co">#&gt; $ query_size            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 763, 763, 763, 763, 763, 763, 177, 177, 177, 177…</span></span>
-<span><span class="co">#&gt; $ intersection_size     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 26, 26, 9, 15, 5, 6, 22, 14, 9, 6, 10, 6</span></span>
-<span><span class="co">#&gt; $ precision             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.03408, 0.03408, 0.01180, 0.01966, 0.00655, 0.0…</span></span>
-<span><span class="co">#&gt; $ recall                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.3714, 0.1871, 0.2195, 0.1415, 0.3333, 0.2609, …</span></span>
-<span><span class="co">#&gt; $ term_id               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "GO:0002088", "GO:0007601", "GO:0000041", "GO:00…</span></span>
-<span><span class="co">#&gt; $ source                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "GO:BP", "GO:BP", "GO:BP", "GO:BP", "GO:BP", "GO…</span></span>
-<span><span class="co">#&gt; $ term_name             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "lens development in camera-type eye", "visual p…</span></span>
-<span><span class="co">#&gt; $ effective_domain_size <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 15468, 15468, 15468, 15468, 15468, 15468, 5714, …</span></span>
-<span><span class="co">#&gt; $ source_order          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 681, 3094, 17, 13905, 1212, 13702, 280, 279, 220…</span></span>
-<span><span class="co">#&gt; $ parents               <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;"GO:0043010", "GO:0048856"&gt;, "GO:0050953", "GO:…</span></span>
+<span><span class="co">#&gt; $ query                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "query_1"<span style="color: #949494;">, </span>"query_1"<span style="color: #949494;">, </span>"query_1"<span style="color: #949494;">, </span>"query_1"<span style="color: #949494;">, </span>"que…</span></span>
+<span><span class="co">#&gt; $ significant           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ p_value               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 2.09e-13<span style="color: #949494;">, </span>1.12e-06<span style="color: #949494;">, </span>1.06e-02<span style="color: #949494;">, </span>1.26e-02<span style="color: #949494;">, </span>2.98e-02…</span></span>
+<span><span class="co">#&gt; $ term_size             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 70<span style="color: #949494;">, </span>139<span style="color: #949494;">, </span>41<span style="color: #949494;">, </span>106<span style="color: #949494;">, </span>15<span style="color: #949494;">, </span>23<span style="color: #949494;">, </span>268<span style="color: #949494;">, </span>143<span style="color: #949494;">, </span>72<span style="color: #949494;">, </span>46<span style="color: #949494;">, </span>78<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ query_size            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 763<span style="color: #949494;">, </span>763<span style="color: #949494;">, </span>763<span style="color: #949494;">, </span>763<span style="color: #949494;">, </span>763<span style="color: #949494;">, </span>763<span style="color: #949494;">, </span>177<span style="color: #949494;">, </span>177<span style="color: #949494;">, </span>177<span style="color: #949494;">, </span>177…</span></span>
+<span><span class="co">#&gt; $ intersection_size     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 26<span style="color: #949494;">, </span>26<span style="color: #949494;">, </span>9<span style="color: #949494;">, </span>15<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>22<span style="color: #949494;">, </span>14<span style="color: #949494;">, </span>9<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>6</span></span>
+<span><span class="co">#&gt; $ precision             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.03408<span style="color: #949494;">, </span>0.03408<span style="color: #949494;">, </span>0.01180<span style="color: #949494;">, </span>0.01966<span style="color: #949494;">, </span>0.00655<span style="color: #949494;">, </span>0.0…</span></span>
+<span><span class="co">#&gt; $ recall                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.3714<span style="color: #949494;">, </span>0.1871<span style="color: #949494;">, </span>0.2195<span style="color: #949494;">, </span>0.1415<span style="color: #949494;">, </span>0.3333<span style="color: #949494;">, </span>0.2609<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ term_id               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "GO:0002088"<span style="color: #949494;">, </span>"GO:0007601"<span style="color: #949494;">, </span>"GO:0000041"<span style="color: #949494;">, </span>"GO:00…</span></span>
+<span><span class="co">#&gt; $ source                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "GO:BP"<span style="color: #949494;">, </span>"GO:BP"<span style="color: #949494;">, </span>"GO:BP"<span style="color: #949494;">, </span>"GO:BP"<span style="color: #949494;">, </span>"GO:BP"<span style="color: #949494;">, </span>"GO…</span></span>
+<span><span class="co">#&gt; $ term_name             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "lens development in camera-type eye"<span style="color: #949494;">, </span>"visual p…</span></span>
+<span><span class="co">#&gt; $ effective_domain_size <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 15468<span style="color: #949494;">, </span>15468<span style="color: #949494;">, </span>15468<span style="color: #949494;">, </span>15468<span style="color: #949494;">, </span>15468<span style="color: #949494;">, </span>15468<span style="color: #949494;">, </span>5714<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ source_order          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 681<span style="color: #949494;">, </span>3094<span style="color: #949494;">, </span>17<span style="color: #949494;">, </span>13905<span style="color: #949494;">, </span>1212<span style="color: #949494;">, </span>13702<span style="color: #949494;">, </span>280<span style="color: #949494;">, </span>279<span style="color: #949494;">, </span>220…</span></span>
+<span><span class="co">#&gt; $ parents               <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;"GO:0043010", "GO:0048856"&gt;<span style="color: #949494;">, </span>"GO:0050953"<span style="color: #949494;">, </span>"GO:…</span></span>
 <span><span class="co">#&gt; $ evidence_codes        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "IMP IGI,IBA,IBA,IBA,IBA,IBA,IBA,IBA,IBA,IBA,IB…</span></span>
 <span><span class="co">#&gt; $ intersection          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "ENSDARG00000013963,ENSDARG00000016793,ENSDARG00…</span></span>
-<span><span class="co">#&gt; $ highlighted           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE…</span></span></code></pre></div>
+<span><span class="co">#&gt; $ highlighted           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE…</span></span></code></pre></div>
 <p><br></p>
 </div>
 </div>
@@ -1468,8 +1466,8 @@ supporting manual exploration.</p>
 output of the <code><a href="../reference/lonelyfishing.html">lonelyfishing()</a></code> function.</li>
 <li>
 <strong><code>bmdboot_data</code></strong>: The DRomics bmdboot
-dataframe results after <code><a href="https://rdrr.io/pkg/DRomics/man/bmdboot.html" class="external-link">DRomics::bmdboot()</a></code> or following the
-additional step <code><a href="https://rdrr.io/pkg/DRomics/man/bmdfilter.html" class="external-link">DRomics::bmdfilter()</a></code>. This data should
+dataframe results after <code><a href="https://lbbe-software.github.io/DRomics/reference/bmdboot.html" class="external-link">DRomics::bmdboot()</a></code> or following the
+additional step <code><a href="https://lbbe-software.github.io/DRomics/reference/bmdfilter.html" class="external-link">DRomics::bmdfilter()</a></code>. This data should
 include the deregulated transcript identifiers from <a href="#step2">Step 2</a>.</li>
 </ul>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
@@ -1485,7 +1483,7 @@ include the deregulated transcript identifiers from <a href="#step2">Step 2</a>.
 </li>
 </ol>
 <p>Cluefish also leverages <code>DRomics</code> visualisation functions,
-like <code><a href="https://rdrr.io/pkg/DRomics/man/curvesplot.html" class="external-link">DRomics::curvesplot()</a></code>, to plot fitted dose-response
+like <code><a href="https://lbbe-software.github.io/DRomics/reference/curvesplot.html" class="external-link">DRomics::curvesplot()</a></code>, to plot fitted dose-response
 curves.</p>
 <ol start="2" style="list-style-type: decimal">
 <li>
@@ -1501,8 +1499,8 @@ function.</li>
 <li>
 <strong><code>bmdboot_data</code></strong>: The <code>DRomics</code>
 <code>bmdboot</code> dataframe results after
-<code><a href="https://rdrr.io/pkg/DRomics/man/bmdboot.html" class="external-link">DRomics::bmdboot()</a></code> or following the additional step
-<code><a href="https://rdrr.io/pkg/DRomics/man/bmdfilter.html" class="external-link">DRomics::bmdfilter()</a></code>. This must correspond to the data
+<code><a href="https://lbbe-software.github.io/DRomics/reference/bmdboot.html" class="external-link">DRomics::bmdboot()</a></code> or following the additional step
+<code><a href="https://lbbe-software.github.io/DRomics/reference/bmdfilter.html" class="external-link">DRomics::bmdfilter()</a></code>. This must correspond to the data
 loaded containing the deregulated transcript identifiers in the <a href="#step2">Step 2</a>.</li>
 <li>
 <strong><code>clustrfusion_data</code></strong>: The named list
@@ -1511,7 +1509,7 @@ function.</li>
 <li>
 <strong><code>tested_doses</code></strong>: A vector of the tested
 doses that can be found in the output of the
-<code><a href="https://rdrr.io/pkg/DRomics/man/drcfit.html" class="external-link">DRomics::drcfit()</a></code> function as
+<code><a href="https://lbbe-software.github.io/DRomics/reference/drcfit.html" class="external-link">DRomics::drcfit()</a></code> function as
 <code>unique(f$omicdata$dose)</code>.</li>
 <li>
 <strong><code>annot_order</code></strong>: A vector specifying the
@@ -1557,7 +1555,7 @@ study.</span></p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>For more information on each argument of this function, run
 <code>?cluefish::curves_to_pdf()</code>. For more information on each
-argument of the <code><a href="https://rdrr.io/pkg/DRomics/man/curvesplot.html" class="external-link">DRomics::curvesplot()</a></code>, run
+argument of the <code><a href="https://lbbe-software.github.io/DRomics/reference/curvesplot.html" class="external-link">DRomics::curvesplot()</a></code>, run
 <code>?DRomics::curvesplot()</code>.</p>
 </li>
 </ol>
@@ -1608,7 +1606,7 @@ license</a>.</p>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14)</span></span>
+<pre><code><span><span class="co">#&gt; R version 4.5.1 (2025-06-13)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
 <span><span class="co">#&gt; Running under: Ubuntu 24.04.3 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1631,75 +1629,74 @@ license</a>.</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices datasets  utils     methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] cluefish_1.0.1 ggplot2_3.5.1 </span></span>
+<span><span class="co">#&gt; [1] cluefish_1.0.1 ggplot2_3.5.2 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] rstudioapi_0.16.0           jsonlite_1.8.8             </span></span>
-<span><span class="co">#&gt;   [3] magrittr_2.0.3              rmarkdown_2.27             </span></span>
-<span><span class="co">#&gt;   [5] fs_1.6.4                    zlibbioc_1.50.0            </span></span>
-<span><span class="co">#&gt;   [7] ragg_1.3.2                  vctrs_0.6.5                </span></span>
-<span><span class="co">#&gt;   [9] memoise_2.0.1               htmltools_0.5.8.1          </span></span>
-<span><span class="co">#&gt;  [11] S4Arrays_1.4.1              usethis_3.0.0              </span></span>
-<span><span class="co">#&gt;  [13] progress_1.2.3              curl_5.2.1                 </span></span>
-<span><span class="co">#&gt;  [15] SparseArray_1.4.8           sass_0.4.9                 </span></span>
-<span><span class="co">#&gt;  [17] bslib_0.7.0                 quarto_1.4.4               </span></span>
-<span><span class="co">#&gt;  [19] htmlwidgets_1.6.4           desc_1.4.3                 </span></span>
-<span><span class="co">#&gt;  [21] httr2_1.0.2                 plotly_4.10.4              </span></span>
-<span><span class="co">#&gt;  [23] cachem_1.1.0                mime_0.12                  </span></span>
-<span><span class="co">#&gt;  [25] lifecycle_1.0.4             DRomics_2.5-2              </span></span>
-<span><span class="co">#&gt;  [27] pkgconfig_2.0.3             Matrix_1.7-0               </span></span>
-<span><span class="co">#&gt;  [29] R6_2.5.1                    fastmap_1.2.0              </span></span>
-<span><span class="co">#&gt;  [31] GenomeInfoDbData_1.2.12     MatrixGenerics_1.16.0      </span></span>
-<span><span class="co">#&gt;  [33] shiny_1.9.1                 digest_0.6.36              </span></span>
-<span><span class="co">#&gt;  [35] colorspace_2.1-0            ps_1.7.7                   </span></span>
-<span><span class="co">#&gt;  [37] AnnotationDbi_1.66.0        S4Vectors_0.42.1           </span></span>
-<span><span class="co">#&gt;  [39] DESeq2_1.44.0               rprojroot_2.0.4            </span></span>
+<span><span class="co">#&gt;   [1] RColorBrewer_1.1-3          rstudioapi_0.17.1          </span></span>
+<span><span class="co">#&gt;   [3] jsonlite_2.0.0              magrittr_2.0.3             </span></span>
+<span><span class="co">#&gt;   [5] farver_2.1.2                rmarkdown_2.29             </span></span>
+<span><span class="co">#&gt;   [7] fs_1.6.6                    ragg_1.4.0                 </span></span>
+<span><span class="co">#&gt;   [9] vctrs_0.6.5                 memoise_2.0.1              </span></span>
+<span><span class="co">#&gt;  [11] htmltools_0.5.8.1           S4Arrays_1.4.1             </span></span>
+<span><span class="co">#&gt;  [13] usethis_3.1.0               progress_1.2.3             </span></span>
+<span><span class="co">#&gt;  [15] curl_7.0.0                  SparseArray_1.4.8          </span></span>
+<span><span class="co">#&gt;  [17] sass_0.4.10                 bslib_0.9.0                </span></span>
+<span><span class="co">#&gt;  [19] htmlwidgets_1.6.4           quarto_1.5.0               </span></span>
+<span><span class="co">#&gt;  [21] desc_1.4.3                  httr2_1.2.1                </span></span>
+<span><span class="co">#&gt;  [23] plotly_4.11.0               cachem_1.1.0               </span></span>
+<span><span class="co">#&gt;  [25] mime_0.13                   lifecycle_1.0.4            </span></span>
+<span><span class="co">#&gt;  [27] DRomics_2.6-2               pkgconfig_2.0.3            </span></span>
+<span><span class="co">#&gt;  [29] Matrix_1.7-3                R6_2.6.1                   </span></span>
+<span><span class="co">#&gt;  [31] fastmap_1.2.0               GenomeInfoDbData_1.2.14    </span></span>
+<span><span class="co">#&gt;  [33] MatrixGenerics_1.16.0       shiny_1.11.1               </span></span>
+<span><span class="co">#&gt;  [35] digest_0.6.37               ps_1.9.1                   </span></span>
+<span><span class="co">#&gt;  [37] AnnotationDbi_1.70.0        S4Vectors_0.46.0           </span></span>
+<span><span class="co">#&gt;  [39] DESeq2_1.44.0               rprojroot_2.1.0            </span></span>
 <span><span class="co">#&gt;  [41] pkgload_1.4.0               crosstalk_1.2.1            </span></span>
-<span><span class="co">#&gt;  [43] textshaping_0.4.0           GenomicRanges_1.56.1       </span></span>
-<span><span class="co">#&gt;  [45] RSQLite_2.3.7               filelock_1.0.3             </span></span>
-<span><span class="co">#&gt;  [47] fansi_1.0.6                 httr_1.4.7                 </span></span>
-<span><span class="co">#&gt;  [49] abind_1.4-5                 compiler_4.4.1             </span></span>
-<span><span class="co">#&gt;  [51] here_1.0.1                  remotes_2.5.0              </span></span>
-<span><span class="co">#&gt;  [53] bit64_4.0.5                 withr_3.0.0                </span></span>
-<span><span class="co">#&gt;  [55] BiocParallel_1.38.0         DBI_1.2.3                  </span></span>
-<span><span class="co">#&gt;  [57] pkgbuild_1.4.4              biomaRt_2.60.1             </span></span>
-<span><span class="co">#&gt;  [59] rappdirs_0.3.3              DelayedArray_0.30.1        </span></span>
-<span><span class="co">#&gt;  [61] sessioninfo_1.2.2           tools_4.4.1                </span></span>
-<span><span class="co">#&gt;  [63] httpuv_1.6.15               glue_1.7.0                 </span></span>
-<span><span class="co">#&gt;  [65] promises_1.3.0              grid_4.4.1                 </span></span>
-<span><span class="co">#&gt;  [67] generics_0.1.3              gtable_0.3.5               </span></span>
-<span><span class="co">#&gt;  [69] tidyr_1.3.1                 data.table_1.15.4          </span></span>
-<span><span class="co">#&gt;  [71] hms_1.1.3                   xml2_1.3.6                 </span></span>
-<span><span class="co">#&gt;  [73] utf8_1.2.4                  XVector_0.44.0             </span></span>
-<span><span class="co">#&gt;  [75] BiocGenerics_0.50.0         pillar_1.9.0               </span></span>
-<span><span class="co">#&gt;  [77] stringr_1.5.1               limma_3.60.3               </span></span>
-<span><span class="co">#&gt;  [79] later_1.3.2                 dplyr_1.1.4                </span></span>
-<span><span class="co">#&gt;  [81] BiocFileCache_2.12.0        lattice_0.22-6             </span></span>
-<span><span class="co">#&gt;  [83] renv_1.0.7                  bit_4.0.5                  </span></span>
-<span><span class="co">#&gt;  [85] tidyselect_1.2.1            locfit_1.5-9.10            </span></span>
-<span><span class="co">#&gt;  [87] Biostrings_2.72.1           miniUI_0.1.1.1             </span></span>
-<span><span class="co">#&gt;  [89] knitr_1.48                  gridExtra_2.3              </span></span>
-<span><span class="co">#&gt;  [91] IRanges_2.38.1              SummarizedExperiment_1.34.0</span></span>
-<span><span class="co">#&gt;  [93] stats4_4.4.1                xfun_0.45                  </span></span>
-<span><span class="co">#&gt;  [95] Biobase_2.64.0              statmod_1.5.0              </span></span>
-<span><span class="co">#&gt;  [97] devtools_2.4.5              matrixStats_1.3.0          </span></span>
-<span><span class="co">#&gt;  [99] DT_0.33                     stringi_1.8.4              </span></span>
-<span><span class="co">#&gt; [101] UCSC.utils_1.0.0            lazyeval_0.2.2             </span></span>
-<span><span class="co">#&gt; [103] yaml_2.3.9                  evaluate_0.24.0            </span></span>
-<span><span class="co">#&gt; [105] codetools_0.2-20            tibble_3.2.1               </span></span>
-<span><span class="co">#&gt; [107] BiocManager_1.30.23         cli_3.6.3                  </span></span>
-<span><span class="co">#&gt; [109] xtable_1.8-4                systemfonts_1.1.0          </span></span>
-<span><span class="co">#&gt; [111] processx_3.8.4              munsell_0.5.1              </span></span>
-<span><span class="co">#&gt; [113] jquerylib_0.1.4             Rcpp_1.0.12                </span></span>
-<span><span class="co">#&gt; [115] GenomeInfoDb_1.40.1         dbplyr_2.5.0               </span></span>
-<span><span class="co">#&gt; [117] gprofiler2_0.2.3            png_0.1-8                  </span></span>
-<span><span class="co">#&gt; [119] parallel_4.4.1              ggfortify_0.4.17           </span></span>
-<span><span class="co">#&gt; [121] ellipsis_0.3.2              pkgdown_2.1.1              </span></span>
-<span><span class="co">#&gt; [123] blob_1.2.4                  prettyunits_1.2.0          </span></span>
-<span><span class="co">#&gt; [125] profvis_0.3.8               urlchecker_1.0.1           </span></span>
-<span><span class="co">#&gt; [127] viridisLite_0.4.2           scales_1.3.0               </span></span>
-<span><span class="co">#&gt; [129] purrr_1.0.2                 crayon_1.5.3               </span></span>
-<span><span class="co">#&gt; [131] rlang_1.1.5                 KEGGREST_1.46.0</span></span></code></pre>
+<span><span class="co">#&gt;  [43] textshaping_1.0.1           GenomicRanges_1.56.2       </span></span>
+<span><span class="co">#&gt;  [45] RSQLite_2.4.2               filelock_1.0.3             </span></span>
+<span><span class="co">#&gt;  [47] httr_1.4.7                  abind_1.4-8                </span></span>
+<span><span class="co">#&gt;  [49] compiler_4.5.1              here_1.0.1                 </span></span>
+<span><span class="co">#&gt;  [51] remotes_2.5.0               bit64_4.6.0-1              </span></span>
+<span><span class="co">#&gt;  [53] withr_3.0.2                 BiocParallel_1.38.0        </span></span>
+<span><span class="co">#&gt;  [55] DBI_1.2.3                   pkgbuild_1.4.8             </span></span>
+<span><span class="co">#&gt;  [57] biomaRt_2.60.1              rappdirs_0.3.3             </span></span>
+<span><span class="co">#&gt;  [59] DelayedArray_0.30.1         sessioninfo_1.2.3          </span></span>
+<span><span class="co">#&gt;  [61] tools_4.5.1                 httpuv_1.6.16              </span></span>
+<span><span class="co">#&gt;  [63] glue_1.8.0                  promises_1.3.3             </span></span>
+<span><span class="co">#&gt;  [65] grid_4.5.1                  generics_0.1.4             </span></span>
+<span><span class="co">#&gt;  [67] gtable_0.3.6                tidyr_1.3.1                </span></span>
+<span><span class="co">#&gt;  [69] data.table_1.17.8           hms_1.1.3                  </span></span>
+<span><span class="co">#&gt;  [71] utf8_1.2.6                  xml2_1.3.8                 </span></span>
+<span><span class="co">#&gt;  [73] XVector_0.48.0              BiocGenerics_0.54.0        </span></span>
+<span><span class="co">#&gt;  [75] pillar_1.11.0               stringr_1.5.1              </span></span>
+<span><span class="co">#&gt;  [77] limma_3.64.3                later_1.4.2                </span></span>
+<span><span class="co">#&gt;  [79] dplyr_1.1.4                 BiocFileCache_2.12.0       </span></span>
+<span><span class="co">#&gt;  [81] lattice_0.22-7              renv_1.1.5                 </span></span>
+<span><span class="co">#&gt;  [83] bit_4.6.0                   tidyselect_1.2.1           </span></span>
+<span><span class="co">#&gt;  [85] locfit_1.5-9.12             Biostrings_2.76.0          </span></span>
+<span><span class="co">#&gt;  [87] miniUI_0.1.2                knitr_1.50                 </span></span>
+<span><span class="co">#&gt;  [89] gridExtra_2.3               IRanges_2.42.0             </span></span>
+<span><span class="co">#&gt;  [91] SummarizedExperiment_1.34.0 stats4_4.5.1               </span></span>
+<span><span class="co">#&gt;  [93] xfun_0.53                   Biobase_2.68.0             </span></span>
+<span><span class="co">#&gt;  [95] statmod_1.5.0               devtools_2.4.5             </span></span>
+<span><span class="co">#&gt;  [97] matrixStats_1.5.0           DT_0.33                    </span></span>
+<span><span class="co">#&gt;  [99] stringi_1.8.7               UCSC.utils_1.4.0           </span></span>
+<span><span class="co">#&gt; [101] lazyeval_0.2.2              yaml_2.3.10                </span></span>
+<span><span class="co">#&gt; [103] evaluate_1.0.4              codetools_0.2-20           </span></span>
+<span><span class="co">#&gt; [105] tibble_3.3.0                BiocManager_1.30.26        </span></span>
+<span><span class="co">#&gt; [107] cli_3.6.5                   xtable_1.8-4               </span></span>
+<span><span class="co">#&gt; [109] systemfonts_1.2.3           processx_3.8.6             </span></span>
+<span><span class="co">#&gt; [111] jquerylib_0.1.4             Rcpp_1.1.0                 </span></span>
+<span><span class="co">#&gt; [113] GenomeInfoDb_1.44.1         dbplyr_2.5.0               </span></span>
+<span><span class="co">#&gt; [115] gprofiler2_0.2.3            png_0.1-8                  </span></span>
+<span><span class="co">#&gt; [117] parallel_4.5.1              ggfortify_0.4.19           </span></span>
+<span><span class="co">#&gt; [119] ellipsis_0.3.2              pkgdown_2.1.3              </span></span>
+<span><span class="co">#&gt; [121] blob_1.2.4                  prettyunits_1.2.0          </span></span>
+<span><span class="co">#&gt; [123] profvis_0.4.0               urlchecker_1.0.1           </span></span>
+<span><span class="co">#&gt; [125] viridisLite_0.4.2           scales_1.4.0               </span></span>
+<span><span class="co">#&gt; [127] purrr_1.1.0                 crayon_1.5.3               </span></span>
+<span><span class="co">#&gt; [129] rlang_1.1.6                 KEGGREST_1.44.1</span></span></code></pre>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -1838,7 +1835,7 @@ Applications</em> 30 (1): 121–41. <a href="https://doi.org/10.1137/040608635" 
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

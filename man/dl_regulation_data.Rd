@@ -24,7 +24,7 @@ dl_regulation_data(
 
 \item{filename_cof}{The name associated with the downloaded co-factor factor file.}
 
-\item{overwrite}{If \code{TRUE}, the function overwrites existing output files; otherwise, it reads the existing file. (default is set to \code{FALSE}).}
+\item{overwrite}{If \code{TRUE}, the function overwrites existing output files; otherwise, it reads the existing files. (default is set to \code{FALSE}).}
 }
 \value{
 No return value; files are downloaded and stored in the specified directory.

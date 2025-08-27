@@ -7,16 +7,18 @@
 simplenrich(
   input_genes,
   bg_genes,
-  bg_type = "custom_annotated",
+  bg_type = c("custom_annotated", "custom", "annotated", "known"),
   sources = c("GO:BP", "KEGG", "WP"),
   organism,
   user_threshold = 0.05,
-  correction_method = "fdr",
+  correction_method = c("fdr", "g_SCS", "bonferroni", "false_discovery_rate",
+    "analytical"),
   exclude_iea = FALSE,
   only_highlighted_GO = TRUE,
   min_term_size = NULL,
   max_term_size = NULL,
   ngenes_enrich_filtr = NULL,
+  gmt_file_paths = NULL,
   path,
   output_filename,
   overwrite = FALSE
@@ -29,7 +31,7 @@ simplenrich(
 
 \item{bg_type}{The background type, i.e. the statistical domain, that can be one of "annotated", "known", "custom" or "custom_annotated"}
 
-\item{sources}{A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.}
+\item{sources}{A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP. Visit the g:GOSt web tool for the comprehensive list and details on incorporated data sources.}
 
 \item{organism}{Organism ID defined for the chosen sources (e.g. if zebrafish = "drerio")}
 
@@ -47,6 +49,8 @@ simplenrich(
 
 \item{ngenes_enrich_filtr}{Minimum number of genes in the  input gene list needed for a gene set to be considered enriched. If NULL (default), no filtering by gene count is applied.}
 
+\item{gmt_file_paths}{If provided, these will be uploaded to g:Profiler and included in the enrichment analysis. For guidance on creating and validating GMT files, see the g:Profiler GMT Helper: https://biit.cs.ut.ee/gmt-helper/.}
+
 \item{path}{Destination folder for the output data results.}
 
 \item{output_filename}{Output enrichment result filename.}
@@ -57,12 +61,19 @@ simplenrich(
 A named \code{list} holding two components:
 -\code{unfiltered} is a named \code{list} holding two sub-components::
 - \code{dr_g_a} is a dataframe of type \emph{g_a} holding the unfiltered enrichment results (e.g. all GO terms, no limits set on gene set size )
-- \code{gostres} is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost().
+- \code{gostres} is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost(), with added enrichment ratios in the 'result' dataframe.
 -\code{filtered} is named \code{list} holding two sub-components:
 - \code{dr_g_a} is a dataframe of type \emph{g_a} holding the filtered enrichment results.
 - \code{dr_a} is a dataframe of type \emph{a} holding the filtered enrichment results.
 -\code{params} is a list of the main parameters used
 }
 \description{
-This function utilizes gprofiler2::gost() to perform standard functional enrichment analysis on a list of genes of interest. It incorporates filters similar to those in the cluefish workflow, enabling users to set limits on gene set sizes (lower and upper), specify the minimum number of genes involved in enrichment, and restrict results to driver GO terms if requested. The function provides flexibility by applying the same filters and features as the cluefish workflow. The output includes both unfiltered and filtered enrichment results, available in two formats: a combination of gene and annotation per row, or annotation per row only.
+This function utilizes gprofiler2::gost() to perform over-representation analysis on a list of genes of interest. Users can choose either standard annotation sources (e.g. GO:BP, KEGG, WP) via the \code{sources} argument, or provide one or more custom GMT files through \code{gmt_file_paths}. If both are provided, results from all sources are combined. At least one of \code{sources} or \code{gmt_file_paths} must be supplied.
+
+Similar to the \code{clustrenrich()} workflow, the function supports filters on gene
+set size (minimum and maximum), on the minimum number of input genes per
+enriched set, and on whether to keep only highlighted driver GO terms.
+
+The output contains both unfiltered and filtered results, in two formats:
+"gene × annotation per row" and "annotation per row".
 }

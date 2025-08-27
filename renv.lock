@@ -34,7 +34,7 @@
   "Packages": {
     "AnnotationDbi": {
       "Package": "AnnotationDbi",
-      "Version": "1.66.0",
+      "Version": "1.70.0",
       "Source": "Bioconductor",
       "Title": "Manipulation of SQLite-based annotations in Bioconductor",
       "Description": "Implements a user-friendly interface for querying SQLite-based annotation data packages.",
@@ -80,10 +80,10 @@
       "VignetteBuilder": "knitr",
       "Collate": "00RTobjs.R AllGenerics.R AllClasses.R unlist2.R utils.R SQL.R FlatBimap.R AnnDbObj-lowAPI.R Bimap.R GOTerms.R BimapFormatting.R Bimap-envirAPI.R flatten.R methods-AnnotationDb.R methods-SQLiteConnection.R methods-geneCentricDbs.R methods-geneCentricDbs-keys.R methods-ReactomeDb.R methods-OrthologyDb.R loadDb.R createAnnObjs-utils.R createAnnObjs.NCBIORG_DBs.R createAnnObjs.NCBICHIP_DBs.R createAnnObjs.ORGANISM_DB.R createAnnObjs.YEASTCHIP_DB.R createAnnObjs.COELICOLOR_DB.R createAnnObjs.ARABIDOPSISCHIP_DB.R createAnnObjs.MALARIA_DB.R createAnnObjs.YEAST_DB.R createAnnObjs.YEASTNCBI_DB.R createAnnObjs.ARABIDOPSIS_DB.R createAnnObjs.GO_DB.R createAnnObjs.KEGG_DB.R createAnnObjs.PFAM_DB.R AnnDbPkg-templates-common.R AnnDbPkg-checker.R print.probetable.R makeMap.R inpIDMapper.R test_AnnotationDbi_package.R",
       "git_url": "https://git.bioconductor.org/packages/AnnotationDbi",
-      "git_branch": "RELEASE_3_19",
-      "git_last_commit": "989c1dc",
-      "git_last_commit_date": "2024-04-30",
-      "Repository": "Bioconductor 3.19",
+      "git_branch": "RELEASE_3_21",
+      "git_last_commit": "a8184e6",
+      "git_last_commit_date": "2025-04-15",
+      "Repository": "Bioconductor 3.21",
       "NeedsCompilation": "no"
     },
     "BH": {

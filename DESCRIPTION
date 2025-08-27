@@ -48,3 +48,12 @@ Imports:
     stringr,
     tidyr,
     utils
+Suggests: 
+    devtools,
+    DT,
+    ggplot2,
+    here,
+    knitr,
+    remotes,
+    renv,
+    rmarkdown

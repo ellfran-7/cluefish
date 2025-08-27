@@ -18,7 +18,7 @@ getids(
 \arguments{
 \item{id_query}{A vector of transcript IDs that typically corresponds to the background transcript list}
 
-\item{biomart_db}{The name of the BioMart database hosted by Ensembl or Ensembl Metazoa. Use \code{listMarts()} to view available Ensembl databases, or \code{listEnsemblGenomes()} to view available Ensembl Metazoa databases.}
+\item{biomart_db}{The name of the BioMart database hosted by Ensembl or Ensembl Metazoa. Use \code{listEnsembl()} to view available Ensembl databases, or \code{listEnsemblGenomes()} to view available Ensembl Metazoa databases.}
 
 \item{species_dataset}{The name of the species dataset desired on \code{ensembl.org}.}
 

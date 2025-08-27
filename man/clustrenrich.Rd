@@ -8,17 +8,19 @@ clustrenrich(
   clustrfiltr_data,
   dr_genes,
   bg_genes,
-  bg_type = "custom_annotated",
+  bg_type = c("custom_annotated", "custom", "annotated", "known"),
   sources = c("GO:BP", "KEGG", "WP"),
   organism,
   user_threshold = 0.05,
-  correction_method = "fdr",
+  correction_method = c("fdr", "g_SCS", "bonferroni", "false_discovery_rate",
+    "analytical"),
   exclude_iea = FALSE,
   enrich_size_filtr = TRUE,
   only_highlighted_GO = TRUE,
   min_term_size = NULL,
   max_term_size = NULL,
   ngenes_enrich_filtr = NULL,
+  gmt_file_paths = NULL,
   path,
   output_filename,
   overwrite = FALSE
@@ -33,7 +35,7 @@ clustrenrich(
 
 \item{bg_type}{The background type, i.e. the statistical domain, that can be one of "annotated", "known", "custom" or "custom_annotated"}
 
-\item{sources}{A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.}
+\item{sources}{A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP. Visit the g:GOSt web tool for the comprehensive list and details on incorporated data sources.}
 
 \item{organism}{Organism ID defined for the chosen sources (e.g. zebrafish = "drerio")}
 
@@ -51,6 +53,8 @@ clustrenrich(
 
 \item{ngenes_enrich_filtr}{Minimum number of genes in a cluster needed for a gene set to be considered enriched. If NULL (default), no filtering by gene count is applied.}
 
+\item{gmt_file_paths}{If provided, these will be uploaded to g:Profiler and included in the enrichment analysis. For guidance on creating and validating GMT files, see the g:Profiler GMT Helper: https://biit.cs.ut.ee/gmt-helper/.}
+
 \item{path}{Destination folder for the output data results.}
 
 \item{output_filename}{Output enrichment result filename.}
@@ -60,15 +64,24 @@ clustrenrich(
 \value{
 A named \code{list} holding 4 components, where :
 -\code{dr_g_a_enrich} is a dataframe of type \emph{g_a} holding the enrichment results with each row being a combination of gene and biological function annotation
--\code{gostres} is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost()
+-\code{gostres} is a named list where 'result' contains the data frame with enrichment analysis results, and 'meta' contains metadata necessary for creating a Manhattan plot. This is the original output of a gprofiler2::gost(), with added enrichment ratios in the 'result' dataframe.
 -\code{dr_g_a_whole} is a dataframe of type \emph{g_a} holding all the biological function annotations found in the g:profiler database for all the deregulated genes.
 -\code{c_simplifylog} is a dataframe tracing the number of biological functions enriched per cluster before and after each filtering step for each source
 -\code{params} is a list of the main parameters used
 }
 \description{
-This function performs Over-Representation Analysis (ORA) on clusters to identify enriched biological functions using the clustrenrich() function. It leverages the gprofiler2::gost() function and offers customization options, including the choice of background gene list, background type (e.g., “custom” or “custom_annotated”), database sources (e.g., GO, KEGG, WP), adjusted p-value correction methods, and the option to exclude IEA (Electronically Inferred Annotations) GO terms. The function is adaptable to various organisms and biological annotation sources.
+Perform Over-Representation Analysis (ORA) on gene clusters to identify enriched biological functions.
+This function wraps around \code{gprofiler2::gost()} and provides flexible options, including:
+\itemize{
+\item custom background gene lists and background types (e.g. "custom", "custom_annotated")
+\item choice of annotation sources (e.g. GO, KEGG, WP)
+\item multiple p-value correction methods
+\item exclusion of IEA (Electronically Inferred Annotations) for GO terms
+}
+
+The function supports a wide range of organisms and annotation sources. Users may rely on standard databases available through g:Profiler and/or extend the analysis by supplying custom GMT annotation file(s).
 
 Users can filter terms/pathways based on gene set size (min_term_size and max_term_size) and the number of genes enriched (ngenes_enrich_filtr). For example, terms with fewer than the minimum required genes or more than the maximum allowed genes are excluded, and terms enriched by fewer than the specified number of genes are filtered out.
 
-Additionally, users can choose to retain only highlighted/driver GO terms to reduce redundancy and focus on key biological functions. A secondary gprofiler2::gost() run with significant = FALSE retrieves annotations for all deregulated genes, which is utilized later in the lonelyfishing() function. Throughout the process, a dataframe tracks the number of biological functions linked to each cluster after each filtering step, categorized by source. All main parameters used are saved in the output for transparency and reproducibility.
+Additionally, users can choose to retain only highlighted/driver GO terms to reduce redundancy and focus on key biological functions. A secondary gprofiler2::gost() run with significant = FALSE retrieves annotations for all deregulated genes, which is utilised later in the lonelyfishing() function. Throughout the process, a dataframe tracks the number of biological functions linked to each cluster after each filtering step, categorized by source. All main parameters used are saved in the output for transparency and reproducibility.
 }
