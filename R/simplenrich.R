@@ -1,12 +1,19 @@
 #' Simple functional enrichment with added filtering
 #' 
 #' @description
-#' This function utilizes gprofiler2::gost() to perform standard functional enrichment analysis on a list of genes of interest. It incorporates filters similar to those in the cluefish workflow, enabling users to set limits on gene set sizes (lower and upper), specify the minimum number of genes involved in enrichment, and restrict results to driver GO terms if requested. The function provides flexibility by applying the same filters and features as the cluefish workflow. The output includes both unfiltered and filtered enrichment results, available in two formats: a combination of gene and annotation per row, or annotation per row only.
+#' This function utilizes gprofiler2::gost() to perform over-representation analysis on a list of genes of interest. Users can choose either standard annotation sources (e.g. GO:BP, KEGG, WP) via the `sources` argument, or provide one or more custom GMT files through `gmt_file_paths`. If both are provided, results from all sources are combined. At least one of `sources` or `gmt_file_paths` must be supplied. 
+#'
+#' Similar to the `clustrenrich()` workflow, the function supports filters on gene 
+#' set size (minimum and maximum), on the minimum number of input genes per 
+#' enriched set, and on whether to keep only highlighted driver GO terms. 
+#' 
+#' The output contains both unfiltered and filtered results, in two formats: 
+#' "gene × annotation per row" and "annotation per row".
 #'
 #' @param input_genes A character vector of genes of interest. The `gprofiler2::gost()` function handles mixed types of gene IDs and even duplicates by treating them as a single unique occurrence of the identifier, disregarding any duplication.
 #' @param bg_genes The vector of background Ensembl genes (preferably from the experiment).
 #' @param bg_type The background type, i.e. the statistical domain, that can be one of "annotated", "known", "custom" or "custom_annotated"
-#' @param sources A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP.
+#' @param sources A vector of data sources to use. Currently, these are set at GO:BP, KEGG and WP. Visit the g:GOSt web tool for the comprehensive list and details on incorporated data sources.
 #' @param organism Organism ID defined for the chosen sources (e.g. if zebrafish = "drerio")
 #' @param user_threshold Adjusted p-value cutoff for Over-Representation analysis (default at 0.05 in `gost()` function)
 #' @param correction_method P-value adjustment method: one of “gSCS” ,“fdr” and “bonferroni (default set at "fdr")
