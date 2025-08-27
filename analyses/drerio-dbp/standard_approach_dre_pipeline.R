@@ -3,7 +3,7 @@
 #> =============================================================================
 
 #> This script applies the cluefish approach pipeline for biological interpretation 
-#> of results of the DRomics analysis of the rat liver pfoa transcriptomic dataset
+#> of results of the DRomics analysis of the zebrafish dbp transcriptomic dataset
 
 #> Before continuing you will need to follow the Cluefish workflow in the 
 #> "make.R" file at the root up to Step 3, in order to retrieve the bg_t_ids
